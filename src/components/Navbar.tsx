@@ -8,22 +8,22 @@ interface NavItem {
 
 const Navbar: React.FC = () => {
   const navItems: NavItem[] = [
-    { name: 'Research', href: '#main-projects' },
+    { name: 'Research', href: '/#main-projects' },
     { name: 'Professor Zichen Xu', href: '#professor' },
     { name: 'Lab Members', href: '#members' },
     { name: 'Contact', href: '#contact' },
-    { name: 'Lab Photo Gallery', href: '#gallery' },
+    { name: 'Lab Photo Gallery', href: '/gallery' },
     { name: 'Lab Blog', href: '#blog' },
-    { name: 'For Students', href: '#interests' },
+    { name: 'For Students', href: '/#interests' },
   ];
 
   return (
     <nav className="bg-white shadow-sm sticky top-0 z-10 w-full">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          {/* 左侧 Logo 或标题 */}
+          {/* 左侧 Logo 或标题 - 修改链接 */}
           <div className="flex-shrink-0">
-            <a href="#" className="text-xl font-semibold text-gray-800">
+            <a href="/" className="text-xl font-semibold text-gray-800">
               Good HomePage
             </a>
           </div>

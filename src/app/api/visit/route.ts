@@ -37,7 +37,7 @@ async function getDb() {
   return db;
 }
 
-export async function GET(request: Request) {
+export async function GET(_request: Request) {
   try {
     const db = await getDb();
 
@@ -67,7 +67,7 @@ export async function GET(request: Request) {
 }
 
 // 处理 OPTIONS 预检请求
-export async function OPTIONS(request: Request) {
+export async function OPTIONS(_request: Request) {
     return new Response(null, {
         status: 204,
         headers: {

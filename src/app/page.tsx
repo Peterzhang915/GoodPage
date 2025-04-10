@@ -1,57 +1,28 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 // Removed Image import as it's unused for now
 // import Image from "next/image";
 // 引入 framer-motion
-import { motion } from 'framer-motion';
+// import { motion } from 'framer-motion';
 
+// 移除 Navbar 导入
+// import Navbar from '@/components/Navbar';
 // 导入拆分后的组件
-import Navbar from '@/components/Navbar';
 import HeroSection from '@/components/HeroSection';
 import ContentSection from '@/components/ContentSection';
-import Footer from '@/components/Footer';
-
-// 辅助函数：获取数字的序数后缀 (保留在 page.tsx 或移到 utils 文件)
-function getOrdinalSuffix(n: number): string {
-  if (n % 100 >= 11 && n % 100 <= 13) {
-    return 'th';
-  }
-  switch (n % 10) {
-    case 1: return 'st';
-    case 2: return 'nd';
-    case 3: return 'rd';
-    default: return 'th';
-  }
-}
+// 移除 PhotoGallery 导入
+// import PhotoGallery from '@/components/PhotoGallery';
 
 // 主页组件
 export default function Home() {
-  const [visitCount, setVisitCount] = useState<number | null>(null);
-
-  useEffect(() => {
-    const fetchVisitCount = async () => {
-      try {
-        const response = await fetch('/api/visit');
-        if (!response.ok) {
-          throw new Error(`API request failed with status ${response.status}`);
-        }
-        const data = await response.json();
-        setVisitCount(data.count);
-      } catch (error) {
-        console.error("Failed to fetch visit count:", error);
-        setVisitCount(0);
-      }
-    };
-    fetchVisitCount();
-  }, []);
-
   return (
-    <main className="flex min-h-screen flex-col items-center justify-start bg-gray-50">
-      <Navbar />
+    // 不再需要 flex-col，因为 layout 会处理布局
+    <main className="items-center justify-start"> {/* 移除 flex min-h-screen flex-col */}
+      {/* <Navbar /> 移除 Navbar 渲染 */}
       <HeroSection />
 
-      {/* 主要内容区域容器 - 现在只负责布局 */}
+      {/* 主要内容区域容器 */}
       <div className="w-full max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12 text-gray-800">
 
         {/* 使用 ContentSection 渲染每个板块 */}
@@ -143,12 +114,10 @@ export default function Home() {
         <section id="professor" className="scroll-mt-16"></section>
         <section id="members" className="scroll-mt-16"></section>
         <section id="contact" className="scroll-mt-16"></section>
-        <section id="gallery" className="scroll-mt-16"></section>
+        {/* <ContentSection id="gallery" ... /> 及其内部的 PhotoGallery 已移除 */}
         <section id="blog" className="scroll-mt-16"></section>
 
       </div> {/* End of main content div */}
-
-      <Footer visitCount={visitCount} getOrdinalSuffix={getOrdinalSuffix} />
 
     </main>
   );
