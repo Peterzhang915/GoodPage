@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 // Removed Image import as it's unused for now
 // import Image from "next/image";
 // 引入 framer-motion
@@ -65,8 +65,48 @@ const Navbar: React.FC = () => {
   );
 };
 
+// 辅助函数：获取数字的序数后缀 (st, nd, rd, th)
+function getOrdinalSuffix(n: number): string {
+  if (n % 100 >= 11 && n % 100 <= 13) {
+    return 'th';
+  }
+  switch (n % 10) {
+    case 1: return 'st';
+    case 2: return 'nd';
+    case 3: return 'rd';
+    default: return 'th';
+  }
+}
+
 // 主页组件
 export default function Home() {
+  // 添加 state 来存储访问次数
+  const [visitCount, setVisitCount] = useState<number | null>(null);
+
+  // 添加 useEffect 在组件挂载时获取访问次数
+  useEffect(() => {
+    // 定义一个异步函数来获取数据
+    const fetchVisitCount = async () => {
+      try {
+        const response = await fetch('/api/visit');
+        if (!response.ok) {
+          // 如果 API 返回错误状态，则抛出错误
+          throw new Error(`API request failed with status ${response.status}`);
+        }
+        const data = await response.json();
+        // 更新 state
+        setVisitCount(data.count);
+      } catch (error) {
+        console.error("Failed to fetch visit count:", error);
+        // 可以在这里设置一个错误状态或默认值，例如 0
+        setVisitCount(0);
+      }
+    };
+
+    // 调用异步函数
+    fetchVisitCount();
+  }, []); // 空依赖数组确保只在挂载时运行一次
+
   return (
     <main className="flex min-h-screen flex-col items-center justify-start bg-gray-50">
       <Navbar />
@@ -231,11 +271,18 @@ export default function Home() {
         <section id="gallery" className="scroll-mt-16"></section>
         <section id="blog" className="scroll-mt-16"></section>
 
-
-        {/* Footer - 待添加 */}
-        {/* <footer className="mt-16 border-t pt-8 text-center text-gray-500 text-sm">
-             @COPYRIGHT NCU GOOD LAB All rights reserved.
-        </footer> */}
+        {/* Footer - 更新访问次数显示格式 */}
+        <footer className="mt-16 border-t border-gray-200 pt-8 pb-8 text-center text-gray-500 text-sm">
+          <p>@COPYRIGHT NCU GOOD LAB All rights reserved.</p>
+          <p className="mt-2">
+            {visitCount === null
+              ? 'Loading visitor count...'
+              : visitCount === 0 // 特殊处理 0 或错误情况
+              ? 'Welcome!'
+              : `You are the ${visitCount}${getOrdinalSuffix(visitCount)} visitor`
+            }
+          </p>
+        </footer>
 
       </div>
 
