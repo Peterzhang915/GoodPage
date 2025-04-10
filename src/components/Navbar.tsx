@@ -1,3 +1,4 @@
+import PublicationsPage from '@/app/publications/page';
 import React from 'react';
 
 // 定义导航项类型 (可选，但推荐)
@@ -10,7 +11,8 @@ const Navbar: React.FC = () => {
   const navItems: NavItem[] = [
     { name: 'Research', href: '/#main-projects' },
     { name: 'Professor Zichen Xu', href: '#professor' },
-    { name: 'Lab Members', href: '#members' },
+    { name: 'Lab Members', href: '/members' },
+    { name: 'Publications', href: '/publications' },   // 新增 publications 链接    
     { name: 'Contact', href: '#contact' },
     { name: 'Lab Photo Gallery', href: '/gallery' },
     { name: 'Lab Blog', href: '#blog' },
