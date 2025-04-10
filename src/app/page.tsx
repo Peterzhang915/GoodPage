@@ -20,7 +20,9 @@ const Navbar: React.FC = () => {
   ];
 
   return (
-    <nav className="bg-white shadow-sm sticky top-0 z-10">
+    // 外层 nav 负责背景、阴影和定位，并占满全宽
+    <nav className="bg-white shadow-sm sticky top-0 z-10 w-full">
+      {/* 内层 div 负责限制内容宽度并居中 */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* 左侧 Logo 或标题 */}
