@@ -33,13 +33,17 @@ const doubledItems = [...itemsToRender, ...itemsToRender];
 const PhotoGallery: React.FC = () => {
   // 添加 state 管理选中的图片
   const [selectedImage, setSelectedImage] = useState<GalleryImage | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null); // Ref for the container div
   const isHoveringRef = useRef(false);
-  const isPausedRef = useRef(false); // 新增：用于模态框打开时暂停动画
+  const isPausedRef = useRef(false);
+  const mouseXRelative = useRef<number | null>(null); // Store relative mouse X (0 to 1)
 
   // --- 物理动画参数 ---
-  const normalVelocity = 60; // 正常速度 (像素/秒)
-  const acceleration = 300;  // 加速度 (像素/秒²)
-  const deceleration = -300; // 减速度 (像素/秒²)
+  const normalVelocity = 60;   // 正常速度 (像素/秒, 默认向左)
+  const maxVelocity = 600;     // 边缘悬停时的最大速度 (像素/秒)
+  const acceleration = 500;    // 加速度 (像素/秒²)
+  const deceleration = -500;   // 减速度 (像素/秒²)
+  const edgeThreshold = 0.2; // 边缘区域阈值 (例如 0.2 表示左右各 20%)
   // ---------------------
 
   // 调整尺寸以适应图片
@@ -51,41 +55,58 @@ const PhotoGallery: React.FC = () => {
 
   // 使用 motionValue 存储 x 坐标和当前速度
   const x = motionValue(0);
-  const velocity = useRef(normalVelocity); // 初始速度设为正常速度
+  const velocity = useRef(-normalVelocity); // 初始速度设为向左
 
   // 核心动画逻辑: useAnimationFrame
   useAnimationFrame((time, delta) => {
-    // delta 是自上一帧以来的毫秒数
-    const dt = delta / 1000; // 转换为秒
+    const dt = delta / 1000; // seconds
 
-    // 确定目标速度
-    let targetVelocity = isHoveringRef.current || isPausedRef.current ? 0 : normalVelocity;
+    let targetVelocity = -normalVelocity; // Default: move left normally
 
-    // 计算速度差
+    if (isPausedRef.current) {
+      targetVelocity = 0;
+    } else if (isHoveringRef.current && mouseXRelative.current !== null) {
+      const relativeX = mouseXRelative.current;
+      if (relativeX < edgeThreshold) { // Hovering left edge
+        targetVelocity = -maxVelocity; // Speed up left
+      } else if (relativeX > (1 - edgeThreshold)) { // Hovering right edge
+        targetVelocity = maxVelocity;  // Speed up right (or reverse)
+      } else { // Hovering center
+        targetVelocity = 0; // Decelerate to stop
+      }
+    } // else (not hovering, not paused) -> targetVelocity remains -normalVelocity
+
+    // Calculate velocity change
     const deltaVelocity = targetVelocity - velocity.current;
 
-    // 应用加速度或减速度
-    if (deltaVelocity > 0) { // 需要加速
-      velocity.current += acceleration * dt;
-      velocity.current = Math.min(velocity.current, targetVelocity); // 不超过目标速度
-    } else if (deltaVelocity < 0) { // 需要减速
-      velocity.current += deceleration * dt; // deceleration 是负数
-      velocity.current = Math.max(velocity.current, targetVelocity); // 不低于目标速度 (0)
+    // Apply acceleration/deceleration
+    if (deltaVelocity !== 0) {
+      const accel = deltaVelocity > 0 ? acceleration : deceleration;
+      velocity.current += accel * dt;
+      // Clamp velocity to target
+      if (deltaVelocity > 0) {
+        velocity.current = Math.min(velocity.current, targetVelocity);
+      } else {
+        velocity.current = Math.max(velocity.current, targetVelocity);
+      }
     }
 
-    // 根据当前速度更新位置
+    // Update position based on current velocity
     let currentX = x.get();
     let moveBy = velocity.current * dt;
-    let newX = currentX - moveBy; // 向左移动
+    let newX = currentX + moveBy; // Apply movement (velocity can be +/-)
 
-    // 处理循环：当移出完整内容宽度时，重置位置
-    // 这里需要精确处理，防止跳跃
-    if (velocity.current !== 0 && moveBy !== 0) { // 只有在移动时才检查循环
-        // 使用 remainder 操作符 (%) 来处理循环
-        // 确保结果在 [-contentWidth * 2, -contentWidth] 范围内，以匹配 doubledItems 的显示逻辑
-        // (稍微复杂一点以处理负数和边界)
-        newX = ((newX % contentWidth) - contentWidth) % contentWidth;
+    // --- Updated Loop Logic --- 
+    if (velocity.current < 0 && newX <= -contentWidth) {
+      // Moving left, wrapped past the end of the first set
+      newX += contentWidth;
+    } else if (velocity.current > 0 && newX >= 0) {
+       // Moving right, wrapped past the start
+       newX -= contentWidth;
     }
+    // Ensure it stays exactly within bounds if velocity becomes 0 at the boundary
+    newX = Math.max(newX, -contentWidth);
+    newX = Math.min(newX, 0); 
 
     x.set(newX);
   });
@@ -93,39 +114,48 @@ const PhotoGallery: React.FC = () => {
   // 处理图片点击 - 暂停动画
   const handleImageClick = (image: GalleryImage) => {
     setSelectedImage(image);
-    isPausedRef.current = true; // 标记为暂停
+    isPausedRef.current = true;
   };
 
   // 关闭模态框 - 恢复动画
   const closeModal = () => {
     setSelectedImage(null);
-    isPausedRef.current = false; // 取消暂停标记
-    // 动画会在下一帧根据 isHoveringRef 自动恢复到合适的速度
+    isPausedRef.current = false;
   };
 
   // 鼠标进入 - 更新悬停状态
   const handleMouseEnter = () => {
     isHoveringRef.current = true;
-    // 不再直接控制动画，useAnimationFrame 会处理
   };
 
   // 鼠标离开 - 更新悬停状态
   const handleMouseLeave = () => {
     isHoveringRef.current = false;
-    // 不再直接控制动画，useAnimationFrame 会处理
+    mouseXRelative.current = null; // Reset relative position when leaving
+  };
+
+  // New: Handle mouse movement within the container
+  const handleMouseMove = (event: React.MouseEvent<HTMLDivElement>) => {
+    if (containerRef.current) {
+      const rect = containerRef.current.getBoundingClientRect();
+      const relativeX = (event.clientX - rect.left) / rect.width;
+      mouseXRelative.current = Math.max(0, Math.min(1, relativeX)); // Clamp between 0 and 1
+    }
   };
 
   return (
     <> {/* 使用 Fragment 包裹，因为 Modal 是独立于滚动容器渲染的 */}
       <div
+        ref={containerRef} // Add ref to the container
         className="w-full overflow-hidden relative bg-gray-100 cursor-grab" // 添加 grab cursor
         style={{ height: `${itemHeight + 32}px`}}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
+        onMouseMove={handleMouseMove} // Add mouse move listener
       > {/* 根据图片高度调整容器高度 */}
         {/* 添加左右渐变遮罩，使滚动看起来更自然 (可选) */}
-         <div className="absolute top-0 left-0 bottom-0 w-16 bg-gradient-to-r from-gray-100 to-transparent z-10"></div>
-         <div className="absolute top-0 right-0 bottom-0 w-16 bg-gradient-to-l from-gray-100 to-transparent z-10"></div>
+         <div className="absolute top-0 left-0 bottom-0 w-16 bg-gradient-to-r from-gray-100 to-transparent z-10 pointer-events-none"></div>
+         <div className="absolute top-0 right-0 bottom-0 w-16 bg-gradient-to-l from-gray-100 to-transparent z-10 pointer-events-none"></div>
 
         {/* 3. 内层滚动容器: flex布局，应用动画 */}
         <motion.div
