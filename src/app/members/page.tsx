@@ -42,7 +42,7 @@ const statusOrder: Record<string, number> = {
 
 // 恢复美化后的英文标题
 const statusTitles: Record<string, string> = {
-  '教师': 'Teachers', 
+  '教师': 'Head of Lab', 
   '博士后': 'Postdoctoral Researchers',
   '博士生': 'PhD Students',
   '硕士生': 'Master Students',
@@ -105,13 +105,13 @@ export default function MembersPage() {
     return sortedGroupKeys.map(groupKey => (
       <section key={groupKey} className="mb-16"> 
         <h2 className={`text-2xl font-semibold ${themeColors.textColorPrimary} border-b ${themeColors.footerBorder} pb-3 mb-8 flex items-center gap-3`}>
-          {groupKey === '教师' && <span className="text-2xl">👨‍🏫</span>}
-          {groupKey === '博士后' && <span className="text-2xl">🧑‍🔬</span>}
-          {groupKey === '博士生' && <span className="text-2xl">🎓</span>}
-          {groupKey === '硕士生' && <span className="text-2xl">🧑‍🎓</span>}
-          {groupKey === '本科生' && <span className="text-2xl">🎒</span>}
-          {groupKey === '访问学者' && <span className="text-2xl">🤝</span>}
-          {groupKey === '校友' && <span className="text-2xl">🌟</span>}
+          {groupKey === '教师' && <span className="text-2xl"></span>}
+          {groupKey === '博士后' && <span className="text-2xl"></span>}
+          {groupKey === '博士生' && <span className="text-2xl"></span>}
+          {groupKey === '硕士生' && <span className="text-2xl"></span>}
+          {groupKey === '本科生' && <span className="text-2xl"></span>}
+          {groupKey === '访问学者' && <span className="text-2xl"></span>}
+          {groupKey === '校友' && <span className="text-2xl"></span>}
           {statusTitles[groupKey] || 'Other Members'} 
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-x-6 gap-y-8"> 
@@ -138,15 +138,16 @@ export default function MembersPage() {
         <p className={`text-center ${themeColors.textColorTertiary} text-lg`}>No members found.</p>
       )}
 
-      {/* 恢复隐藏在底部的 Emoji 开关按钮 */}
+      {/* 优化 Emoji 按钮位置和添加呼吸动画 */}
       {!isLoading && !error && members.length > 0 && (
-        <div className="mt-24 text-center"> 
-          <button 
+        <div className="mt-24 text-center mx-auto w-full flex justify-center">
+          <button
             onClick={() => setIsEmojiEnabled(!isEmojiEnabled)}
             title={isEmojiEnabled ? 'Disable Fun Emojis' : 'Enable Fun Emojis'}
-            className={`p-2 rounded-full transition-all duration-300 ${isEmojiEnabled ? `${themeColors.footerBackground} hover:${themeColors.accentColor}` : `${themeColors.footerBackground} hover:${themeColors.textColorSecondary}`}`}
+            className={`w-12 h-12 rounded-full shadow-md hover:shadow-lg flex items-center justify-center transition-shadow duration-200 select-none animate-[breathe-scale_2s_infinite] ${isEmojiEnabled ? `${themeColors.footerBackground} hover:${themeColors.accentColor}` : `${themeColors.footerBackground} hover:${themeColors.textColorSecondary}`}`}
+            aria-label="Toggle Emojis"
           >
-            <span className="text-xl">{isEmojiEnabled ? '🎉' : '✨'}</span>
+            <span className="text-2xl select-none">{isEmojiEnabled ? '🎉' : '✨'}</span>
           </button>
         </div>
       )}
