@@ -8,6 +8,8 @@ import {
 import { notFound } from 'next/navigation';
 import { MemberProfileImage } from '@/components/MemberProfileImage';
 import Link from 'next/link';
+// 导入需要的图标
+import { Github, ExternalLink, Linkedin } from 'lucide-react';
 
 // Props 类型
 interface MemberPageProps {
@@ -67,10 +69,29 @@ export default async function MemberProfilePage({ params }: MemberPageProps) {
           {member.name_en && <p className="text-md text-gray-600 mb-1">{member.name_en}</p>}
           <p className="text-sm font-semibold text-indigo-600 mb-2">{displayStatus}</p>
           {member.email && (
-            <a href={`mailto:${member.email}`} className="text-sm text-blue-600 hover:underline break-all">
+            <a href={`mailto:${member.email}`} className="text-sm text-blue-600 hover:underline break-all mb-3 block">
               {member.email}
             </a>
           )}
+          
+          {/* 新增：显示社交链接图标 */}
+          <div className="flex justify-center items-center space-x-4 mt-2">
+            {member.github_url && (
+              <a href={member.github_url} target="_blank" rel="noopener noreferrer" title="GitHub Profile" className="text-gray-600 hover:text-gray-900 transition-colors">
+                <Github size={20} />
+              </a>
+            )}
+            {member.blog_url && (
+              <a href={member.blog_url} target="_blank" rel="noopener noreferrer" title="Personal Blog/Website" className="text-gray-600 hover:text-gray-900 transition-colors">
+                <ExternalLink size={20} />
+              </a>
+            )}
+            {member.linkedin_url && (
+              <a href={member.linkedin_url} target="_blank" rel="noopener noreferrer" title="LinkedIn Profile" className="text-gray-600 hover:text-gray-900 transition-colors">
+                <Linkedin size={20} />
+              </a>
+            )}
+          </div>
         </div>
 
         <div className="md:w-2/3 p-6">
@@ -95,18 +116,17 @@ export default async function MemberProfilePage({ params }: MemberPageProps) {
             </section>
           )}
 
-          <section>
-            <h2 className="text-xl font-semibold text-gray-700 border-b pb-2 mb-3">发表成果</h2>
-            {publications.length > 0 ? (
-              <ul className="list-none p-0 mt-2 space-y-2"> 
+          {/* 只有当 publications 数组不为空时才渲染整个 section */}
+          {publications.length > 0 && (
+            <section>
+              <h2 className="text-xl font-semibold text-gray-700 border-b pb-2 mb-3">发表成果</h2>
+              <ul className="list-none p-0 mt-2 space-y-2">
                 {publications.map((pub) => (
                   <MemberPublicationItem key={pub.id} pub={pub} />
                 ))}
               </ul>
-            ) : (
-              <p className="text-sm text-gray-500 mt-2">暂无发表成果。</p>
-            )}
-          </section>
+            </section>
+          )}
         </div>
       </div>
     </div>

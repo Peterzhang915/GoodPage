@@ -13,7 +13,7 @@ async function connectDb() {
   });
 }
 
-// 成员接口定义 (保持不变)
+// 成员接口定义 (添加新字段)
 export interface Member {
   id: string;
   name_en: string | null;
@@ -28,6 +28,10 @@ export interface Member {
   email: string | null;
   research_interests: string | null;
   favorite_emojis: string | null;
+  // 新增字段
+  github_url: string | null; 
+  blog_url: string | null;
+  linkedin_url: string | null;
 }
 
 // 新增接口：包含显示状态的成员信息
