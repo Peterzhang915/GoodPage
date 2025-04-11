@@ -31,6 +31,19 @@ body {
     rgb(var(--background-start-rgb));
 } */
 
+/* 定义主题色变量 */
+:root {
+  --color-theme-page: #f8f9fa;
+  --color-theme-header: #2c3e50;
+  --color-theme-header-light: #34495e;
+  --color-theme-light: #ecf0f1;
+  --color-theme-primary: #2c3e50;
+  --color-theme-secondary: #34495e;
+  --color-theme-muted: #7f8c8d;
+  --color-theme-dark: #1a252f;
+  --color-theme: #3498db;
+}
+
 /* 添加全局平滑滚动 */
 html {
   @apply scroll-smooth;
