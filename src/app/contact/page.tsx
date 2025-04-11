@@ -52,9 +52,9 @@ const ContactPage: React.FC = () => {
   const [isAddressHovered, setIsAddressHovered] = useState(false); // 新增: 地址悬停状态
 
   return (
-    <div className={`container mx-auto px-4 py-16 ${themeColors.textColorPrimary}`}> {/* 使用 textColorPrimary */}
+    <div className={`px-4 py-16 ${themeColors.textColorPrimary}`}>
       <motion.h1 
-        className={`text-4xl font-bold mb-16 text-center ${themeColors.textColorPrimary}`}
+        className={`text-4xl font-bold mb-12 text-center ${themeColors.ccfAText}`}
         initial={{ opacity: 0, y: -30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, ease: "easeOut" }}
@@ -62,12 +62,11 @@ const ContactPage: React.FC = () => {
         Contact Us
       </motion.h1>
 
-      {/* 使用 motion.div 包裹并应用 containerVariants 实现子元素交错动画 */}
       <motion.div 
-        className="max-w-3xl bg-white p-8 sm:p-10 rounded-lg shadow-xl border border-gray-100 overflow-hidden" // 增强样式
+        className="max-w-3xl mx-auto bg-white p-8 sm:p-10 rounded-lg shadow-xl border border-gray-100 overflow-hidden"
         variants={containerVariants}
         initial="hidden"
-        animate="visible" // 使用 animate 确保页面加载时就执行动画
+        animate="visible"
       >
         <motion.div variants={itemVariants} className="mb-8"> {/* 分块 1: 实验室名称 */}
           <h3 className={`text-2xl font-semibold mb-2 ${themeColors.textColorPrimary}`}> 

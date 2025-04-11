@@ -96,7 +96,7 @@ body.developer-mode-active nav a[class*="text-sm"] { /* Target nav links */
   @apply text-gray-300 hover:text-green-400 hover:border-green-400; /* Adjust text and hover colors */
 }
 body.developer-mode-active nav a[class*="text-xl"] { /* Target logo/title link */
-   @apply text-gray-100 hover:text-green-400;
+  @apply text-gray-100 hover:text-green-400;
 }
 
 /* Target Footer specifically */
