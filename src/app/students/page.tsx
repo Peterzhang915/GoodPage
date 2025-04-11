@@ -9,7 +9,7 @@ const StudentsPage: React.FC = () => {
       <ul className={`${themeColors.textColorSecondary} list-disc list-inside space-y-6`}>
         <li className='hover:scale-105 transition-transform duration-200 bg-white p-6 rounded-md shadow-md flex items-center space-x-2'>
           <Book className={`w-6 h-6 ${themeColors.accentColor}`} />
-          <a href='https://good.ncu.edu.cn/ForStudents/MUST_READ_IN_GOOD.pdf' className={`${themeColors.linkColor} hover:underline`}>GOOD Lab member MUST read</a>
+          <a href='/MUST_READ_IN_GOOD.pdf' className={`${themeColors.linkColor} hover:underline`}>GOOD Lab member MUST read</a>
           <span className={`${themeColors.textColorTertiary} text-sm ml-1`}> - Prof. Zichen Xu, NCU</span>
         </li>
         <li className='hover:scale-105 transition-transform duration-200 bg-white p-6 rounded-md shadow-md flex items-center space-x-2'>
