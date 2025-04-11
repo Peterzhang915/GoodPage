@@ -6,6 +6,7 @@ import { Member } from '../lib/db';
 import JSConfetti from 'js-confetti';
 import React, { useEffect, useRef } from 'react';
 import { motion } from 'framer-motion'; // 引入 framer-motion
+import { themeColors } from '@/styles/theme';
 
 const placeholderAvatar = '/avatars/placeholder.png';
 const defaultEmojis = ['✨', '💖', '🚀'];
@@ -90,7 +91,7 @@ export function MemberCard({ member, isEmojiEnabled }: MemberCardProps) {
         whileHover={{ y: -5 }}
         transition={{ type: 'spring', stiffness: 300 }}
       >
-        <div className="w-20 h-20 rounded-full overflow-hidden mb-4 border-2 border-gray-200 group-hover:border-indigo-500 group-hover:scale-105 transition-all duration-300 flex-shrink-0 z-10">
+        <div className={`w-20 h-20 rounded-full overflow-hidden mb-4 border-2 border-gray-200 group-hover:border-blue-500 group-hover:scale-105 transition-all duration-300 flex-shrink-0 z-10`}>
           <Image
             src={member.avatar_url || placeholderAvatar}
             alt={`${member.name_zh} 头像`}
@@ -106,10 +107,10 @@ export function MemberCard({ member, isEmojiEnabled }: MemberCardProps) {
         </div>
         <div className="flex flex-col justify-center flex-grow z-10">
           <div>
-            <h3 className="text-base font-semibold text-gray-900 group-hover:text-indigo-600 transition-colors duration-300 mb-0.5">{member.name_zh}</h3>
+            <h3 className={`text-base font-semibold ${themeColors.textColorPrimary} group-hover:${themeColors.primary} transition-colors duration-300 mb-0.5`}>{member.name_zh}</h3>
             {member.name_en && <p className="text-xs text-gray-500 group-hover:text-gray-600 transition-colors duration-300">{member.name_en}</p>}
           </div>
-          <p className="text-xs font-medium text-indigo-500 mt-2 bg-indigo-50 px-2 py-0.5 rounded-full inline-block">{member.displayStatus}</p>
+          <p className={`text-xs font-medium ${themeColors.accentColor} mt-2 ${themeColors.ccfCBg} px-2 py-0.5 rounded-full inline-block`}>{member.displayStatus}</p>
         </div>
       </motion.div>
     </Link>

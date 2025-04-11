@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react'; // 显式导入 React
 // 移除直接导入数据库函数，改为从 API 获取
 // import { getAllMembers, Member, calculateMemberGradeStatus } from '@/lib/db'; 
 import { MemberCard } from '@/components/MemberCard';
+import { themeColors } from '@/styles/theme';
 
 // 定义成员类型，包含显示状态 (需要与 API 返回的类型一致)
 interface Member {
@@ -20,6 +21,9 @@ interface Member {
   email: string | null;
   research_interests: string | null;
   favorite_emojis: string | null; // 确保与 Member 类型一致
+  github_url: string | null;  // Added to match expected type
+  blog_url: string | null;     // Added to match expected type
+  linkedin_url: string | null; // Added to match expected type
 }
 interface MemberWithDisplayStatus extends Member {
   displayStatus: string;
@@ -100,7 +104,7 @@ export default function MembersPage() {
 
     return sortedGroupKeys.map(groupKey => (
       <section key={groupKey} className="mb-16"> 
-        <h2 className="text-2xl font-semibold text-gray-800 border-b border-gray-300 pb-3 mb-8 flex items-center gap-3">
+        <h2 className={`text-2xl font-semibold ${themeColors.textColorPrimary} border-b ${themeColors.footerBorder} pb-3 mb-8 flex items-center gap-3`}>
           {groupKey === '教师' && <span className="text-2xl">👨‍🏫</span>}
           {groupKey === '博士后' && <span className="text-2xl">🧑‍🔬</span>}
           {groupKey === '博士生' && <span className="text-2xl">🎓</span>}
@@ -125,13 +129,13 @@ export default function MembersPage() {
       <h1 className="text-4xl font-bold text-center text-gray-800 mb-16">Meet the Team</h1>
 
       {isLoading ? (
-        <p className="text-center text-gray-500 text-lg">Loading members...</p>
+        <p className={`text-center ${themeColors.textColorTertiary} text-lg`}>Loading members...</p>
       ) : error ? (
-        <p className="text-center text-red-600 bg-red-100 p-4 rounded-lg">Error: {error}</p>
+        <p className={`text-center ${themeColors.accentColor} ${themeColors.footerBackground} p-4 rounded-lg`}>Error: {error}</p>
       ) : members.length > 0 ? (
          renderGroupedSections()
       ) : (
-        <p className="text-center text-gray-500 text-lg">No members found.</p>
+        <p className={`text-center ${themeColors.textColorTertiary} text-lg`}>No members found.</p>
       )}
 
       {/* 恢复隐藏在底部的 Emoji 开关按钮 */}
@@ -140,7 +144,7 @@ export default function MembersPage() {
           <button 
             onClick={() => setIsEmojiEnabled(!isEmojiEnabled)}
             title={isEmojiEnabled ? 'Disable Fun Emojis' : 'Enable Fun Emojis'}
-            className={`p-2 rounded-full transition-all duration-300 ${isEmojiEnabled ? 'bg-indigo-100 hover:bg-indigo-200 text-indigo-700 scale-110' : 'bg-gray-100 hover:bg-gray-200 text-gray-500 hover:text-gray-700'}`}
+            className={`p-2 rounded-full transition-all duration-300 ${isEmojiEnabled ? `${themeColors.footerBackground} hover:${themeColors.accentColor}` : `${themeColors.footerBackground} hover:${themeColors.textColorSecondary}`}`}
           >
             <span className="text-xl">{isEmojiEnabled ? '🎉' : '✨'}</span>
           </button>
