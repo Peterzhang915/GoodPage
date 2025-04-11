@@ -1,0 +1,33 @@
+"id","name_en","name_zh","title_zh","title_en","status","enrollment_year","bio_zh","bio_en","avatar_url","email","research_interests","favorite_emojis","github_url","blog_url","linkedin_url"
+"ZichenXu","Zichen Xu","徐子晨","教授","Professor","教师",2000,null,null,"/avatars/placeholder.png","zichen.xu@example.com",null,null,null,null,null
+"YanFu","Yan Fu","Yan Fu",null,null,"博士生",2021,null,null,"/avatars/placeholder.png","yan.fu@example.com",null,null,null,null,null
+"HanxiaoYi","Hanxiao Yi","Hanxiao Yi",null,null,"博士生",2021,null,null,"/avatars/placeholder.png","hanxiao.yi@example.com",null,null,null,null,null
+"JinhuiLai","Jinhui Lai","Jinhui Lai",null,null,"博士生",2022,null,null,"/avatars/placeholder.png","jinhui.lai@example.com",null,null,null,null,null
+"AoGong","Ao Gong","Ao Gong",null,null,"博士生",2022,null,null,"/avatars/placeholder.png","ao.gong@example.com",null,null,null,null,null
+"ChengLinLiang","ChengLin Liang","ChengLin Liang",null,null,"硕士生",2023,null,null,"/avatars/placeholder.png","chenglin.liang@example.com",null,null,null,null,null
+"HanJianJiang","HanJian Jiang","HanJian Jiang",null,null,"硕士生",2023,null,null,"/avatars/placeholder.png","hanjian.jiang@example.com",null,null,null,null,null
+"JiangBoLi","JiangBo Li","JiangBo Li",null,null,"硕士生",2023,null,null,"/avatars/placeholder.png","jiangbo.li@example.com",null,null,null,null,null
+"ZhenLingSun","ZhenLing Sun","ZhenLing Sun",null,null,"硕士生",2023,null,null,"/avatars/placeholder.png","zhenling.sun@example.com",null,null,null,null,null
+"BingYanLi","BingYan Li","BingYan Li",null,null,"硕士生",2023,null,null,"/avatars/placeholder.png","bingyan.li@example.com",null,null,null,null,null
+"KeXu","Ke Xu","Ke Xu",null,null,"硕士生",2023,null,null,"/avatars/placeholder.png","ke.xu@example.com",null,null,null,null,null
+"YueGong","Yue Gong","Yue Gong",null,null,"硕士生",2024,null,null,"/avatars/placeholder.png","yue.gong@example.com",null,null,null,null,null
+"HaowenZhou","Haowen Zhou","Haowen Zhou",null,null,"硕士生",2024,null,null,"/avatars/placeholder.png","haowen.zhou@example.com",null,null,null,null,null
+"WeiXu","Wei Xu","Wei Xu",null,null,"硕士生",2024,null,null,"/avatars/placeholder.png","wei.xu@example.com",null,null,null,null,null
+"YucongDong","Yucong Dong","Yucong Dong",null,null,"硕士生",2024,null,null,"/avatars/placeholder.png","yucong.dong@example.com",null,null,null,null,null
+"ZihanYu","Zihan Yu","Zihan Yu",null,null,"硕士生",2024,null,null,"/avatars/placeholder.png","zihan.yu@example.com",null,null,null,null,null
+"HaoChen","Hao Chen","Hao Chen",null,null,"硕士生",2024,null,null,"/avatars/placeholder.png","hao.chen@example.com",null,null,null,null,null
+"YingZhou","Ying Zhou","Ying Zhou",null,null,"硕士生",2024,null,null,"/avatars/placeholder.png","ying.zhou@example.com",null,null,null,null,null
+"ZiqianCheng","Ziqian Cheng","Ziqian Cheng",null,null,"硕士生",2024,null,null,"/avatars/placeholder.png","ziqian.cheng@example.com",null,null,null,null,null
+"JinZhao","Jin Zhao","Jin Zhao",null,null,"硕士生",2024,null,null,"/avatars/placeholder.png","jin.zhao@example.com",null,null,null,null,null
+"LinxinWu","Linxin Wu","Linxin Wu",null,null,"硕士生",2024,null,null,"/avatars/placeholder.png","linxin.wu@example.com",null,null,null,null,null
+"YongtaoZhong","Yongtao Zhong","Yongtao Zhong",null,null,"硕士生",2024,null,null,"/avatars/placeholder.png","yongtao.zhong@example.com",null,null,null,null,null
+"HaonanZheng","Haonan Zheng","Haonan Zheng",null,null,"硕士生",2024,null,null,"/avatars/placeholder.png","haonan.zheng@example.com",null,null,null,null,null
+"JingGao","Jing Gao","Jing Gao",null,null,"本科生",2021,null,null,"/avatars/placeholder.png","jing.gao@example.com",null,null,null,null,null
+"XinDai","Xin Dai","Xin Dai",null,null,"本科生",2021,null,null,"/avatars/placeholder.png","xin.dai@example.com",null,null,null,null,null
+"YifanZhang","Yifan Zhang","Yifan Zhang",null,null,"本科生",2022,null,null,"/avatars/placeholder.png","yifan.zhang@example.com",null,null,null,null,null
+"YuhanWang","Yuhan Wang","Yuhan Wang",null,null,"本科生",2022,null,null,"/avatars/placeholder.png","yuhan.wang@example.com",null,null,null,null,null
+"WeihanYi","Weihan Yi","易炜涵",null,null,"本科生",2024,"易炜涵是实验室的优秀本科生，积极参与软件工程项目，并对数据挖掘和Web开发有浓厚兴趣。","Weihan Yi is an outstanding undergraduate student actively involved in software engineering projects, with strong interests in data mining and web development.","/avatars/placeholder.png","weihan.yi@example.com","软件工程,数据挖掘,Web开发","💻,📊,🌐,YWH","https://github.com/example-weihanyi","https://blog.example.com/weihanyi",null
+"PinyeWang","Pinye Wang","王品烨",null,null,"本科生",2022,null,null,"/avatars/placeholder.png","pinye.wang@example.com",null,null,null,null,null
+"ZiqiZhou","Ziqi Zhou","Ziqi Zhou",null,null,"本科生",2023,null,null,"/avatars/placeholder.png","ziqi.zhou@example.com",null,null,null,null,null
+"WenHaoHu","WenHao Hu","WenHao Hu",null,null,"本科生",2023,null,null,"/avatars/placeholder.png","wenhao.hu@example.com",null,null,null,null,null
+"FengHanLi","FengHan Li","FengHan Li",null,null,"本科生",2023,null,null,"/avatars/placeholder.png","fenghan.li@example.com",null,null,null,null,null 

@@ -1,0 +1,6 @@
+"id","title","venue","year","ccf_rank","doi_url","pdf_url","abstract","keywords"
+"1","Paper 1: Exploring SE and Mining in IEEE TSE","IEEE TSE","2023","A","10.1109/EXAMPLE.2023.1234","/pdfs/paper_1.pdf","This paper explores SE and Mining. We propose a method and evaluate it.","SE,Mining"
+"2","Paper 2: Exploring AI and ML in ICSE","ICSE","2022","B","10.1109/EXAMPLE.2022.5678","/pdfs/paper_2.pdf","This paper explores AI and ML with novel approaches.","AI,ML"
+"3","Paper 3: Exploring NLP and IR in FSE","FSE","2021","C","10.1109/EXAMPLE.2021.9101","/pdfs/paper_3.pdf","This paper focuses on NLP and IR improvements.","NLP,IR"
+"4","Paper 4: Exploring Testing and Debug in ASE","ASE","2020","A","10.1109/EXAMPLE.2020.1123","/pdfs/paper_4.pdf","We discuss testing and debug techniques.","Testing,Debug"
+"5","Paper 5: Exploring Empirical SE in TOSEM","TOSEM","2019","B","10.1109/EXAMPLE.2019.4567","/pdfs/paper_5.pdf","This paper covers empirical studies in SE.","Empirical SE"
