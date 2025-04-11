@@ -10,14 +10,13 @@ interface NavItem {
 
 const Navbar: React.FC = () => {
   const navItems: NavItem[] = [
-    { name: 'Research', href: '/#main-projects' },
-    { name: 'Professor Zichen Xu', href: '#professor' },
+    { name: 'Professor Zichen Xu', href: '/xuz' },
     { name: 'Lab Members', href: '/members' },
-    { name: 'Publications', href: '/publications' },   // 新增 publications 链接    
-    { name: 'Contact', href: '#contact' },
+    { name: 'Publications', href: '/publications' },
     { name: 'Lab Photo Gallery', href: '/gallery' },
-    { name: 'Lab Blog', href: '#blog' },
-    { name: 'For Students', href: '/#interests' },
+    { name: 'Lab Blog', href: '/blog' },
+    { name: 'For Students', href: '/students' },
+    { name: 'Contact', href: '/contact' },
   ];
 
   return (
