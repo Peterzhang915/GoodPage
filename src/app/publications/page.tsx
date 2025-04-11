@@ -8,7 +8,7 @@ import { themeColors } from '@/styles/theme';  // Assume this is where we'll imp
 function PublicationItem({ pub }: { pub: Publication }) {
   return (
     // 恢复之前的样式
-    <li id={`pub-${pub.id}`} className="mb-8 p-6 bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 border border-gray-100 scroll-mt-20"> 
+    <li id={`pub-${pub.id}`} className={`mb-8 p-6 ${themeColors.backgroundWhite} rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 ${themeColors.borderLight} scroll-mt-20`}> 
       <h3 className={`text-lg font-semibold ${themeColors.textColorPrimary} mb-3 leading-tight flex items-start`}>
         <BookOpen className={`w-5 h-5 mr-2 mt-0.5 ${themeColors.primary} flex-shrink-0`} />
         <span>{pub.title}</span>
@@ -34,7 +34,7 @@ function PublicationItem({ pub }: { pub: Publication }) {
         )}
         {pub.year && (
           <span className="flex items-center">
-            <Calendar className="w-4 h-4 mr-1 text-gray-400 flex-shrink-0" /> {pub.year}
+            <Calendar className={`w-4 h-4 mr-1 ${themeColors.textColorTertiary} flex-shrink-0`} /> {pub.year}
           </span>
         )}
         {pub.ccf_rank && (
@@ -46,11 +46,11 @@ function PublicationItem({ pub }: { pub: Publication }) {
       {pub.abstract && (
          <details className={`text-sm ${themeColors.textColorTertiary} mt-3 group`}>
              <summary className={`cursor-pointer ${themeColors.linkColor} ${themeColors.accentColor} hover:underline hover:${themeColors.linkColor.replace('text-', 'hover:text-')} font-medium list-none group-open:mb-2`}>Show Abstract</summary>
-             <p className={`italic ${themeColors.textColorTertiary} border-l-2 border-indigo-100 pl-3`}>{pub.abstract}</p>
+             <p className={`italic ${themeColors.textColorTertiary} border-l-2 ${themeColors.borderLight} pl-3`}>{pub.abstract}</p>
          </details>
       )}
       {pub.keywords && (
-         <div className="mt-3 text-xs text-gray-500">
+         <div className={`mt-3 text-xs ${themeColors.textColorTertiary}`}>
              <span className="font-medium mr-1">Keywords:</span> {pub.keywords}
          </div>
       )}
@@ -96,7 +96,7 @@ export default async function PublicationsPage() {
         sortedYears.map(year => (
           <section key={year} className="mb-16">
             {/* 恢复之前的年份标题样式 */}
-            <h2 className="text-3xl font-semibold text-gray-700 border-b border-gray-300 pb-3 mb-8">{year}</h2>
+            <h2 className={`text-3xl font-semibold ${themeColors.textColorPrimary} border-b ${themeColors.borderLight} pb-3 mb-8`}>{year}</h2>
             <ul className="list-none p-0">
               {groupedPublications[year].map((pub) => (
                 <PublicationItem key={pub.id} pub={pub} />
@@ -105,7 +105,7 @@ export default async function PublicationsPage() {
           </section>
         ))
       ) : (
-        <p className="text-center text-gray-500 text-lg">No publications found.</p>
+        <p className={`text-center ${themeColors.textColorTertiary} text-lg`}>No publications found.</p>
       )}
     </div>
   );

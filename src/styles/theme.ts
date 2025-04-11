@@ -1,22 +1,49 @@
 export const themeColors = {
-  primary: 'text-blue-600',  // Retained for general use
-  textColorPrimary: 'text-gray-900',  // Deep gray for primary text
-  textColorSecondary: 'text-gray-600',  // Medium gray for secondary text
-  textColorTertiary: 'text-gray-500',  // Light gray for tertiary text
-  linkColor: 'text-blue-600',  // Unified link color
-  ccfAText: 'text-blue-900',  // Deep blue for A rank text
-  ccfABg: 'bg-blue-200',  // Light blue for A rank background
-  ccfBText: 'text-blue-700',  // Deep blue for B rank text
-  ccfBBg: 'bg-blue-100',  // Light blue for B rank background
-  ccfCText: 'text-blue-500',  // Medium deep blue for C rank text
-  ccfCBg: 'bg-blue-50',  // Light blue for C rank background
-  accentColor: 'text-blue-500',  // For highlighting important text or elements, maintaining blue theme consistency
+  primary: 'text-slate-900',  // 使用深灰蓝色作为主色调
+  textColorPrimary: 'text-gray-900',  // 保持深灰色作为主文本
+  textColorSecondary: 'text-gray-800',  // 调整为更深的灰色，增加对比度
+  textColorTertiary: 'text-gray-600',  // 保持浅灰色作为三级文本
+  linkColor: 'text-blue-600',  // 统一链接颜色
+  ccfAText: 'text-blue-900',  // 保持深蓝色作为A级文本
+  ccfABg: 'bg-blue-200',  // 调整为更浅的蓝色背景
+  ccfBText: 'text-blue-700',  // 保持深蓝色作为B级文本
+  ccfBBg: 'bg-blue-100',  // 调整为更浅的蓝色背景
+  ccfCText: 'text-blue-600',  // 调整为更深的蓝色作为C级文本
+  ccfCBg: 'bg-blue-50',  // 保持浅蓝色背景
+  accentColor: 'text-blue-600',  // 调整为更深的蓝色作为强调色
   // Removed redundant ccfBlue series and others for simplicity
-  navBackground: 'bg-white',  // Background for Navbar
-  navTextColor: 'text-gray-800',  // Text color for Navbar items
-  navHoverText: 'text-gray-700',  // Hover text color for Navbar
-  navHoverBorder: 'border-gray-300',  // Hover border color for Navbar
-  footerBorder: 'border-gray-200',  // Border color for Footer
-  footerTextColor: 'text-gray-500',  // Text color for Footer elements
-  footerBackground: 'bg-gray-100',  // Light background for Footer to separate it from content
+  navBackground: 'bg-white',  // 保持白色导航栏背景
+  navTextColor: 'text-gray-800',  // 保持深灰色导航文本
+  navHoverText: 'text-gray-700',  // 保持灰色悬停文本
+  navHoverBorder: 'border-gray-300',  // 保持灰色悬停边框
+  footerBorder: 'border-gray-200',  // 保持浅灰色页脚边框
+  footerTextColor: 'text-gray-500',  // 保持浅灰色页脚文本
+  footerBackground: 'bg-gray-50',  // 调整为更浅的灰色页脚背景
+
+  // 新增的背景色
+  backgroundWhite: 'bg-white',
+  backgroundBlack: 'bg-black',
+  backgroundLight: 'bg-gray-100',
+  backgroundMedium: 'bg-gray-200',
+  backgroundDark: 'bg-gray-300',
+  
+  // 新增的边框
+  borderLight: 'border-gray-100',
+  borderMedium: 'border-gray-200',
+  borderDark: 'border-gray-300',
+  
+  // 新增的文字颜色
+  textWhite: 'text-white',
+  textGrayLight: 'text-gray-400',
+  textGrayMedium: 'text-gray-500',
+  textGrayDark: 'text-gray-600',
+  
+  // 新增的渐变
+  gradientPrimary: 'from-slate-900 via-slate-800 to-slate-700',
+  gradientFade: 'from-gray-100 to-transparent',
+  
+  // 新增的透明度
+  opacityLight: 'bg-opacity-50',
+  opacityMedium: 'bg-opacity-75',
+  opacityDark: 'bg-opacity-95'
 }; 

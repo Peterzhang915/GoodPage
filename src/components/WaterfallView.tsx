@@ -3,6 +3,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 import { GalleryImage } from './PhotoGallery'; // Assuming GalleryImage is exported or moved
+import { themeColors } from '@/styles/theme';
 
 interface WaterfallViewProps {
   category: string;
@@ -41,9 +42,13 @@ const WaterfallView: React.FC<WaterfallViewProps> = ({
               className="object-cover block transition-transform duration-300 group-hover:scale-105"
             />
             {(image.caption || image.date) && (
-              <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-60 transition-opacity duration-300 flex flex-col justify-end p-3 text-white opacity-0 group-hover:opacity-100 pointer-events-none">
-                {image.caption && <p className="font-semibold text-sm truncate">{image.caption}</p>}
-                {image.date && <p className="text-xs">{image.date}</p>}
+              <div className={`absolute inset-0 ${themeColors.backgroundBlack} ${themeColors.opacityLight} transition-opacity duration-300 group-hover:opacity-100`}>
+                <div className={`absolute inset-0 flex items-center justify-center ${themeColors.textWhite} text-center p-4`}>
+                  <div>
+                    {image.caption && <p className="font-semibold text-sm truncate">{image.caption}</p>}
+                    {image.date && <p className="text-xs">{image.date}</p>}
+                  </div>
+                </div>
               </div>
             )}
           </motion.div>

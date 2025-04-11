@@ -4,6 +4,7 @@ import Image from 'next/image'; // 导入 Next.js Image 组件
 // 导入 Modal 组件
 import Modal from './Modal'; // 假设 Modal 和 PhotoGallery 在同一目录
 import WaterfallView from './WaterfallView'; // Assuming WaterfallView exists
+import { themeColors } from '@/styles/theme';
 
 // 定义图片数据接口，添加 category
 export interface GalleryImage {
@@ -234,15 +235,15 @@ const PhotoGallery: React.FC = () => {
             {/* 高亮滚动流 */} 
             <div
               ref={containerRef}
-              className="w-full overflow-hidden relative bg-gray-100 cursor-grab mb-6" // 增加下方 margin
+              className={`w-full overflow-hidden relative ${themeColors.backgroundLight} cursor-grab mb-6`}
               style={{ height: `${itemHeight + 32}px`}}
               onMouseEnter={handleMouseEnter}
               onMouseLeave={handleMouseLeave}
               onMouseMove={handleMouseMove}
             >
               {/* 添加左右渐变遮罩，使滚动看起来更自然 (可选) */}
-              <div className="absolute top-0 left-0 bottom-0 w-16 bg-gradient-to-r from-gray-100 to-transparent z-10 pointer-events-none"></div>
-              <div className="absolute top-0 right-0 bottom-0 w-16 bg-gradient-to-l from-gray-100 to-transparent z-10 pointer-events-none"></div>
+              <div className={`absolute top-0 left-0 bottom-0 w-16 bg-gradient-to-r from-${themeColors.backgroundLight} to-transparent z-10 pointer-events-none`}></div>
+              <div className={`absolute top-0 right-0 bottom-0 w-16 bg-gradient-to-l from-${themeColors.backgroundLight} to-transparent z-10 pointer-events-none`}></div>
 
               {/* 3. 内层滚动容器: flex布局，应用动画 */}
               <motion.div
@@ -268,9 +269,13 @@ const PhotoGallery: React.FC = () => {
                     />
                     {/* 悬停时显示图片信息 (可选) */}
                     {(image.caption || image.date) && (
-                      <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-opacity duration-300 flex flex-col justify-end p-3 text-white opacity-0 group-hover:opacity-100 pointer-events-none"> {/* 添加 pointer-events-none 避免干扰点击 */}
-                        {image.caption && <p className="font-semibold text-sm truncate">{image.caption}</p>}
-                        {image.date && <p className="text-xs">{image.date}</p>}
+                      <div className={`absolute inset-0 ${themeColors.backgroundBlack} ${themeColors.opacityLight} transition-opacity duration-300 group-hover:opacity-100`}>
+                        <div className={`absolute inset-0 flex items-center justify-center ${themeColors.textWhite} text-center p-4`}>
+                          <div>
+                            {image.caption && <p className="text-sm">{image.caption}</p>}
+                            {image.date && <p className="text-xs">{image.date}</p>}
+                          </div>
+                        </div>
                       </div>
                     )}
                   </div>
