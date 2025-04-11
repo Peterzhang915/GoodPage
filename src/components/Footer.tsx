@@ -45,8 +45,7 @@ const Footer: React.FC = () => {
   }, []); // 空依赖确保只运行一次
 
   return (
-    <footer className={`mt-16 ${themeColors.footerBackground} ${themeColors.footerBorder} pt-8 pb-8 text-center ${themeColors.footerTextColor} text-sm w-full`}>
-      {/* 页脚内容也限制宽度可能更好看 */}
+    <footer className={`  ${themeColors.backgroundLight} pt-8 pb-8 text-center ${themeColors.footerTextColor} text-sm w-full`}>
       <p>@COPYRIGHT NCU GOOD LAB All rights reserved.</p>
       <p className="mt-2">
         {visitCount === null
