@@ -3,7 +3,7 @@
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Mail, Phone, MapPin, Building2, School, ChevronDown, ChevronUp, Map as MapIcon } from 'lucide-react'; // 导入图标
+import { Mail, Phone, MapPin, Building2, School, ChevronDown, ChevronUp, Map as MapIcon, ExternalLink } from 'lucide-react'; // 导入图标
 import { themeColors } from '@/styles/theme';
 
 // 定义动画变体
@@ -32,8 +32,7 @@ const expandingSectionVariants = {
   visible: {
     opacity: 1,
     height: 'auto',
-    marginTop: '1rem', // 展开时添加上边距
-    marginBottom: '2rem', // 展开时添加下边距
+    marginTop: '0.5rem', // 减小展开时的上边距
     overflow: 'visible',
     transition: { duration: 0.3, ease: "easeInOut" }
   },
@@ -50,6 +49,7 @@ const expandingSectionVariants = {
 const ContactPage: React.FC = () => {
   const [isFormExpanded, setIsFormExpanded] = useState(false);
   const [isMapExpanded, setIsMapExpanded] = useState(false);
+  const [isAddressHovered, setIsAddressHovered] = useState(false); // 新增: 地址悬停状态
 
   return (
     <div className={`container mx-auto px-4 py-12 ${themeColors.textColorPrimary}`}> {/* 使用 textColorPrimary */}
@@ -80,67 +80,113 @@ const ContactPage: React.FC = () => {
           <div className="flex items-start gap-4">
             <School size={20} className={`mt-1 ${themeColors.textColorSecondary}`} />
             <div>
-              <p>School of Information Engineering</p>
-              <p>Department of Computer Science and Engineering</p>
-              <p>The Nanchang University</p>
+              {/* 学校链接 */}
+              <motion.a 
+                href="https://smcs.ncu.edu.cn/" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className={`inline-flex items-center gap-1 ${themeColors.textColorPrimary} hover:${themeColors.ccfAText} transition-colors group`}
+                whileHover={{ y: -1 }}
+              >
+                School of Information Engineering
+                <ExternalLink size={14} className="opacity-50 group-hover:opacity-100 transition-opacity"/>
+              </motion.a>
+              {/* 部门信息 - 紧随学校下方，添加缩进和样式 */}
+              <p className={`text-sm ${themeColors.textColorSecondary} pl-1`}>
+                Department of Computer Science and Engineering
+              </p>
+              {/* 大学链接 - 稍微隔开 */} 
+              <motion.a 
+                href="https://www.ncu.edu.cn/" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className={`inline-flex items-center gap-1 mt-1 ${themeColors.textColorPrimary} hover:${themeColors.ccfAText} transition-colors group`}
+                whileHover={{ y: -1 }}
+              >
+                The Nanchang University
+                <ExternalLink size={14} className="opacity-50 group-hover:opacity-100 transition-opacity"/>
+              </motion.a>
             </div>
           </div>
-          <div className="flex items-start gap-4">
-            <MapPin size={20} className={`mt-1 ${themeColors.textColorSecondary}`} />
-            <div>
-              <p>IEB A608-1, 999 Xuefu BLVD</p> {/* 调整地址显示 */}
-              <p>Nanchang, Jiangxi, 330000</p>
-              <p>China</p> {/* 添加国家 */}
+          {/* 修改地址交互：悬停提示，点击展开 */}
+          <motion.div 
+            className="cursor-pointer relative" // 添加 relative 定位
+            onClick={() => setIsMapExpanded(!isMapExpanded)} // 点击切换地图
+            onHoverStart={() => setIsAddressHovered(true)} // 记录悬停开始
+            onHoverEnd={() => setIsAddressHovered(false)}   // 记录悬停结束
+          >
+            <div className="flex items-start gap-4"> {/* 原地址容器 */}
+              <MapPin size={20} className={`mt-1 ${themeColors.textColorSecondary}`} />
+              <div>
+                <p>IEB A608-1, 999 Xuefu BLVD</p> 
+                <p>Nanchang, Jiangxi, 330000</p>
+                <p>China</p> 
+              </div>
             </div>
-          </div>
+            {/* 条件渲染悬停提示 */} 
+            <AnimatePresence>
+              {isAddressHovered && !isMapExpanded && (
+                <motion.div
+                  initial={{ opacity: 0, y: 5, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 5, scale: 0.95 }}
+                  transition={{ duration: 0.2, ease: "easeOut" }}
+                  className={`text-sm ${themeColors.ccfAText} mt-2 ml-10 absolute -bottom-5 left-0 whitespace-nowrap`}
+                >
+                  Click here 👇 to show location
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </motion.div>
+          
+          {/* 地图内容 (展开逻辑不变) */}
+          <AnimatePresence initial={false}>
+            {isMapExpanded && (
+              <motion.div
+                key="map-section"
+                variants={expandingSectionVariants}
+                initial="hidden"
+                animate="visible"
+                exit="exit"
+                className="bg-gray-50 rounded border border-gray-200 p-4 mt-2 ml-10" // 添加左边距对齐提示
+              >
+                {/* TODO: 在这里嵌入地图组件或 iframe */}
+                <p className="text-center text-gray-500">Map will be displayed here.</p>
+                <div className="aspect-video bg-gray-200 rounded flex items-center justify-center">
+                  <MapIcon size={48} className="text-gray-400" />
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </motion.div>
         
         <motion.div variants={itemVariants} className="space-y-4 mb-8"> {/* 分块 3: 联系方式 - 增加 mb-8 */}
-          <div className="flex items-center gap-4">
-            <Mail size={20} className={`${themeColors.textColorSecondary}`} />
-            <a href="mailto:xuz@ncu.edu.cn" className={`hover:underline ${themeColors.textColorPrimary} hover:${themeColors.ccfAText}`}>
+          <motion.div 
+            className="flex items-center gap-4 group cursor-pointer"
+            whileHover="hover"
+          >
+            <motion.div variants={{ hover: { x: 3, y: -2, rotate: 5, scale: 1.1, color: themeColors.ccfAText } }} transition={{ duration: 0.2 }}>
+              <Mail size={20} className={`${themeColors.textColorSecondary} group-hover:${themeColors.ccfAText} transition-colors`} />
+            </motion.div>
+            <a href="mailto:xuz@ncu.edu.cn" className={`${themeColors.textColorPrimary} group-hover:${themeColors.ccfAText} transition-colors`}>
               xuz@ncu.edu.cn
             </a>
-          </div>
+          </motion.div>
           <div className="flex items-center gap-4">
             <Phone size={20} className={`${themeColors.textColorSecondary}`} />
-            {/* 更新电话号码并添加 tel: 链接 */}
-            <a href="tel:+8679183968516" className={`hover:underline ${themeColors.textColorPrimary} hover:${themeColors.ccfAText}`}>
+            {/* 将 a 标签改为 motion.a 并添加摇动动画 */}
+            <motion.a 
+              href="tel:+8679183968516" 
+              className={`${themeColors.textColorPrimary} hover:${themeColors.ccfAText} cursor-pointer`} // 移除 hover:underline，添加 cursor-pointer
+              whileHover={{
+                rotate: [0, -3, 3, -3, 3, 0], // 左右小幅度摇摆
+                transition: { duration: 0.4, ease: "easeInOut", repeat: 0 } // 调整持续时间
+              }}
+            >
               (0791) 8396 8516
-            </a>
+            </motion.a>
           </div>
         </motion.div>
-
-        {/* --- 地图触发器 --- */}
-        <motion.div variants={itemVariants} className="border-t pt-6 mb-6"> 
-          <button
-            onClick={() => setIsMapExpanded(!isMapExpanded)}
-            className={`flex justify-between items-center w-full text-left text-lg font-medium ${themeColors.textColorPrimary} hover:${themeColors.ccfAText} transition-colors`}
-          >
-            <span>View our location</span>
-            {isMapExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
-          </button>
-        </motion.div>
-
-        {/* --- 地图内容 (可展开) --- */}
-        <AnimatePresence initial={false}>
-          {isMapExpanded && (
-            <motion.div
-              key="map-section"
-              variants={expandingSectionVariants}
-              initial="hidden"
-              animate="visible"
-              exit="exit"
-              className="bg-gray-50 rounded border border-gray-200 p-4" // 简单样式
-            >
-              {/* TODO: 在这里嵌入地图组件或 iframe */}
-              <p className="text-center text-gray-500">Map will be displayed here.</p>
-              <div className="aspect-video bg-gray-200 rounded flex items-center justify-center">
-                <MapIcon size={48} className="text-gray-400" />
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
 
         {/* --- 表单触发器 --- */}
         <motion.div variants={itemVariants} className="border-t pt-6"> 
