@@ -69,6 +69,24 @@ const DeveloperPage: React.FC = () => {
     }
   }, [displayMode, isPromptComplete, linuxPasswordInput, handleLoginAttempt]); // Add dependencies
 
+  // Effect to toggle body class based on authentication status
+  useEffect(() => {
+    const bodyClass = 'developer-mode-active';
+    if (isAuthenticated) {
+      document.body.classList.add(bodyClass);
+      console.log('Added body class:', bodyClass);
+    } else {
+      document.body.classList.remove(bodyClass);
+      console.log('Removed body class:', bodyClass);
+    }
+
+    // Cleanup function to remove class on component unmount
+    return () => {
+      document.body.classList.remove(bodyClass);
+      console.log('Cleanup: Removed body class:', bodyClass);
+    };
+  }, [isAuthenticated]); // Dependency array ensures this runs when auth changes
+
   // 定义不同模式下的文本
   const normalIntroText = "Whoa! You found the secret passage!\nAre you one of us, or just randomly mashing buttons?\nProve your worthiness!";
   // 模拟 Linux 风格的文本 - 移除末尾空格
@@ -156,62 +174,77 @@ const DeveloperPage: React.FC = () => {
 
   // 如果已认证，显示开发者工具箱
   return (
-    <div>
+    // 应用 font-mono, 深色背景, 浅色文本 和 padding
+    <div className="font-mono px-4 py-8 bg-gray-900 text-gray-100 rounded-lg mt-8 mb-8"> {/* 添加圆角和外边距 */}
       <motion.h1 
          initial={{ opacity: 0, y: -20 }}
          animate={{ opacity: 1, y: 0 }}
-         className={`text-3xl font-bold mb-8 ${themeColors.ccfAText} flex items-center gap-2`}
+         // 使用更亮的颜色，调整间距
+         className={`text-3xl md:text-4xl font-bold mb-6 text-green-400 flex items-center gap-3`} 
       >
-         <Unlock size={28} /> Developer Toolbox Activated! 
+         <Unlock size={32} /> 
+         <span>Developer Toolbox Activated!</span>
       </motion.h1>
 
-      <p className="mb-6 text-gray-600">Welcome back, master builder! Here are your tools. Use them wisely.</p>
+      {/* 使用浅灰色文本 */}
+      <p className="mb-10 text-base text-gray-400">Welcome back, master builder! Here are your tools. Use them wisely.</p>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {/* Tool: Code Server Link */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"> {/* 可以稍微减小 gap */}
+        {/* Tool: Code Server Link - 应用暗色卡片样式 */}
         <motion.div 
           initial={{ opacity: 0, y: 20 }} 
           animate={{ opacity: 1, y: 0 }} 
           transition={{ delay: 0.1 }}
-          className="bg-white p-6 rounded-lg shadow-md border border-gray-200"
+          // 移除 bg-white 和 shadow, 添加暗色背景和边框
+          className="bg-gray-800 p-6 rounded-md border border-gray-700 flex flex-col justify-between"
         >
-          <h2 className="text-xl font-semibold mb-3">Code Server Access</h2>
-          <p className="text-sm text-gray-500 mb-4">Direct link to the internal Code Server instance.</p>
+          <div> 
+            {/* 调整标题和描述颜色 */}
+            <h2 className="text-xl font-semibold mb-3 text-green-400">Code Server Access</h2>
+            <p className="text-sm text-gray-400 mb-5">Direct link to the internal Code Server instance.</p>
+          </div>
           <a 
             href="http://your-codeserver-internal-ip:port" 
             target="_blank" 
             rel="noopener noreferrer"
-            className={`inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium ${themeColors.textWhite} ${themeColors.ccfBText === 'text-white' ? themeColors.ccfCBg : themeColors.ccfBBg} hover:opacity-90`}
+            // 调整按钮颜色以适应深色背景
+            className={`mt-auto inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium bg-indigo-600 text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 focus:ring-indigo-500 transition-colors`}
           >
             Open Code Server
             <ExternalLink size={16} className="ml-2"/>
           </a>
         </motion.div>
 
-        {/* Tool: Add Photo (Placeholder) */}
+        {/* Tool: Add Photo (Placeholder) - 应用暗色卡片样式 */}
         <motion.div 
           initial={{ opacity: 0, y: 20 }} 
           animate={{ opacity: 1, y: 0 }} 
           transition={{ delay: 0.2 }}
-          className="bg-white p-6 rounded-lg shadow-md border border-gray-200"
+          className="bg-gray-800 p-6 rounded-md border border-gray-700 flex flex-col justify-between"
         >
-          <h2 className="text-xl font-semibold mb-3">Add New Photo</h2>
-          <p className="text-sm text-gray-500 mb-4">Quickly upload and add a new photo to the gallery.</p>
-          <button disabled className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-400 bg-gray-100 cursor-not-allowed">
+           <div>
+            <h2 className="text-xl font-semibold mb-3 text-green-400">Add New Photo</h2>
+            <p className="text-sm text-gray-400 mb-5">Quickly upload and add a new photo to the gallery.</p>
+          </div>
+           {/* 调整禁用按钮样式 */}
+          <button disabled className="mt-auto inline-flex items-center justify-center px-4 py-2 border border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-500 bg-gray-700 cursor-not-allowed">
             Upload Photo (Coming Soon)
           </button>
         </motion.div>
 
-        {/* Tool: Add Member (Placeholder) */}
+        {/* Tool: Add Member (Placeholder) - 应用暗色卡片样式 */}
         <motion.div 
           initial={{ opacity: 0, y: 20 }} 
           animate={{ opacity: 1, y: 0 }} 
           transition={{ delay: 0.3 }}
-          className="bg-white p-6 rounded-lg shadow-md border border-gray-200"
+          className="bg-gray-800 p-6 rounded-md border border-gray-700 flex flex-col justify-between"
         >
-          <h2 className="text-xl font-semibold mb-3">Add New Member</h2>
-          <p className="text-sm text-gray-500 mb-4">Add information for a new lab member.</p>
-          <button disabled className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-400 bg-gray-100 cursor-not-allowed">
+          <div>
+            <h2 className="text-xl font-semibold mb-3 text-green-400">Add New Member</h2>
+            <p className="text-sm text-gray-400 mb-5">Add information for a new lab member.</p>
+          </div>
+           {/* 调整禁用按钮样式 */}
+          <button disabled className="mt-auto inline-flex items-center justify-center px-4 py-2 border border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-500 bg-gray-700 cursor-not-allowed">
             Add Member (Coming Soon)
           </button>
         </motion.div>

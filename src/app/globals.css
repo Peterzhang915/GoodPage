@@ -77,3 +77,30 @@ body {
 .animate-blink {
   animation: blink 1s step-end infinite;
 }
+/* Add this at the end of src/app/globals.css */
+body.developer-mode-active {
+  @apply bg-gray-900; /* Or your preferred dark background color */
+}
+/* Add these rules to the end of src/app/globals.css */
+
+/* --- Developer Dark Mode Overrides --- */
+body.developer-mode-active {
+  @apply bg-gray-900; /* Set main body background */
+}
+
+/* Target Navbar specifically */
+body.developer-mode-active nav[class*="shadow-sm"] { /* Use a class that Navbar has */
+  @apply bg-gray-800 border-b border-gray-700 shadow-none; /* Dark background, add border, remove shadow */
+}
+body.developer-mode-active nav a[class*="text-sm"] { /* Target nav links */
+  @apply text-gray-300 hover:text-green-400 hover:border-green-400; /* Adjust text and hover colors */
+}
+body.developer-mode-active nav a[class*="text-xl"] { /* Target logo/title link */
+   @apply text-gray-100 hover:text-green-400;
+}
+
+/* Target Footer specifically */
+body.developer-mode-active footer[class*="pt-8"] { /* Use a class that Footer has */
+  @apply bg-gray-900 border-t border-gray-700 text-gray-400; /* Dark background, add border, adjust text */
+}
+/* --- End Developer Dark Mode Overrides --- */
