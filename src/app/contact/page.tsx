@@ -52,7 +52,7 @@ const ContactPage: React.FC = () => {
   const [isAddressHovered, setIsAddressHovered] = useState(false); // 新增: 地址悬停状态
 
   return (
-    <div className={`container mx-auto px-4 py-12 ${themeColors.textColorPrimary}`}> {/* 使用 textColorPrimary */}
+    <div className={`container mx-auto px-4 py-16 ${themeColors.textColorPrimary}`}> {/* 使用 textColorPrimary */}
       <motion.h1 
         className={`text-4xl font-bold mb-16 text-center ${themeColors.textColorPrimary}`}
         initial={{ opacity: 0, y: -30 }}
@@ -64,7 +64,7 @@ const ContactPage: React.FC = () => {
 
       {/* 使用 motion.div 包裹并应用 containerVariants 实现子元素交错动画 */}
       <motion.div 
-        className="max-w-3xl mx-auto bg-white p-8 sm:p-10 rounded-lg shadow-xl border border-gray-100 overflow-hidden" // 增强样式
+        className="max-w-3xl bg-white p-8 sm:p-10 rounded-lg shadow-xl border border-gray-100 overflow-hidden" // 增强样式
         variants={containerVariants}
         initial="hidden"
         animate="visible" // 使用 animate 确保页面加载时就执行动画
@@ -172,20 +172,23 @@ const ContactPage: React.FC = () => {
               xuz@ncu.edu.cn
             </a>
           </motion.div>
-          <div className="flex items-center gap-4">
-            <Phone size={20} className={`${themeColors.textColorSecondary}`} />
-            {/* 将 a 标签改为 motion.a 并添加摇动动画 */}
-            <motion.a 
+          <motion.div 
+            className="flex items-center gap-4 group cursor-pointer"
+            whileHover="hover"
+          >
+            <motion.div 
+              variants={{ hover: { rotate: [0, -8, 8, -8, 8, 0], scale: 1.1, color: themeColors.ccfAText } }}
+              transition={{ duration: 0.4, ease: "easeInOut" }}
+            >
+              <Phone size={20} className={`${themeColors.textColorSecondary} group-hover:${themeColors.ccfAText} transition-colors`} />
+            </motion.div>
+            <a 
               href="tel:+8679183968516" 
-              className={`${themeColors.textColorPrimary} hover:${themeColors.ccfAText} cursor-pointer`} // 移除 hover:underline，添加 cursor-pointer
-              whileHover={{
-                rotate: [0, -3, 3, -3, 3, 0], // 左右小幅度摇摆
-                transition: { duration: 0.4, ease: "easeInOut", repeat: 0 } // 调整持续时间
-              }}
+              className={`${themeColors.textColorPrimary} group-hover:${themeColors.ccfAText} transition-colors`}
             >
               (0791) 8396 8516
-            </motion.a>
-          </div>
+            </a>
+          </motion.div>
         </motion.div>
 
         {/* --- 表单触发器 --- */}

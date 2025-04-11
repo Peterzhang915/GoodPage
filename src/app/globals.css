@@ -70,3 +70,10 @@ body {
 .my-masonry-grid_column > div {
   margin-bottom: 1rem; /* 对应 gap-4 */
 }
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+.animate-blink {
+  animation: blink 1s step-end infinite;
+}
