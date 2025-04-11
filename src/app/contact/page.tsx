@@ -52,9 +52,9 @@ const ContactPage: React.FC = () => {
   const [isMapExpanded, setIsMapExpanded] = useState(false);
 
   return (
-    <div className={`container mx-auto px-4 py-16 ${themeColors.textColorPrimary}`}> {/* 使用 textColorPrimary */}
+    <div className={`container mx-auto px-4 py-12 ${themeColors.textColorPrimary}`}> {/* 使用 textColorPrimary */}
       <motion.h1 
-        className={`text-4xl font-bold mb-12 text-center ${themeColors.ccfAText}`}
+        className={`text-4xl font-bold mb-16 text-center ${themeColors.textColorPrimary}`}
         initial={{ opacity: 0, y: -30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, ease: "easeOut" }}
@@ -70,7 +70,7 @@ const ContactPage: React.FC = () => {
         animate="visible" // 使用 animate 确保页面加载时就执行动画
       >
         <motion.div variants={itemVariants} className="mb-8"> {/* 分块 1: 实验室名称 */}
-          <h3 className={`text-2xl font-semibold mb-2 ${themeColors.ccfBText}`}> 
+          <h3 className={`text-2xl font-semibold mb-2 ${themeColors.textColorPrimary}`}> 
             Generic Operational and Optimal Data Lab
           </h3>
           <p className="text-xl text-gray-600">泛在数据分析与优化实验室</p>
@@ -237,16 +237,6 @@ const ContactPage: React.FC = () => {
         {/* --- 可展开表单结束 --- */}
 
       </motion.div>
-
-      {/* 版权信息可以保持不变，或者也加个淡入 */}
-      <motion.footer 
-        className="text-center mt-16 text-sm text-gray-500"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 1, duration: 0.5 }} // 延迟显示
-      >
-        @COPYRIGHT NCU GOOD LAB All rights reserved.
-      </motion.footer>
     </div>
   );
 };
