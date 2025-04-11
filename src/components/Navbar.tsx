@@ -1,5 +1,6 @@
 import PublicationsPage from '@/app/publications/page';
 import React from 'react';
+import { themeColors } from '@/styles/theme';
 
 // 定义导航项类型 (可选，但推荐)
 interface NavItem {
@@ -20,12 +21,12 @@ const Navbar: React.FC = () => {
   ];
 
   return (
-    <nav className="bg-white shadow-sm sticky top-0 z-10 w-full">
+    <nav className={`${themeColors.navBackground} shadow-sm sticky top-0 z-50 w-full`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* 左侧 Logo 或标题 - 修改链接 */}
           <div className="flex-shrink-0">
-            <a href="/" className="text-xl font-semibold text-gray-800">
+            <a href="/" className={`${themeColors.navTextColor} text-xl font-semibold`}>
               Good HomePage
             </a>
           </div>
@@ -36,7 +37,7 @@ const Navbar: React.FC = () => {
               <a
                 key={item.name}
                 href={item.href}
-                className="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700"
+                className={`inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium ${themeColors.navTextColor} hover:${themeColors.navHoverBorder} hover:${themeColors.navHoverText}`}
               >
                 {item.name}
               </a>
