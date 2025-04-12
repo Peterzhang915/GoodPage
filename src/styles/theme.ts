@@ -16,6 +16,7 @@ export const themeColors = {
   // --- 核心调色板：基础颜色定义 ---
   // 这些是项目的基本颜色，用于背景、边框和文本，确保整体风格简洁一致
   primary: 'text-slate-900',  // 主色调，使用深灰蓝色作为核心主题色
+  primaryBg: 'bg-slate-900',  // 主色调背景色
   textColorPrimary: 'text-gray-900',  // 主文本颜色，保持深灰色以增加对比度
   textColorSecondary: 'text-gray-700',  // 次要文本颜色，调整为更深的灰色，提高可读性
   textColorTertiary: 'text-gray-600',  // 三级文本颜色，浅灰色用于辅助说明
@@ -70,6 +71,7 @@ export const themeColors = {
   // --- 新增的文字颜色：文本样式扩展 ---
   // 这些颜色用于各种文本级别，确保可访问性
   textWhite: 'text-white',  // 白色文本，用于深色背景
+  textGrayWhite: 'text-gray-200',
   textGrayLight: 'text-gray-400',  // 浅灰文本，用于辅助信息
   textGrayMedium: 'text-gray-500',  // 中灰文本，用于次要内容
   textGrayDark: 'text-gray-600',  // 深灰文本，用于强调
