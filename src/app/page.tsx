@@ -1,4 +1,4 @@
-"use client";
+// 移除文件顶部的 "use client"; 指令
 
 import React from 'react';
 // Removed Image import as it's unused for now
@@ -16,9 +16,44 @@ import ContentSection from '@/components/ContentSection';
 
 // First, add back the import statement at the top
 import { themeColors } from '@/styles/theme';
+  interface NewsApiResponse {
+    title: string;
+    news: string[];
+  }
 
-// 主页组件
-export default function Home() {
+// --- Removed unused imports ---
+// import fs from 'fs';
+// import path from 'path';
+
+
+// 主页组件现在是 async 因为要 await 数据读取
+export default async function Home() {
+          // Fetch news data from the API on the server
+          let newsData: NewsApiResponse | null = null;
+          try {
+              // Using relative path for server-side fetch to own API route
+              const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3000'}/api/news`, { cache: 'no-store' }); // Fetch fresh data
+              if (res.ok) {
+                  const data = await res.json();
+                  // Basic validation
+                  if (data && typeof data.title === 'string' && Array.isArray(data.news)) {
+                       newsData = data as NewsApiResponse;
+                  } else {
+                       console.error('Invalid news data format received from API:', data);
+                  }
+              } else {
+                   console.error(`Failed to fetch news: ${res.status} ${res.statusText}`);
+                   // Log response body if available
+                   // const errorBody = await res.text();
+                   // console.error('Error response body:', errorBody);
+              }
+          } catch (error) {
+              console.error('Error fetching news data:', error);
+          }
+
+          // <<< Re-insert the definition INSIDE the function scope >>>
+          const recruitmentText = "We always look for self-motivated under/graduate students who are ready to take on ambitious challenges to join my research group (with financial support).";
+
   return (
     // 不再需要 flex-col，因为 layout 会处理布局
     <main className="items-center justify-start"> {/* 移除 flex min-h-screen flex-col */}
@@ -30,10 +65,27 @@ export default function Home() {
 
         {/* 使用 ContentSection 渲染每个板块 */}
         <ContentSection id="news" title="News" viewport={{ once: true, amount: 0.3 }} transition={{ duration: 0.5 }}> {/* 可以覆盖默认动画参数 */}
-          <ul className={`list-disc ml-6 space-y-3 ${themeColors.textColorTertiary}`}>
-            <li>We always look for <span className={themeColors.primary}>self-motivated under/graduate students</span> who are ready to take on ambitious challenges to join my research group (with <span className={themeColors.primary}>financial support</span>)</li>
-            <li className={themeColors.primary}><span className={themeColors.primary}>News:</span> We have won the First Prize of Provincial Technology Advancement Award, the only ONE in Computer Science in 2024.</li>
-          </ul>
+          {/* Always display recruitment text */}
+          <p className={`mb-4 leading-relaxed ${themeColors.textColorTertiary}`}>
+            {recruitmentText}
+          </p>
+
+          {/* Conditionally display fetched news */}
+          {newsData && newsData.news.length > 0 ? (
+            <div className="mt-6 border-t border-gray-700 pt-4"> {/* Use darker border */}
+              {/* Display news list */}
+              <ul className={`list-disc ml-6 space-y-2 ${themeColors.textColorTertiary}`}>
+                {newsData.news.map((item, index) => (
+                  <li key={index}>
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : (
+              // Render nothing if news is empty or fetch failed
+              null
+          )}
         </ContentSection>
 
         <ContentSection id="interests" title="Students with Interests">
