@@ -31,7 +31,7 @@ body {
     rgb(var(--background-start-rgb));
 } */
 
-/* 定义主题色变量 */
+/* 定义主题色变量 - 使用更兼容的方式 */
 :root {
   --color-theme-page: #f8f9fa;
   --color-theme-header: #2c3e50;
@@ -43,6 +43,18 @@ body {
   --color-theme-dark: #1a252f;
   --color-theme: #3498db;
 }
+
+/* 直接提供CSS类，确保颜色能够显示 */
+.bg-theme-page { background-color: var(--color-theme-page); }
+.bg-theme-header { background-color: var(--color-theme-header); }
+.bg-theme-header-light { background-color: var(--color-theme-header-light); }
+.text-theme-light { color: var(--color-theme-light); }
+.text-theme-primary { color: var(--color-theme-primary); }
+.text-theme-secondary { color: var(--color-theme-secondary); }
+.text-theme-muted { color: var(--color-theme-muted); }
+.border-theme-dark { border-color: var(--color-theme-dark); }
+.border-theme-primary { border-color: var(--color-theme-primary); }
+.border-theme { border-color: var(--color-theme); }
 
 /* 添加全局平滑滚动 */
 html {
@@ -59,6 +71,8 @@ body {
 .font-serif {
   font-family: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
 }
+
+/* 删除硬编码的CSS类，使用Tailwind自定义类 */
 
 @layer utilities {
   .text-balance {
