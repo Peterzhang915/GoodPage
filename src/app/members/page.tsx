@@ -95,33 +95,39 @@ export default function MembersPage() {
       }
       grouped[groupKey].push(member);
     });
-
+  
     const sortedGroupKeys = Object.keys(grouped).sort((a, b) => {
       const orderA = statusOrder[a] || 99;
       const orderB = statusOrder[b] || 99;
       return orderA - orderB;
     });
-
-    return sortedGroupKeys.map(groupKey => (
-      <section key={groupKey} className="mb-16"> 
-        <h2 className={`text-2xl font-semibold ${themeColors.textColorPrimary} border-b ${themeColors.footerBorder} pb-3 mb-8 flex items-center gap-3`}>
-          {groupKey === '教师' && <span className="text-2xl"></span>}
-          {groupKey === '博士后' && <span className="text-2xl"></span>}
-          {groupKey === '博士生' && <span className="text-2xl"></span>}
-          {groupKey === '硕士生' && <span className="text-2xl"></span>}
-          {groupKey === '本科生' && <span className="text-2xl"></span>}
-          {groupKey === '访问学者' && <span className="text-2xl"></span>}
-          {groupKey === '校友' && <span className="text-2xl"></span>}
-          {statusTitles[groupKey] || 'Other Members'} 
-        </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-x-6 gap-y-8"> 
-          {grouped[groupKey].map((member) => (
-            <MemberCard key={member.id} member={member} isEmojiEnabled={isEmojiEnabled} />
-          ))}
-        </div>
-      </section>
-    ));
+  
+    return sortedGroupKeys.map(groupKey => {
+      // 先对组内成员按 enrollment_year 降序排序
+      const sortedMembers = [...grouped[groupKey]].sort((a, b) => a.enrollment_year - b.enrollment_year);
+      
+      return (
+        <section key={groupKey} className="mb-16"> 
+          <h2 className={`text-2xl font-semibold ${themeColors.textColorPrimary} border-b ${themeColors.footerBorder} pb-3 mb-8 flex items-center gap-3`}>
+            {groupKey === '教师' && <span className="text-2xl"></span>}
+            {groupKey === '博士后' && <span className="text-2xl"></span>}
+            {groupKey === '博士生' && <span className="text-2xl"></span>}
+            {groupKey === '硕士生' && <span className="text-2xl"></span>}
+            {groupKey === '本科生' && <span className="text-2xl"></span>}
+            {groupKey === '访问学者' && <span className="text-2xl"></span>}
+            {groupKey === '校友' && <span className="text-2xl"></span>}
+            {statusTitles[groupKey] || 'Other Members'} 
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-x-6 gap-y-8"> 
+            {sortedMembers.map((member) => (
+              <MemberCard key={member.id} member={member} isEmojiEnabled={isEmojiEnabled} />
+            ))}
+          </div>
+        </section>
+      );
+    });
   };
+  
 
 
   return (

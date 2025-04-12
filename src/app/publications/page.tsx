@@ -96,7 +96,7 @@ export default async function PublicationsPage() {
         sortedYears.map(year => (
           <section key={year} className="mb-16">
             {/* 恢复之前的年份标题样式 */}
-            <h2 className={`text-3xl font-semibold ${themeColors.textColorPrimary} border-b ${themeColors.borderLight} pb-3 mb-8`}>{year}</h2>
+            <h2 className={`text-2xl font-semibold ${themeColors.textColorPrimary} border-b ${themeColors.footerBorder} pb-3 mb-8 flex items-center gap-3`}>{year}</h2>
             <ul className="list-none p-0">
               {groupedPublications[year].map((pub) => (
                 <PublicationItem key={pub.id} pub={pub} />
