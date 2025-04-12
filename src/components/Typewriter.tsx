@@ -5,14 +5,14 @@ import React, { useState, useEffect, useRef } from 'react';
 
 interface TypewriterProps {
   text: string;
-  speed?: number; // Milliseconds per character
+  speed?: number; // 每个字符的毫秒数
   className?: string;
-  onComplete?: () => void; // Optional callback when typing finishes
+  onComplete?: () => void; // 打字完成时的可选回调函数
 }
 
 const Typewriter: React.FC<TypewriterProps> = ({
   text,
-  speed = 50, // Default speed: 50ms per char
+  speed = 50, // 默认速度：50ms/字符
   className = '',
   onComplete,
 }) => {
@@ -22,7 +22,7 @@ const Typewriter: React.FC<TypewriterProps> = ({
   const containerRef = useRef<HTMLSpanElement>(null);
 
   useEffect(() => {
-    // Reset when text changes
+    // 当 text prop 改变时重置状态
     setDisplayText('');
     setCurrentIndex(0);
   }, [text]);
@@ -34,31 +34,30 @@ const Typewriter: React.FC<TypewriterProps> = ({
         setCurrentIndex((prev) => prev + 1);
       }, speed);
 
-      // Cleanup timeout on unmount or if text/speed changes
+      // 组件卸载或 text/speed 改变时清除 timeout
       return () => clearTimeout(timeoutId);
     } else {
-      // Typing finished
+      // 打字完成
       if (onComplete) {
         onComplete();
       }
-      // Optional: Stop cursor blinking after completion
-      // setShowCursor(false); 
+      // 之前注释掉的逻辑：完成后停止光标闪烁
     }
   }, [currentIndex, text, speed, onComplete]);
 
-  // Cursor blinking effect
+  // 光标闪烁效果
   useEffect(() => {
     if (currentIndex < text.length) {
-      // If still typing, set up the blinking interval
+      // 如果仍在打字，设置闪烁间隔
       const cursorInterval = setInterval(() => {
         setShowCursor((prev) => !prev);
-      }, 500); // Blink speed
+      }, 500); // 闪烁速度
       return () => clearInterval(cursorInterval);
     } else {
-      // If typing is finished, ensure cursor is hidden immediately
+      // 如果打字完成，立即隐藏光标
       setShowCursor(false);
     }
-  }, [currentIndex, text.length]); // Re-run when typing finishes or starts
+  }, [currentIndex, text.length]); // 打字完成或开始时重新运行
 
 
   return (

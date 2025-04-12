@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import { Save, History, Loader2, X, ArrowLeft, Trash2, CheckCircle, Edit2, Radio } from 'lucide-react';
 // Removed themeColors import as we use hardcoded dark theme classes now
 
-// --- Helper: Format Date (Moved here) --- //
+// --- 辅助函数：格式化日期 --- //
 function formatDate(isoString: string): string {
   try {
     return new Date(isoString).toLocaleString(undefined, {
@@ -17,42 +17,42 @@ function formatDate(isoString: string): string {
   }
 }
 
-// --- Interfaces (Moved here) --- //
+// --- 接口定义 --- //
 interface NewsData {
   title: string;
   news: string[];
 }
 
 interface NewsHistoryEntry {
-  timestamp: string;
+  timestamp: string; // 时间戳，或 'live', 'draft' 等特殊值
   title: string;
   news: string[];
-  isLive?: boolean;
-  isDraft?: boolean;
+  isLive?: boolean; // 是否为线上版本
+  isDraft?: boolean; // 是否为当前草稿
 }
 
 interface NewsEditorProps {
   onClose: () => void;
 }
 
-// --- News Editor Component Definition --- //
+// --- 新闻编辑器组件 --- //
 const NewsEditor: React.FC<NewsEditorProps> = ({ onClose }) => {
-  // State for news editor
+  // 编辑器状态
   const [title, setTitle] = useState('');
   const [newsContent, setNewsContent] = useState('');
-  const [isLoading, setIsLoading] = useState(true); // Loading initial live data
-  const [isSaving, setIsSaving] = useState(false); // Separate state for saving action
+  const [isLoading, setIsLoading] = useState(true); // 初始加载状态
+  const [isSaving, setIsSaving] = useState(false); // 保存操作状态
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [messageType, setMessageType] = useState<'success' | 'error' | 'info' | null>(null);
 
-  // State for history feature
+  // 历史记录功能状态
   const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [newsHistory, setNewsHistory] = useState<NewsHistoryEntry[]>([]);
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
   const [historyError, setHistoryError] = useState<string | null>(null);
-  const [isLoadingDelete, setIsLoadingDelete] = useState<string | null>(null); // Track deleting timestamp
+  const [isLoadingDelete, setIsLoadingDelete] = useState<string | null>(null); // 跟踪正在删除的历史记录时间戳
 
-  // Fetch current news (live version) on component mount
+  // 获取当前线上新闻 (组件挂载时)
   const fetchLiveNews = useCallback(async (showLoadingMessage = true) => {
     if(showLoadingMessage) {
         setIsLoading(true);
@@ -78,19 +78,16 @@ const NewsEditor: React.FC<NewsEditorProps> = ({ onClose }) => {
       console.error("Fetch live news error:", err);
       setStatusMessage('Failed to load live news data.');
       setMessageType('error');
-      // Keep potentially existing state or clear?
-      // setTitle('(Error Loading Title)');
-      // setNewsContent('Error loading content.');
     } finally {
        if(showLoadingMessage) setIsLoading(false);
     }
-  }, []); // No dependencies, it fetches current state
+  }, []);
 
   useEffect(() => {
     fetchLiveNews();
   }, [fetchLiveNews]);
 
-  // Handle saving news
+  // 处理保存新闻逻辑
   const handleSaveNews = async () => {
     setIsSaving(true);
     setStatusMessage(null);
@@ -124,48 +121,48 @@ const NewsEditor: React.FC<NewsEditorProps> = ({ onClose }) => {
     }
   };
 
-  // Fetch news history - Includes Live and Draft
+  // 获取新闻历史记录 (包含线上版本和当前草稿)
   const fetchHistory = async () => {
     setIsLoadingHistory(true);
     setHistoryError(null);
     setNewsHistory([]);
     try {
-      // Fetch both history and live data concurrently
+      // 并发获取历史记录和线上数据
       const [historyRes, liveRes] = await Promise.all([
         fetch('/api/news/history'),
         fetch('/api/news')
       ]);
 
-      // Process History
+      // 处理历史记录
       if (!historyRes.ok) throw new Error('Failed to fetch history');
       const historyData: NewsHistoryEntry[] = await historyRes.json();
       if (!Array.isArray(historyData)) throw new Error('Invalid history data format.');
 
-      // Process Live Data
+      // 处理线上数据
       if (!liveRes.ok) throw new Error('Failed to fetch live data for history view');
       const liveData: NewsData = await liveRes.json();
       if (!liveData || typeof liveData.title !== 'string' || !Array.isArray(liveData.news)) {
            throw new Error('Invalid live data format received.');
       }
 
-      // Create Live entry
+      // 创建线上版本条目
       const liveEntry: NewsHistoryEntry = {
-        timestamp: 'live', // Special identifier
+        timestamp: 'live', // 特殊标识符
         title: liveData.title,
         news: liveData.news,
         isLive: true
       };
 
-      // Create Draft entry (from current editor state)
+      // 创建草稿条目 (基于当前编辑器状态)
       const draftNewsArray = newsContent.split('\n').map(line => line.trim()).filter(Boolean);
       const draftEntry: NewsHistoryEntry = {
-        timestamp: 'draft', // Special identifier
-        title: title || '(Current Draft)', // Use editor title or placeholder
+        timestamp: 'draft', // 特殊标识符
+        title: title || '(Current Draft)', // 使用编辑器标题或占位符
         news: draftNewsArray,
         isDraft: true
       };
 
-      // Combine: Live, Draft, History
+      // 合并：线上版本、草稿、历史记录
       const combinedHistory = [liveEntry, draftEntry, ...historyData];
 
       setNewsHistory(combinedHistory);
@@ -178,9 +175,9 @@ const NewsEditor: React.FC<NewsEditorProps> = ({ onClose }) => {
     }
   };
 
-  // Load a specific version from history, live, or draft
+  // 从历史记录、线上版本或草稿加载特定版本
   const loadVersion = (version: NewsHistoryEntry) => {
-    setTitle(version.title || '(Untitled)'); // Load title
+    setTitle(version.title || '(Untitled)'); // 加载标题
     setNewsContent(version.news.join('\n'));
     setShowHistoryModal(false);
 
@@ -193,23 +190,24 @@ const NewsEditor: React.FC<NewsEditorProps> = ({ onClose }) => {
       message = `Loaded historical version from ${formatDate(version.timestamp)}. Click Save News to make it live.`;
     }
     setStatusMessage(message);
-    setMessageType('info'); // Use info for loading messages
+    setMessageType('info'); // 使用 'info' 类型显示加载消息
     setHistoryError(null);
      setTimeout(() => setStatusMessage(null), 3000);
   };
 
-   // Delete a history entry
+   // 删除历史记录条目
   const handleDeleteHistory = async (timestampToDelete: string) => {
-    if (!timestampToDelete || timestampToDelete === 'live' || timestampToDelete === 'draft') return; // Cannot delete live/draft
+    // 无法删除线上版本或草稿
+    if (!timestampToDelete || timestampToDelete === 'live' || timestampToDelete === 'draft') return; 
 
-    // Optional: Add confirmation dialog here
+    // 可选：添加确认对话框
     if (!confirm(`Are you sure you want to delete the history entry from ${formatDate(timestampToDelete)}? This cannot be undone.`)) {
         return;
     }
 
-    setIsLoadingDelete(timestampToDelete); // Mark this specific entry as deleting
+    setIsLoadingDelete(timestampToDelete); // 标记此特定条目正在删除
     setHistoryError(null);
-    setStatusMessage(null); // Clear other messages
+    setStatusMessage(null); // 清除其他消息
 
     try {
       const res = await fetch(`/api/news/history?timestamp=${encodeURIComponent(timestampToDelete)}`, {
@@ -218,14 +216,14 @@ const NewsEditor: React.FC<NewsEditorProps> = ({ onClose }) => {
 
       if (!res.ok) {
         const errorData = await res.json().catch(() => ({ error: `Delete failed with status: ${res.status}` }));
-         // Handle 404 specifically - item might already be deleted
+         // 特别处理 404 错误 - 条目可能已被删除
          if (res.status === 404) {
             setHistoryError(`History entry not found (timestamp: ${timestampToDelete}). It might have been already deleted.`);
          } else {
             throw new Error(errorData.error || 'Failed to delete history entry');
          }
       } else {
-         // Success: Remove the item from the local state
+         // 成功：从本地状态中移除条目
          setNewsHistory(prevHistory => prevHistory.filter(entry => entry.timestamp !== timestampToDelete));
          setStatusMessage(`History entry from ${formatDate(timestampToDelete)} deleted.`);
          setMessageType('success');
@@ -236,7 +234,7 @@ const NewsEditor: React.FC<NewsEditorProps> = ({ onClose }) => {
       console.error("Delete history error:", err);
       setHistoryError(err instanceof Error ? err.message : 'An unknown error occurred during deletion');
     } finally {
-      setIsLoadingDelete(null); // Finish deleting state for this entry
+      setIsLoadingDelete(null); // 完成此条目的删除状态
     }
   };
 
@@ -295,7 +293,7 @@ const NewsEditor: React.FC<NewsEditorProps> = ({ onClose }) => {
       <div className="flex items-center justify-end gap-4 mt-4">
          {/* Discard Draft Button (Optional but Recommended) */}
         <button
-           onClick={() => fetchLiveNews(true)} // Explicitly show loading message
+           onClick={() => fetchLiveNews(true)} // 显式显示加载消息
            disabled={isLoading || isSaving || isLoadingHistory || !!isLoadingDelete}
            className={`inline-flex items-center px-4 py-2 border border-yellow-700 rounded-md shadow-sm text-sm font-medium text-yellow-300 bg-yellow-900/50 hover:bg-yellow-800/50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-yellow-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed`}
            title="Discard current changes and reload the live version"
@@ -357,7 +355,7 @@ const NewsEditor: React.FC<NewsEditorProps> = ({ onClose }) => {
               ) : newsHistory.length > 0 ? (
                 <ul className="space-y-3">
                   {newsHistory.map((entry) => (
-                    <li key={entry.timestamp} // Use timestamp as key (live/draft have unique strings)
+                    <li key={entry.timestamp} // 使用时间戳或特殊值作为 key
                         className={`p-3 rounded border flex justify-between items-start gap-4 transition-colors
                            ${entry.isLive ? 'border-green-500/60 bg-green-900/20' : entry.isDraft ? 'border-yellow-500/60 bg-yellow-900/20' : 'border-gray-600 bg-gray-700/50 hover:bg-gray-700'}`}>
                       {/* Left side: Title, Timestamp/Label, Line count */}

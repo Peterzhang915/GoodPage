@@ -2,11 +2,10 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { Lock, Unlock, AlertTriangle, ExternalLink, Terminal, Save, Upload, History, Loader2, X, Edit, ArrowLeft } from 'lucide-react'; // Keep necessary icons for this page
+import { Lock, Unlock, AlertTriangle, ExternalLink, Terminal, Save, Upload, History, Loader2, X, Edit, ArrowLeft } from 'lucide-react';
 import { themeColors } from '@/styles/theme';
 import Typewriter from '@/components/Typewriter';
 
-// Import the separated components
 import ToolCard from '@/components/developer/ToolCard';
 import NewsEditor from '@/components/developer/NewsEditor';
 import PhotoManager from '@/components/developer/PhotoManager';
@@ -27,7 +26,6 @@ const DeveloperPage: React.FC = () => {
   const [displayMode, setDisplayMode] = useState<'normal' | 'linux'>('normal');
   const [isPromptComplete, setIsPromptComplete] = useState(false);
 
-  // State to manage active tool view
   const [activeTool, setActiveTool] = useState<string | null>(null);
 
   const handleLoginAttempt = useCallback((enteredPassword: string) => {
@@ -50,7 +48,7 @@ const DeveloperPage: React.FC = () => {
     handleLoginAttempt(password);
   };
 
-  // Linux mode effect
+  // 处理 Linux 风格登录界面的键盘输入
   useEffect(() => {
     if (displayMode === 'linux' && isPromptComplete) {
       const handleKeyDown = (event: KeyboardEvent) => {
@@ -66,31 +64,29 @@ const DeveloperPage: React.FC = () => {
       window.addEventListener('keydown', handleKeyDown);
       return () => { window.removeEventListener('keydown', handleKeyDown); };
     }
-  }, [displayMode, isPromptComplete, linuxPasswordInput, handleLoginAttempt]); // Correct dependencies
+  }, [displayMode, isPromptComplete, linuxPasswordInput, handleLoginAttempt]);
 
-  // Body class effect
+  // 根据认证状态切换 body 的 CSS 类，用于应用全局暗色主题
   useEffect(() => {
-    const bodyClass = 'developer-mode-active'; // Class applied to <body>
+    const bodyClass = 'developer-mode-active';
     if (isAuthenticated) {
       document.body.classList.add(bodyClass);
     } else {
-      // Ensure class is removed if not authenticated or on component unmount
       document.body.classList.remove(bodyClass);
     }
-    // Cleanup function to remove class when component unmounts or isAuthenticated changes to false
+    // 清理函数：确保组件卸载或登出时移除类
     return () => {
       document.body.classList.remove(bodyClass);
     };
-  }, [isAuthenticated]); // Run when isAuthenticated changes
+  }, [isAuthenticated]);
 
-  // Visit recording effect
+  // 记录开发者访问事件 (仅在认证成功时)
   useEffect(() => {
     if (isAuthenticated) {
-       // Intentionally removed console.log for cleaner output
        fetch('/api/visit?source=developer', { method: 'POST' })
         .catch(err => console.error('Error recording developer visit:', err));
     }
-  }, [isAuthenticated]); // Run only when isAuthenticated changes to true
+  }, [isAuthenticated]);
 
 
   const normalIntroText = "Whoa! You found the secret passage!\nAre you one of us, or just randomly mashing buttons?\nProve your worthiness!";
@@ -102,19 +98,16 @@ const DeveloperPage: React.FC = () => {
       <div className="flex flex-col items-center justify-center min-h-[60vh] text-center font-mono">
         <motion.div
           initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.5 }}
-          // Use themeColors for background consistency if needed, or keep white
           className={`bg-white p-10 rounded-lg shadow-xl max-w-xl w-full border border-yellow-300 relative`}
         >
           <button
              onClick={() => setDisplayMode(prev => prev === 'normal' ? 'linux' : 'normal')}
-             // Use themeColors for consistency
              className={`absolute top-4 right-4 p-2 rounded hover:bg-gray-100 ${themeColors.textColorSecondary} transition-colors`}
              title="Toggle display mode"
           >
              <Terminal size={18} />
           </button>
           <AlertTriangle size={52} className="mx-auto text-yellow-500 mb-5" />
-          {/* Use themeColors for text */}
           <h1 className={`text-3xl font-bold mb-5 ${themeColors.ccfBText}`}>Developer Access Only</h1>
           <div className={`mb-8 text-left text-sm ${themeColors.textColorSecondary} min-h-[6em] whitespace-pre-wrap pl-0 ml-0`} >
             <Typewriter
@@ -139,14 +132,12 @@ const DeveloperPage: React.FC = () => {
                   autoComplete="current-password" required value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Password"
-                  // Use theme colors for input field
                   className={`py-3 px-4 block w-full shadow-sm ${themeColors.textColorPrimary} ${themeColors.backgroundWhite} focus:ring-indigo-500 focus:border-indigo-500 border ${error ? 'border-red-500' : themeColors.borderMedium} rounded-md text-base`}
                 />
               </div>
               {error && <p className="text-sm text-red-600 text-left">{error}</p>}
               <button
                 type="submit"
-                 // Use theme colors for consistency
                 className={`w-full inline-flex items-center justify-center px-6 py-3 border border-transparent rounded-md shadow-sm text-base font-medium ${themeColors.textWhite} ${themeColors.ccfABg} hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-opacity`}
               >
                 <Lock size={18} className="mr-2" /> Unlock Developer Tools
@@ -163,27 +154,22 @@ const DeveloperPage: React.FC = () => {
 
   // --- Authenticated View: Developer Toolbox --- //
   return (
-    // Removed font-mono from outer container, applied dark theme via body class
     <div className="container mx-auto px-4 py-12">
-      {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
         className="text-center mb-12"
       >
-         {/* Use text-green-400 for header, consistent with cards */}
         <h1 className={`text-4xl font-bold text-green-400 mb-2 flex items-center justify-center gap-3`}>
           <Unlock size={36} /> Developer Toolbox Activated!
         </h1>
-         {/* Use gray-400 for subtitle text */}
         <p className="text-gray-400">Welcome back, master builder! Here are your tools. Use them wisely.</p>
       </motion.div>
 
       {/* --- Conditional Rendering: Tool Cards Grid OR Active Tool View --- */}
       {activeTool === null ? (
-        // Show Grid of Tool Cards
-        <motion.div // Add animation to the grid itself
+        <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.5, delay: 0.1 }}
@@ -236,11 +222,11 @@ const DeveloperPage: React.FC = () => {
       ) : (
         // Show Active Tool's Detailed View
         <motion.div
-          key={activeTool} // Ensure animation triggers on change
-          initial={{ opacity: 0, y: 30 }} // Animate from bottom slightly
+          key={activeTool}
+          initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -30 }} // Animate out upwards
-          transition={{ duration: 0.3, ease: "easeInOut" }} // Smoother transition
+          exit={{ opacity: 0, y: -30 }}
+          transition={{ duration: 0.3, ease: "easeInOut" }}
         >
           {activeTool === 'news' && <NewsEditor onClose={() => setActiveTool(null)} />}
           {activeTool === 'photo' && <PhotoManager onClose={() => setActiveTool(null)} />}
