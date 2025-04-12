@@ -52,9 +52,9 @@ const ContactPage: React.FC = () => {
   const [isAddressHovered, setIsAddressHovered] = useState(false); // 新增: 地址悬停状态
 
   return (
-    <div className={`px-4 py-16 ${themeColors.textColorPrimary}`}>
+    <div className={`px-4 py-12 ${themeColors.textColorPrimary}`}>
       <motion.h1 
-        className={`text-4xl font-bold mb-12 text-center ${themeColors.ccfAText}`}
+        className={`text-4xl font-bold mb-16 text-center`}
         initial={{ opacity: 0, y: -30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, ease: "easeOut" }}

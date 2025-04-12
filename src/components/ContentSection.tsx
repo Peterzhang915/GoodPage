@@ -17,7 +17,7 @@ const ContentSection: React.FC<ContentSectionProps> = ({
   title,
   children,
   className = 'mb-16', // 默认下边距
-  titleClassName = 'text-3xl font-serif font-bold mb-6 border-b pb-2', // 默认标题样式
+  titleClassName = 'text-2xl font-serif font-bold mb-6 border-b pb-2', // 默认标题样式
   // 解构 MotionProps，并设置默认动画
   initial = { opacity: 0, y: 20 },
   whileInView = { opacity: 1, y: 0 },

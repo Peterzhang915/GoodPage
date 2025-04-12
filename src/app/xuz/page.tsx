@@ -1,8 +1,12 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { themeColors } from '../../styles/theme';
+import { getAllPublications, Publication } from '@/lib/db';
+import { BookOpen } from 'lucide-react';
 
-export default function ProfessorPage() {
+export default async function ProfessorPage() {
+  const publications = await getAllPublications();
+  const ccfAPubs: Publication[] = publications.filter((pub: Publication) => pub.ccf_rank === 'A');
   return (
     <div className={`${themeColors.themePageBg} min-h-screen`}>
       {/* 标题栏 */}
@@ -10,8 +14,10 @@ export default function ProfessorPage() {
         <div className="max-w-5xl mx-auto px-4">
           <div className="flex flex-col md:flex-row items-start justify-between">
             <div className="md:pr-10 mb-6 md:mb-0">
-              <h1 className="text-4xl font-serif font-bold mb-3">Dr. Zichen Xu (徐子晨)</h1>
-              <p className={`text-xl font-serif mb-4`}>
+              {/* Removed font-serif from h1 */}
+              <h1 className="text-4xl font-bold mb-3">Dr. Zichen Xu (徐子晨)</h1>
+              {/* Removed font-serif from p */}
+              <p className={`text-xl mb-4`}>
                 Vice Dean, School of Mathematics and Computer Science<br />
                 The Nanchang University
               </p>
@@ -23,11 +29,11 @@ export default function ProfessorPage() {
               </p>
             </div>
             <div className="md:w-52 h-60 bg-theme-header-light md:ml-4 overflow-hidden flex-shrink-0 border-4 border-theme-header-light">
-              <Image 
-                src="/avatars/zichenxu.jpg" 
-                alt="Dr. Zichen Xu" 
-                width={208} 
-                height={240} 
+              <Image
+                src="/avatars/zichenxu.jpg"
+                alt="Dr. Zichen Xu"
+                width={208}
+                height={240}
                 className="object-cover"
                 unoptimized
               />
@@ -37,7 +43,9 @@ export default function ProfessorPage() {
       </div>
 
       {/* 内容区域 */}
-      <div className="max-w-5xl mx-auto px-4 py-10 font-serif">
+      {/* Removed font-serif from the main content div */}
+      <div className="max-w-5xl mx-auto px-4 py-10">
+        {/* Keep the "prose" class as it handles general typography, not just serif */}
         <div className="prose max-w-none">
           {/* 研究兴趣 */}
           <section className="mb-12">
@@ -51,8 +59,36 @@ export default function ProfessorPage() {
 
           {/* 出版物 */}
           <section className="mb-12">
-            <h2 className={`text-2xl font-bold border-b ${themeColors.opacityDark} pb-2 ${themeColors.primary}`}>Selected Publications</h2>
-            {/* 等待被开发 */}
+            <h2 className={`text-2xl font-bold border-b border-${themeColors.opacityDark} pb-2 text-${themeColors.primary}`}>Selected Publications</h2>
+            {ccfAPubs.length > 0 ? (
+              <ul className="list-none p-0">
+                {ccfAPubs.map((pub: Publication) => (
+                  <li key={pub.id} className={`mb-2 p-4 space-y-1`}>
+                    <h3 className={`text-lg font-semibold ${themeColors.textColorPrimary} mb-1 leading-normal flex items-start`}>
+                      <BookOpen className={`w-5 h-5 mr-2 mt-0.5 ${themeColors.primary} flex-shrink-0`} />
+                      <span>{pub.title}</span>
+                    </h3>
+                    {pub.authors && pub.authors?.length > 0 && (
+                      <div className={`text-sm ${themeColors.textColorSecondary} mb-1 flex items-center flex-wrap gap-x-1`}>
+                        {pub.authors?.map((author, index, authors) => (
+                          <span key={author.id} className="mr-1">
+                            <Link href={`/members/${author.id}`} className={`${themeColors.linkColor} hover:underline`}>
+                              {author.name_zh}
+                            </Link>{index < authors.length - 1 ? ', ' : ''}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                    <div className={`text-sm ${themeColors.textColorTertiary} mb-1 flex flex-wrap items-center gap-x-4`}>
+                      {pub.venue && <span>{pub.venue}</span>}
+                      {pub.year && <span>{pub.year}</span>}
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className={`${themeColors.textColorTertiary}`}>No CCF A publications found.</p>
+            )}
           </section>
 
           {/* 学术服务 */}
@@ -107,7 +143,7 @@ export default function ProfessorPage() {
             <div className="mt-4">
               <details className={`${themeColors.textColorSecondary}`}>
                 <summary className={`cursor-pointer font-medium ${themeColors.primary} hover:underline`}>View all academic services</summary>
-                <div className="mt-3 grid md:grid-cols-2 gap-x-8 gap-y-2 pl-4 ${themeColors.primaryBorder} border-l-2">
+                <div className={`mt-3 grid md:grid-cols-2 gap-x-8 gap-y-2 pl-4 border-l-2`}>
                   <div>PC, SoCC, 2022</div>
                   <div>PC, SSDBM, 2022</div>
                   <div>PC, NDBC, 2021, 2022</div>
@@ -175,7 +211,7 @@ export default function ProfessorPage() {
               <div>
                 <details className={`${themeColors.textColorSecondary}`}>
                   <summary className={`cursor-pointer font-medium ${themeColors.primary} hover:underline`}>View all awards and honors</summary>
-                  <div className="mt-3 grid md:grid-cols-2 gap-x-8 gap-y-2 pl-4 ${themeColors.primaryBorder} border-l-2">
+                  <div className={`mt-3 grid md:grid-cols-2 gap-x-8 gap-y-2 pl-4 border-l-2`}>
                     <div>Education Major Grant, Dept. of Edu. JiangXi, 2019-2021</div>
                     <div>National KHF Key Project, Min. of Science, 2018-2020</div>
                     <div>Jiangxi Thousand Young Talents, 2018</div>

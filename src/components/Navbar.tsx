@@ -1,5 +1,5 @@
 import PublicationsPage from '@/app/publications/page';
-import React from 'react';
+import React, { useState } from 'react';
 import { themeColors } from '@/styles/theme';
 
 // 定义导航项类型 (可选，但推荐)
@@ -14,18 +14,20 @@ const Navbar: React.FC = () => {
     { name: 'Lab Members', href: '/members' },
     { name: 'Publications', href: '/publications' },
     { name: 'Lab Photo Gallery', href: '/gallery' },
-    { name: 'Lab Blog', href: '/blog' },
+    //{ name: 'Lab Blog', href: '/blog' },
     { name: 'For Students', href: '/students' },
     { name: 'Contact', href: '/contact' },
   ];
+
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   return (
     <nav className={`${themeColors.navBackground} shadow-sm sticky top-0 z-50 w-full`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          {/* 左侧 Logo 或标题 - 修改链接 */}
+          {/* 左侧 Logo - 调整为响应式字体大小 */}
           <div className="flex-shrink-0">
-            <a href="/" className={`${themeColors.navTextColor} text-xl font-semibold`}>
+            <a href="/" className={`text-xl sm:text-2xl font-semibold ${themeColors.navTextColor}`}>
               Good HomePage
             </a>
           </div>
@@ -43,7 +45,37 @@ const Navbar: React.FC = () => {
             ))}
           </div>
 
-          {/* 移动端菜单按钮等可以后续在此添加 */}
+          {/* 移动端汉堡菜单按钮 */}
+          <div className="sm:hidden flex items-center">
+            <button
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              className={`p-2 rounded-md ${themeColors.navTextColor} hover:${themeColors.navHoverText}`}
+              aria-label="Toggle menu"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16m-7 6h7" />
+              </svg>
+            </button>
+          </div>
+
+          {/* 移动端菜单 - 展开时显示 */}
+          {isMenuOpen && (
+            <div className="sm:hidden absolute top-16 left-0 w-full bg-white shadow-md">
+              <ul className="flex flex-col space-y-2 p-4">
+                {navItems.map((item) => (
+                  <li key={item.name}>
+                    <a
+                      href={item.href}
+                      className={`block px-3 py-2 text-sm ${themeColors.navTextColor} hover:${themeColors.navHoverText}`}
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      {item.name}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
         </div>
       </div>
     </nav>
