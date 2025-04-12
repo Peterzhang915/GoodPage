@@ -71,7 +71,7 @@ const ContactPage: React.FC = () => {
         <motion.div variants={itemVariants} className="mb-8"> {/* 分块 1: 实验室名称 */}
           <h3 className={`text-2xl font-semibold mb-2 ${themeColors.textColorPrimary}`}> 
             Generic Operational and Optimal Data Lab
-          </h3>
+        </h3>
           <p className="text-xl text-gray-600">泛在数据分析与优化实验室</p>
         </motion.div>
 
@@ -118,7 +118,7 @@ const ContactPage: React.FC = () => {
               <MapPin size={20} className={`mt-1 ${themeColors.textColorSecondary}`} />
               <div>
                 <p>IEB A608-1, 999 Xuefu BLVD</p> 
-                <p>Nanchang, Jiangxi, 330000</p>
+          <p>Nanchang, Jiangxi, 330000</p>
                 <p>China</p> 
               </div>
             </div>
@@ -153,7 +153,7 @@ const ContactPage: React.FC = () => {
                 <p className="text-center text-gray-500">Map will be displayed here.</p>
                 <div className="aspect-video bg-gray-200 rounded flex items-center justify-center">
                   <MapIcon size={48} className="text-gray-400" />
-                </div>
+        </div>
               </motion.div>
             )}
           </AnimatePresence>
@@ -277,7 +277,7 @@ const ContactPage: React.FC = () => {
                   >
                     Send Message
                   </button>
-                </div>
+      </div>
               </form>
             </motion.div>
           )}

@@ -87,6 +87,22 @@ const DeveloperPage: React.FC = () => {
     };
   }, [isAuthenticated]); // Dependency array ensures this runs when auth changes
 
+  // Effect to record developer visit on successful authentication
+  useEffect(() => {
+    if (isAuthenticated) {
+      console.log('Authenticated, recording developer visit...');
+      fetch('/api/visit?source=developer', { method: 'POST' })
+        .then(res => {
+          if (!res.ok) {
+            console.error('Failed to record developer visit:', res.statusText);
+          }
+          return res.json(); // Consume the response body even if not used
+        })
+        .then(data => console.log('Developer visit recorded:', data)) // Optional log
+        .catch(err => console.error('Error recording developer visit:', err));
+    }
+  }, [isAuthenticated]); // Run only when isAuthenticated changes
+
   // 定义不同模式下的文本
   const normalIntroText = "Whoa! You found the secret passage!\nAre you one of us, or just randomly mashing buttons?\nProve your worthiness!";
   // 模拟 Linux 风格的文本 - 移除末尾空格

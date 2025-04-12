@@ -24,36 +24,74 @@ function getOrdinalSuffix(n: number): string {
 
 // 组件现在自己管理状态和获取数据
 const Footer: React.FC = () => {
-  const [visitCount, setVisitCount] = useState<number | null>(null);
+  // 添加状态来存储两个计数值
+  const [totalVisits, setTotalVisits] = useState<number | null>(null);
+  const [developerVisits, setDeveloperVisits] = useState<number | null>(null);
+  const [isDeveloperMode, setIsDeveloperMode] = useState(false);
+
+  // Effect to check for developer mode class on mount and update
+  useEffect(() => {
+    // Initial check
+    setIsDeveloperMode(document.body.classList.contains('developer-mode-active'));
+    
+    // Optional: Use MutationObserver to detect class changes if needed
+    // This is more robust if the class might be added/removed while footer is mounted
+    const observer = new MutationObserver((mutationsList) => {
+      for(let mutation of mutationsList) {
+        if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+           setIsDeveloperMode(document.body.classList.contains('developer-mode-active'));
+        }
+      }
+    });
+    observer.observe(document.body, { attributes: true });
+
+    return () => observer.disconnect(); // Cleanup observer
+
+  }, []);
 
   useEffect(() => {
-    const fetchVisitCount = async () => {
+    const fetchVisitCounts = async () => {
       try {
-        // 确保 API 路径正确
-        const response = await fetch('/api/visit');
+        // GET 请求获取两个计数值
+        const response = await fetch('/api/visit'); 
         if (!response.ok) {
           throw new Error(`API request failed with status ${response.status}`);
         }
         const data = await response.json();
-        setVisitCount(data.count);
+        setTotalVisits(data.total ?? 0); // 使用 ?? 0 提供默认值
+        setDeveloperVisits(data.developer ?? 0);
       } catch (error) {
-        console.error("Failed to fetch visit count:", error);
-        setVisitCount(0); // 错误处理
+        console.error("Failed to fetch visit counts:", error);
+        setTotalVisits(0); 
+        setDeveloperVisits(0);
       }
     };
-    fetchVisitCount();
-  }, []); // 空依赖确保只运行一次
+    fetchVisitCounts();
+  }, []); 
+
+  // 根据 isDeveloperMode 渲染不同内容
+  const renderContent = () => {
+    if (isDeveloperMode) {
+      if (developerVisits === null || totalVisits === null) {
+         return 'Loading dev stats...';
+      }
+      return `Developer Access: ${developerVisits} | Total Visits: ${totalVisits}`;
+    } else {
+      if (totalVisits === null) {
+        return 'Loading visitor count...';
+      }
+      if (totalVisits === 0) {
+          return 'Welcome!';
+      }
+      return `You are the ${totalVisits}${getOrdinalSuffix(totalVisits)} visitor`;
+    }
+  };
 
   return (
-    <footer className={`  ${themeColors.backgroundLight} pt-8 pb-8 text-center ${themeColors.footerTextColor} text-sm w-full`}>
+    <footer className={` ${themeColors.backgroundLight} pt-8 pb-8 text-center ${themeColors.footerTextColor} text-sm w-full`}>
       <p>@COPYRIGHT NCU GOOD LAB All rights reserved.</p>
       <p className="mt-2">
-        {visitCount === null
-          ? 'Loading visitor count...'
-          : visitCount === 0
-          ? 'Welcome!'
-          : `You are the ${visitCount}${getOrdinalSuffix(visitCount)} visitor`
-        }
+        {renderContent()}
       </p>
     </footer>
   );

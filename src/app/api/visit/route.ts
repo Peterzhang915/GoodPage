@@ -13,57 +13,95 @@ async function getDb() {
   if (dbInstance) {
     return dbInstance;
   }
-  // 如果实例不存在，打开数据库连接
   const db = await open({
     filename: DB_PATH,
     driver: sqlite3.Database,
   });
 
-  // 检查表是否存在，如果不存在则创建
   await db.exec(`
     CREATE TABLE IF NOT EXISTS visits (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      id INTEGER PRIMARY KEY NOT NULL, -- Removed AUTOINCREMENT for specific IDs
       count INTEGER NOT NULL DEFAULT 0
     );
   `);
 
-  // 检查是否已有计数记录，如果没有则插入初始值 0
-  const existingCount = await db.get('SELECT count FROM visits WHERE id = 1');
-  if (!existingCount) {
+  // 检查并初始化 ID=1 (total) - 保持为 0
+  let row = await db.get('SELECT count FROM visits WHERE id = 1');
+  if (!row) {
     await db.run('INSERT INTO visits (id, count) VALUES (?, ?)', 1, 0);
+    console.log('Initialized total visit count (ID 1) to 0');
+  }
+  // 检查并初始化 ID=2 (developer) - 设置初始值为 1
+  row = await db.get('SELECT count FROM visits WHERE id = 2');
+  if (!row) {
+    await db.run('INSERT INTO visits (id, count) VALUES (?, ?)', 2, 1); // Set initial count to 1
+    console.log('Initialized developer visit count (ID 2) to 1');
   }
 
-  dbInstance = db; // 缓存实例
+  dbInstance = db;
   return db;
 }
 
-export async function GET(_request: Request) {
+export async function GET() {
   try {
     const db = await getDb();
+    // 使用 await 获取语句，并 await get() 的结果
+    const totalStmt = await db.prepare('SELECT count FROM visits WHERE id = 1');
+    const devStmt = await db.prepare('SELECT count FROM visits WHERE id = 2');
+    const totalRow = await totalStmt.get(); // await the get() call
+    const devRow = await devStmt.get();     // await the get() call
+    const totalCount = totalRow?.count ?? 0;
+    const devCount = devRow?.count ?? 0;
 
-    // 原子性地增加计数值
-    await db.run('UPDATE visits SET count = count + 1 WHERE id = 1');
+    // 清理语句资源 (可选但推荐)
+    await totalStmt.finalize();
+    await devStmt.finalize();
 
-    // 获取更新后的计数值
-    const result = await db.get('SELECT count FROM visits WHERE id = 1');
-    const visitCount = result?.count ?? 0;
+    return NextResponse.json({ total: totalCount, developer: devCount });
+  } catch (error) {
+    console.error("API GET Error:", error);
+    return NextResponse.json({ error: 'Failed to fetch visit counts' }, { status: 500 });
+  }
+}
 
-    // 返回 JSON 响应
-    return NextResponse.json({ count: visitCount }, {
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'GET, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type',
-      }
-    });
+export async function POST(req: Request) {
+  try {
+    const db = await getDb();
+    const { searchParams } = new URL(req.url);
+    const source = searchParams.get('source');
+
+    // **总是增加总访问次数**
+    const incrementTotalStmt = await db.prepare('UPDATE visits SET count = count + 1 WHERE id = 1');
+    await incrementTotalStmt.run();
+    await incrementTotalStmt.finalize();
+
+    // 如果是开发者访问，额外增加开发者访问次数
+    if (source === 'developer') {
+      const incrementDevStmt = await db.prepare('UPDATE visits SET count = count + 1 WHERE id = 2');
+      await incrementDevStmt.run();
+      await incrementDevStmt.finalize();
+      console.log('Incremented developer and total visits.');
+    } else {
+      console.log('Incremented total visits.');
+    }
+    
+    // 返回最新的计数值
+    const totalStmt = await db.prepare('SELECT count FROM visits WHERE id = 1');
+    const devStmt = await db.prepare('SELECT count FROM visits WHERE id = 2');
+    const totalRow = await totalStmt.get();
+    const devRow = await devStmt.get();
+    const totalCount = totalRow?.count ?? 0;
+    const devCount = devRow?.count ?? 0;
+
+    await totalStmt.finalize();
+    await devStmt.finalize();
+
+    return NextResponse.json({ total: totalCount, developer: devCount }, { status: 200 });
 
   } catch (error) {
-    console.error('API Error:', error);
-    return NextResponse.json({ error: 'Failed to process visit count' }, { status: 500 });
+    console.error("API POST Error:", error);
+    return NextResponse.json({ error: 'Failed to update visit counts' }, { status: 500 });
   }
-  // 注意：在 serverless 环境中，数据库连接管理可能需要更细致的处理，
-  // 例如在函数执行完毕后关闭连接，或者使用连接池。
-  // 但对于简单场景和本地部署，缓存实例通常可行。
 }
 
 // 处理 OPTIONS 预检请求
