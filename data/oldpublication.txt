@@ -1,0 +1,81 @@
+Publications
+Journals
+Xiaoli Ren, Kaijun Ren, Zichen Xu, Xiaoyong Li, Aolong Zhou, Junqiang Song, and Kefeng Deng, "Improving ocean data services with semantics and quick index," Journal of Computer Science and Technology. doi:10.1007/s11390-021-1374-0, 2021
+Zichen Xu et al. "SmartDL: Energy-Aware Decremental Learning in a Mobile-based Federation for Geo-spatial Systems", accepted in NCAA, 2021.
+Zichen Xu et al. "Geo-SPS: Bipartite Graph Representation for GeoSpatial Prenatal Survey Data", accepted in NCAA, 2021.
+Xiaoli Ren, Xiaoyong Li, Kaijun Ren, Junqiang Song, Zichen Xu, Kefeng Deng, Xiang Wang. “Deep Learning-based Weather Prediction : A Survey”, in Big Data Research (23), Feb. 2021.
+徐子晨, 程婕, 王玉皞, 饶泓, “面向胜任力培养的在线系统实验实践方案设计”, in 高等工程教育, April 2021.
+Wang, Xiuxiu, Yipei Niu, Fangming Liu, and Zichen Xu. "When FPGA Meets Cloud: A First Look at Performance." IEEE Transactions on Cloud Computing (2020).
+Zichen Xu, Jie Zhou, Wenli Zheng, Yuhao Wang, and Minyi Guo, “Exploiting big.LITTLE Batteries for Software Defined Management on Mobile Devices”, in IEEE Transaction on Mobile Computing, 2020, (0): 1536-1233, 2020.
+Zichen Xu, Ao Cui, Gele Bai, and Shasha Wang, “Power-Aware Throughput Control for Containerized Relational Operation”, Accepted in CCF Journal on High-Performance Computing, 2020
+Zichen Xu, Wenjing Jiang, Cuiyin Gao, Jingyun Gu, and Yuhao Wang, “Cost Risk Analysis for Instance Recommendation in a Sustainable Cloud-CPS Framework”, Accepted in Journal of Software Experience, 2020
+Sun, Xiangyuan, Xiaoyong Li, Kaijun Ren, Junqiang Song, Zichen Xu, and Jing Chen. "Rethinking compact abating probability modeling for open set recognition problem in Cyber-physical systems." Journal of Systems Architecture 101 (2019): 101660.
+Haoyang Zhu, Xiaoyong Li, Qiang Liu, Zichen Xu. "Top-k Dominating Queries on Skyline Groups." IEEE Trans. Knowl. Data Eng. 32(7): 1431-1444 (2020).
+Zichen Xu, Yi-cheng Tu and Xiaorui Wang, "Online Energy Estimation of Relational Operations in Database Systems", IEEE Transactions on Computers, 64(12): 1-14, December 2015.
+Yi-cheng Tu, Xiaorui Wang, Bo Zeng, and Zichen Xu, "A System for Energy-Efficient Data Management", ACM SIGMOD Record, 43(1): 21-26, March 2014.
+Zichen Xu, Yi-cheng Tu and Xiaorui Wang, “PET: Reducing Database Energy Cost via Query Optimization”, in the Very Large Data Bases (VLDB) Endowment, Volume 5, 2011-2012.
+Zichen Xu, Yi-cheng Tu, and Xiaorui Wang, “Data Sprinting: High-throughput Data Processing in a Controlled Sprinting Data Center”, IEEE Transactions on Parallel and Distributed Systems.
+Zichen Xu, Christopher Stewart, and Xiaorui Wang, “Building Data Storage In Awareness of Carbon Footprints”, IEEE Transactions on Computers.
+Conference/Workshop Publications
+Zichen Xu et al. "A Local Similarity-Preserving Framework for Nonlinear Dimensionality Reduction with Neural Networks", in DASFAA 2021
+Zichen Xu, Jie Cheng, Yuhao Wang, Hong Rao, "Developing (Almost) Free Distributed System Labs Using Container-based Technique", ACM TUR-C 2020: 101-106
+Jie Zhou, Zichen Xu, Wenli Zheng, “CAPMAN: Cooling and Active Power Management in big.LITTLE Battery Supported Devices”, 40th IEEE/ACM ICDCS, pp. 1-9. 2020.
+Xu, Zichen, Li Li, and Wenting Zou. "Exploring federated learning on battery-powered devices." In Proceedings of the ACM Turing Celebration Conference-China, pp. 1-6. 2019.
+Eslami, Mehrad, Yicheng Tu, Hadi Charkhgard, Zichen Xu, and Jiacheng Liu. "PsiDB: A Framework for Batched Query Processing and Optimization." In 2019 IEEE International Conference on Big Data (Big Data), pp. 6046-6048. IEEE, 2019. (Poster)
+Xu, Zichen, Christopher Stewart, and Jiacheng Huang. "Elastic, geo-distributed RAFT." In Proceedings of the International Symposium on Quality of Service, pp. 1-9. 2019.
+Xu, Zichen, Li Li, and Wenting Zou. "Exploring federated learning on battery-powered devices." In Proceedings of the ACM Turing Celebration Conference-China, pp. 1-6. 2019.
+Xu, Zichen, Christopher Stewart, and Jiacheng Huang. "RAFTing Over on Geo-Diverse Spot markets." In IEEE INFOCOM 2019-IEEE Conference on Computer Communications Workshops (INFOCOM WKSHPS), pp. 490-495. IEEE, 2019. (Workshop)
+Gu, Jingyun, Zichen Xu, and Cuiying Gao. "RISC: Risk Assessment of Instance Selection in Cloud Markets." In International Conference on Algorithms and Architectures for Parallel Processing, pp. 59-74. Springer, Cham, 2018.
+Wang, Peian, Jinyun Gu, and Zichen Xu. "Exploring Fast Artistic Style Merging on Heterogenous Architecture." In 2017 IEEE International Conference on Autonomic Computing (ICAC), pp. 75-76. IEEE, 2017. (Poster)
+Zichen Xu, Xiaorui Wang, “REEWA: Runtime Energy Estimation for Web Activities on Smartphones”, IEEE International Conference on Sustainable Computing, 2017
+Zichen Xu, Nan Deng, Christopher Stewart, and XiaoruiWang, "Blending On-Demand and Spot Instances to Lower Costs for In-Memory Storage", in the 35th IEEE International Conference on Computer Communications (INFOCOM 2016), San Francisco, California, April 2016.
+Nan Deng, Zichen Xu, Christopher Stewart, and Xiaorui Wang, "Tell-Tale Tails: Decomposing Response Times for Live Internet Services", the 6th International Green and Sustainable Computing Conference (IGSC 2015), Las Vegas, Nevada, December 2015.
+Zichen Xu, Nan Deng, Christopher Stewart, and Xiaorui Wang, "CADRE: Carbon-Aware Data Replication for Geo-Diverse Services", in the 12th IEEE International Conference on Autonomic Computing (ICAC 2015), Grenoble, France, July 2015.
+Zhang Xu, Haining Wang, Zichen Xu, and Xiaorui Wang, "Power Attack: An Increasing Threat to Data Centers", in the 21st Network and Distributed System Security Symposium (NDSS 2014), San Diego, California, February 2014.
+Nan Deng, Zichen Xu, Christopher Stewart, and Xiaorui Wang, "From the Outside Looking In: Probing Web APIs to Build DetailedWorkload Profiles", 9th InternationalWorkshop on Feedback Computing (Feedback 2014), Philadelphia,
+Zichen Xu, Yi-cheng Tu, and Xiaorui Wang, "Dynamic Energy Estimation of Query Plans in Database Systems", in the 33rd International Conference on Distributed Computing Systems (ICDCS 2013), Philadelphia, Pennsylvania, July 2013.
+Zichen Xu, Xiaorui Wang, and Yi-cheng Tu, "Power-Aware Throughput Control for Database Management", in the 10th International Conference on Autonomic Computing (ICAC 2013), San Jose, California, June 2013.
+Zichen Xu, Yi-cheng Tu and Xiaorui Wang,"PET: Reducing Database Energy Cost via Query Optimization", in the 38th International Conference on Very Large Data Bases (VLDB 2012), September 2012.
+Yi-cheng Tu, Xiaorui Wang, and Zichen Xu, "Power-Aware DBMS: Potential and Challenges", the 23rd Scientific and Statistical Database Management Conference (SSDBM 2011), Portland, Oregon, July 2011.
+Zichen Xu, "Building a power-aware database management system", in the Fourth SIGMOD PhD Workshop on Innovative Database Research (IDAR 2010) in conjunction with SIGMOD'10, Indianaplois, Indiana, July 2010.
+Zichen Xu, Yi-cheng Tu and Xiaorui Wang. "Power-Performance Tradeoffs in Database Systems" in the 26th IEEE International Conference on Data Engineering (ICDE 2010), Long Beach,California, March 2010.
+Jingyun Gu, Zichen Xu and Cuiying Gao. "RISC: Risk Assessment of Instance Selection in Cloud Markets" in International Conference on Algorithms and Architectures for Parallel Processing (ICA3PP 2018), Guangzhou, China, November 2018
+Yalin Yang, Linjie Xu, Zichen Xu and Yuhao Wang. "Data-intensive Computing Acceleration with Python for Xilinx FPGA" in Web Information Systems Engineering (WISE 2018), Dubai, United Arab Emirates, November 2018
+Weizheng Wu, Yizhi Wei, Cuiying Gao and Zichen Xu. "Leavs: a Learning-enabled Autonomous Vehicle Simulation Platform" in the 4th International Conference on Cognitive System and Information Processing (ICCSIP 2018), Beijing, China, November 2018
+Academic Services
+PC, ICPADS, 2021
+Track Chair, IEEE BigData, 2021
+PC, HPCChina, 2021
+PC, ACM SIGCSE 2020, 2021
+Publicity Chair, ICAC (Now ACSOS) 2019, 2020, 2021
+PC, ICAC (Now ACSOS) 2015, 2017, 2019, 2020, 2021
+Chair, Workshop on Cloud-edge Computing Enabling Novel Computing Architecture, colocated with CTC China 2020, 2021
+Workshop Chair, ACA 2020
+PC, ACM TUR-C 2020
+PC, HPBD\&IS 2020
+PC, NAS 2019
+Publicity Chair, IWQoS 2016
+Session Chair, INFOCOM 2016
+Session Chair, ICDCS 2015
+PC, ICDCS 2013, 2020
+Awards, Honors, and Research Impacts
+Principal Investigator, Cambodian Funding, 2021
+Co-PI, National R/D Key Project, Ministry of Science and Technology, 2019 - 2022
+Principal Investigator, Education Major Grant, Department of Education JiangXi, 2019 - 2021
+Co-PI, National KHF Key Project, Ministry of Science and Technology, 2018 - 2020
+The 1st selected Jiangxi Provincial Thousand Young Talents, 2018
+Principal Investigator, NSFC Youth Grant, NSFC, 2018 - 2020
+Principal Investigator, Tencent Rhino Bird Grant, Tencent, 2017 - 2018
+Principal Investigator, AWS Research Education Grant, Amazon, 2015 - 2017
+Principal Investigator, Microsoft Azure Research Grant, Microsoft, 2017 - 2018
+Principal Investigator, AWS Research Education Grant, Amazon, 2015 - 2017
+Finalist in Edward F. Hayes Graduate Research Forum, OSU, February 2015
+Student Travel Grant, USENIX Association, June 2013
+Principal Investigator, USF Student Challenge Grant, USF, 2010 - 2011
+Best Paper Award, Florida Emerging Paradigms conference, April 2010
+Student Travel Grant, SIGMOD, June 2010
+Conference Presentation Grant, USF, March 2010
+Best Research Poster Award, USF, October 2009
+Best Undergraduate Thesis, Beijing University of Posts and Telecommunications, July 2007
+Finalist in Windows Embedded Student Challenge (WESC), Microsoft, May 2006
+Honored Graduate, BUPT, 2007 (Top 8%)
