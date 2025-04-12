@@ -320,8 +320,8 @@ const PhotoGallery: React.FC = () => {
                       <div className={`absolute inset-0 ${themeColors.backgroundBlack} ${themeColors.opacityLight} transition-opacity duration-300 group-hover:opacity-100`}>
                         <div className={`absolute inset-0 flex items-center justify-center ${themeColors.textWhite} text-center p-4`}>
                           <div>
-                            {image.caption && <p className="text-sm">{image.caption}</p>}
-                            {image.date && <p className="text-xs">{image.date}</p>}
+                            {image.caption && <p className="text-sm select-none">{image.caption}</p>}
+                            {image.date && <p className="text-xs select-none">{image.date}</p>}
                           </div>
                         </div>
                       </div>
@@ -356,9 +356,9 @@ const PhotoGallery: React.FC = () => {
                     whileTap={{ scale: 0.95 }}
                   >
                     {/* 显示 Emoji 图标 */} 
-                    <span className="text-lg -ml-1">{categoryEmojis[category] || categoryEmojis.Default}</span> 
+                    <span className="text-lg -ml-1 select-none">{categoryEmojis[category] || categoryEmojis.Default}</span> 
                     {/* 显示类别名称 */} 
-                    <span>{category}</span>
+                    <span className="select-none">{category}</span>
                   </motion.button>
                 ))}
               </motion.div>
@@ -390,8 +390,8 @@ const PhotoGallery: React.FC = () => {
                </motion.button>
                {/* 显示当前类别标题和图标 */} 
                <span className="text-lg font-semibold flex items-center gap-2">
-                 <span className="text-xl">{categoryEmojis[selectedCategory] || categoryEmojis.Default}</span>
-                 <span className="capitalize">{selectedCategory}</span>
+                 <span className="text-xl select-none">{categoryEmojis[selectedCategory] || categoryEmojis.Default}</span>
+                 <span className="capitalize select-none">{selectedCategory}</span>
                </span>
                {/* 空 div 用于布局对齐 */} 
                <div></div> 
