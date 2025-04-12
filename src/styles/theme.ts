@@ -29,6 +29,30 @@ export const themeColors = {
   footerTextColor: 'text-gray-500',  // 页脚文本颜色，浅灰色用于辅助信息
   footerBackground: 'bg-gray-50',  // 页脚背景颜色，浅灰色背景
 
+  // --- 主题颜色 (来自 globals.css) ---
+  themePageBg: 'bg-gray-50',             // 主站整体页面背景色
+  themeHeaderBg: 'bg-slate-800',           // 主站页眉背景色
+  themeHeaderLightBg: 'bg-slate-700',      // 页眉元素的较浅变体
+  themeLightText: 'text-gray-100',         // 浅色文字，常用于深色背景
+  themePrimaryText: 'text-slate-800',      // 主站主要文字颜色
+  themeSecondaryText: 'text-slate-700',    // 次要文字颜色，用于较低强调
+  themeMutedText: 'text-gray-500',         // 柔和文字颜色，用于不显眼信息
+  themeDarkBorder: 'border-slate-900',     // 主站元素的深色边框
+  themePrimaryBorder: 'border-slate-800',  // 对应主主题色的主要边框颜色
+  themeAccentBorder: 'border-blue-500',      // 强调边框颜色，用于高亮
+
+  // --- 开发者工具颜色 (来自 globals.css) ---
+  devCardBg: 'bg-gray-800',                // 开发者工具卡片的背景色
+  devBorder: 'border-gray-700',            // 开发者工具内的标准边框颜色
+  devTitleText: 'text-green-400',          // 开发者工具内标题的文字颜色
+  devDescText: 'text-gray-400',            // 开发者工具内描述文字的颜色
+  devDisabledText: 'text-gray-500',        // 禁用元素或文本的文字颜色
+  devDescDisabledText: 'text-gray-600',    // 禁用元素上描述文字的颜色
+  devButtonBg: 'bg-indigo-600',            // 开发者工具中主要按钮的背景色
+  devButtonText: 'text-white',             // 开发者工具中主要按钮的文字颜色
+  devButtonDisabledBg: 'bg-gray-700',      // 开发者工具中禁用按钮的背景色
+  devButtonDisabledBorder: 'border-gray-600', // 开发者工具中禁用按钮的边框颜色
+
   // --- 新增的背景色：扩展背景选项 ---
   // 这些背景色用于不同场景，提供更多灵活性
   backgroundWhite: 'bg-white',  // 白色背景，用于主要内容区

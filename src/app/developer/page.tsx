@@ -192,7 +192,12 @@ const DeveloperPage: React.FC = () => {
         <h1 className={`text-4xl font-bold text-green-400 mb-2 flex items-center justify-center gap-3`}>
           <Unlock size={36} /> Developer Toolbox {isFullAccess ? 'Activated' : 'Limited Access'}
         </h1>
-        <p className="text-gray-400">Welcome! Available tools depend on your access level.</p>
+        <p className="text-gray-400">
+          {isFullAccess
+            ? "Core systems unlocked. Welcome, Administrator! Remember: sudo responsibly."
+            : "Welcome! Available tools depend on your access level."
+          }
+        </p>
       </motion.div>
 
       {/* --- Conditional Rendering: Tool Cards Grid OR Active Tool View --- */}

@@ -1,38 +1,9 @@
 /* 使用 Tailwind v4 推荐的导入方式 */
 @import "tailwindcss";
 
-/* 移除旧的指令 */
-/* @tailwind base;
-@tailwind components;
-@tailwind utilities; */
-
-/* 移除 Vercel/Next.js 相关的 CSS 变量和样式 */
-/* :root {
-  --foreground-rgb: 0, 0, 0;
-  --background-start-rgb: 214, 219, 220;
-  --background-end-rgb: 255, 255, 255;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --foreground-rgb: 255, 255, 255;
-    --background-start-rgb: 0, 0, 0;
-    --background-end-rgb: 0, 0, 0;
-  }
-}
-
-body {
-  color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-      to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
-} */
-
-/* 定义主题色变量 - 使用更兼容的方式 */
+/* --- Theme Variables --- */
 :root {
+  /* 主站主题色 */
   --color-theme-page: #f8f9fa;
   --color-theme-header: #2c3e50;
   --color-theme-header-light: #34495e;
@@ -42,9 +13,70 @@ body {
   --color-theme-muted: #7f8c8d;
   --color-theme-dark: #1a252f;
   --color-theme: #3498db;
+
+  /* 开发者工具主题色 */
+  --dev-color-bg-card: #1f2937;      /* gray-800 */
+  --dev-color-bg-btn-disabled: #374151; /* gray-700 */
+  --dev-color-border: #374151;       /* gray-700 */
+  --dev-color-border-btn-disabled: #4b5563; /* gray-600 */
+  --dev-color-text-title: #4ade80;    /* green-400 */
+  --dev-color-text-desc: #9ca3af;     /* gray-400 */
+  --dev-color-text-disabled: #6b7280; /* gray-500 */
+  --dev-color-text-desc-disabled: #4b5563; /* gray-600 - 用于禁用时的描述 */
+  --dev-color-button-bg: #4f46e5;      /* indigo-600 */
+  --dev-color-button-text: #ffffff;   /* white */
 }
 
-/* 直接提供CSS类，确保颜色能够显示 */
+/* --- Base Styles --- */
+html {
+  @apply scroll-smooth;
+}
+
+body {
+  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  @apply antialiased;
+}
+
+/* --- Utility Layers (Tailwind Custom Utilities) --- */
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+/* --- Component Styles --- */
+
+/* Masonry Layout */
+.my-masonry-grid {
+  display: flex;
+  margin-left: -1rem; /* 对应列间距 padding-left */
+  width: auto;
+}
+.my-masonry-grid_column {
+  padding-left: 1rem; /* 列间距 */
+  background-clip: padding-box;
+}
+.my-masonry-grid_column > div { /* 列内元素 */
+  margin-bottom: 1rem; /* 垂直间距 */
+}
+
+/* Typewriter Blinking Cursor */
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+.animate-blink {
+  animation: blink 1s step-end infinite;
+}
+
+/* Serif Font for Titles/Headings */
+.font-serif {
+  font-family: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+}
+
+/* --- Theme Helper Classes --- */
+
+/* 主站主题辅助类 */
 .bg-theme-page { background-color: var(--color-theme-page); }
 .bg-theme-header { background-color: var(--color-theme-header); }
 .bg-theme-header-light { background-color: var(--color-theme-header-light); }
@@ -56,78 +88,37 @@ body {
 .border-theme-primary { border-color: var(--color-theme-primary); }
 .border-theme { border-color: var(--color-theme); }
 
-/* 添加全局平滑滚动 */
-html {
-  @apply scroll-smooth;
-}
+/* 开发者工具主题辅助类 */
+.dev-bg-card { background-color: var(--dev-color-bg-card); }
+.dev-border { border-color: var(--dev-color-border); }
+.dev-text-title { color: var(--dev-color-text-title); }
+.dev-text-desc { color: var(--dev-color-text-desc); }
+.dev-text-disabled { color: var(--dev-color-text-disabled); }
+.dev-text-desc-disabled { color: var(--dev-color-text-desc-disabled); }
+.dev-bg-button { background-color: var(--dev-color-button-bg); }
+.dev-text-button { color: var(--dev-color-button-text); }
+.dev-bg-button-disabled { background-color: var(--dev-color-bg-btn-disabled); }
+.dev-border-disabled { border-color: var(--dev-color-border-btn-disabled); }
 
-/* 添加基础字体样式 */
-body {
-  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
-  @apply antialiased; /* 抗锯齿，使字体更平滑 */
-}
 
-/* 可以定义衬线字体用于标题等 */
-.font-serif {
-  font-family: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
-}
+/* --- Global Overrides (Developer Mode) --- */
 
-/* 删除硬编码的CSS类，使用Tailwind自定义类 */
-
-@layer utilities {
-  .text-balance {
-    text-wrap: balance;
-  }
-}
-
-/* --- react-masonry-css styles --- */
-.my-masonry-grid {
-  display: -webkit-box; /* 老版本 Safari */
-  display: -ms-flexbox; /* IE 10 */
-  display: flex;
-  margin-left: -1rem; /* 对应 WaterfallView 中 Masonry 的 gap-4 */
-  width: auto;
-}
-.my-masonry-grid_column {
-  padding-left: 1rem; /* 列间距，对应 gap-4 */
-  background-clip: padding-box;
-}
-
-/* 列内元素的垂直间距 */
-.my-masonry-grid_column > div {
-  margin-bottom: 1rem; /* 对应 gap-4 */
-}
-@keyframes blink {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0; }
-}
-.animate-blink {
-  animation: blink 1s step-end infinite;
-}
-/* Add this at the end of src/app/globals.css */
 body.developer-mode-active {
-  @apply bg-gray-900; /* Or your preferred dark background color */
-}
-/* Add these rules to the end of src/app/globals.css */
-
-/* --- Developer Dark Mode Overrides --- */
-body.developer-mode-active {
-  @apply bg-gray-900; /* Set main body background */
+  @apply bg-gray-900; /* 设置开发者模式下的主背景色 */
 }
 
-/* Target Navbar specifically */
-body.developer-mode-active nav[class*="shadow-sm"] { /* Use a class that Navbar has */
-  @apply bg-gray-800 border-b border-gray-700 shadow-none; /* Dark background, add border, remove shadow */
+/* 开发者模式下覆盖 Navbar 样式 */
+body.developer-mode-active nav[class*="shadow-sm"] {
+  @apply bg-gray-800 border-b border-gray-700 shadow-none; /* 暗色背景, 添加边框, 移除阴影 */
 }
-body.developer-mode-active nav a[class*="text-sm"] { /* Target nav links */
-  @apply text-gray-300 hover:text-green-400 hover:border-green-400; /* Adjust text and hover colors */
+body.developer-mode-active nav a[class*="text-sm"] {
+  @apply text-gray-300 hover:text-green-400 hover:border-green-400; /* 调整导航链接文本和悬停颜色 */
 }
-body.developer-mode-active nav a[class*="text-xl"] { /* Target logo/title link */
-  @apply text-gray-100 hover:text-green-400;
+body.developer-mode-active nav a[class*="text-xl"] {
+  @apply text-gray-100 hover:text-green-400; /* 调整 Logo/标题 链接颜色 */
 }
 
-/* Target Footer specifically */
-body.developer-mode-active footer[class*="pt-8"] { /* Use a class that Footer has */
-  @apply bg-gray-900 border-t border-gray-700 text-gray-400; /* Dark background, add border, adjust text */
+/* 开发者模式下覆盖 Footer 样式 */
+body.developer-mode-active footer[class*="pt-8"] {
+  @apply bg-gray-900 border-t border-gray-700 text-gray-400; /* 暗色背景, 添加边框, 调整文本颜色 */
 }
-/* --- End Developer Dark Mode Overrides --- */
