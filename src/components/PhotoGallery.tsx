@@ -376,25 +376,27 @@ const PhotoGallery: React.FC = () => {
             variants={waterfallViewVariants} // 应用进入/退出动画
           >
             {/* 瀑布流视图的页眉 */} 
-            <div className="category-selector flex justify-between items-center mb-4 px-4">
-               {/* 返回按钮 - 应用与类别按钮相似的样式 */} 
+            <div className="category-selector flex justify-between items-center mb-6 px-4 relative">
+               {/* 返回按钮 - 位于左侧 */} 
                <motion.button
                   onClick={handleReturnToHighlight} // 点击返回高亮视图
                   // 采用与类别按钮相似的样式，调整了 padding 和圆角
-                  className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ease-in-out shadow-sm ${themeColors.backgroundLight} ${themeColors.textColorSecondary} hover:${themeColors.textColorPrimary} hover:shadow-md hover:bg-gray-100 active:scale-95 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500`}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ease-in-out shadow-sm ${themeColors.backgroundLight} ${themeColors.textColorSecondary} hover:${themeColors.textColorPrimary} hover:shadow-md hover:bg-gray-100 active:scale-95 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 z-10`}
                   whileHover={{ scale: 1.03, boxShadow: "0px 5px 15px rgba(0, 0, 0, 0.1)" }} // 保持与类别按钮一致的悬停动画
                   whileTap={{ scale: 0.95 }}
                >
-                 <span className="text-lg">⬅️</span>
-                 <span>Back to Albums</span>
+                 <span className="text-lg select-none">⬅️</span>
+                 <span className="select-none">Back to Albums</span>
                </motion.button>
-               {/* 显示当前类别标题和图标 */} 
-               <span className="text-lg font-semibold flex items-center gap-2">
-                 <span className="text-xl select-none">{categoryEmojis[selectedCategory] || categoryEmojis.Default}</span>
+               
+               {/* 类别标题 - 绝对定位居中 */} 
+               <h2 className="text-2xl font-serif font-bold select-none flex items-center gap-2 absolute left-1/2 transform -translate-x-1/2">
+                 <span className="text-2xl select-none">{categoryEmojis[selectedCategory] || categoryEmojis.Default}</span>
                  <span className="capitalize select-none">{selectedCategory}</span>
-               </span>
-               {/* 空 div 用于布局对齐 */} 
-               <div></div> 
+               </h2>
+               
+               {/* 空 div 用于保持布局平衡 */} 
+               <div className="w-[120px]"></div>
             </div>
             {/* 渲染瀑布流组件 */} 
             <WaterfallView
