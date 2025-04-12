@@ -1,0 +1,29 @@
+{
+    "databases": {
+      "lab": { 
+        "tables": {
+          "members": {
+            "permissions": {
+              "insert-row": true, 
+              "update-row": true, 
+              "delete-row": true  
+            }
+          },
+          "publications": {
+             "permissions": {
+              "insert-row": true, 
+              "update-row": true,
+              "delete-row": true
+            }
+          },
+          "publication_authors": {
+             "permissions": {
+              "insert-row": true, 
+              "update-row": true,
+              "delete-row": true
+            }
+          }
+        }
+      }
+    }
+  }
