@@ -53,7 +53,7 @@ const Footer: React.FC = () => {
     const fetchVisitCounts = async () => {
       try {
         // GET 请求获取两个计数值
-        const response = await fetch('/api/visit'); 
+        const response = await fetch('/api/visit');
         if (!response.ok) {
           throw new Error(`API request failed with status ${response.status}`);
         }

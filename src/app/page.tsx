@@ -1,28 +1,35 @@
-"use client";
-
 import React from 'react';
-// Removed Image import as it's unused for now
-// import Image from "next/image";
-// 引入 framer-motion
-// import { motion } from 'framer-motion';
-
-// 移除 Navbar 导入
-// import Navbar from '@/components/Navbar';
-// 导入拆分后的组件
 import HeroSection from '@/components/HeroSection';
 import ContentSection from '@/components/ContentSection';
-// 移除 PhotoGallery 导入
-// import PhotoGallery from '@/components/PhotoGallery';
-
-// First, add back the import statement at the top
 import { themeColors } from '@/styles/theme';
+  interface NewsApiResponse {
+    title: string;
+    news: string[];
+  }
+// 主页组件现在是 async 因为要 await 数据读取
+export default async function Home() {
+          let newsData: NewsApiResponse | null = null;
+          try {
+              const apiUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3000'}/api/news`;
+              const res = await fetch(apiUrl, { cache: 'no-store' }); // 获取最新数据
+              if (res.ok) {
+                  const data = await res.json();
+                  // 数据格式验证
+                  if (data && typeof data.title === 'string' && Array.isArray(data.news)) {
+                       newsData = data as NewsApiResponse;
+                  } else {
+                       console.error('从 API 收到的新闻数据格式无效:', data);
+                  }
+              } else {
+                   console.error(`获取新闻失败: ${res.status} ${res.statusText}`);
+              }
+          } catch (error) {
+              console.error('获取新闻数据时出错:', error);
+          }
+          const recruitmentText = "We always look for self-motivated under/graduate students who are ready to take on ambitious challenges to join my research group (with financial support).";
 
-// 主页组件
-export default function Home() {
   return (
-    // 不再需要 flex-col，因为 layout 会处理布局
-    <main className="items-center justify-start"> {/* 移除 flex min-h-screen flex-col */}
-      {/* <Navbar /> 移除 Navbar 渲染 */}
+    <main className="items-center justify-start">
       <HeroSection />
 
       {/* 主要内容区域容器 */}
@@ -30,10 +37,27 @@ export default function Home() {
 
         {/* 使用 ContentSection 渲染每个板块 */}
         <ContentSection id="news" title="News" viewport={{ once: true, amount: 0.3 }} transition={{ duration: 0.5 }}> {/* 可以覆盖默认动画参数 */}
-          <ul className={`list-disc ml-6 space-y-3 ${themeColors.textColorTertiary}`}>
-            <li>We always look for <span className={themeColors.primary}>self-motivated under/graduate students</span> who are ready to take on ambitious challenges to join my research group (with <span className={themeColors.primary}>financial support</span>)</li>
-            <li className={themeColors.primary}><span className={themeColors.primary}>News:</span> We have won the First Prize of Provincial Technology Advancement Award, the only ONE in Computer Science in 2024.</li>
-          </ul>
+          {/* 始终显示招聘信息 */}
+          <p className={`mb-4 leading-relaxed ${themeColors.textColorTertiary}`}>
+            {recruitmentText}
+          </p>
+
+          {/* 条件性显示获取的新闻 */}
+          {newsData && newsData.news.length > 0 ? (
+            <div className="mt-6 border-t border-gray-700 pt-4"> {/* 分隔线 */}
+              {/* 显示新闻列表 */}
+              <ul className={`list-disc ml-6 space-y-2 ${themeColors.textColorTertiary}`}>
+                {newsData.news.map((item, index) => (
+                  <li key={index}>
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : (
+              // 如果新闻为空或获取失败，则不渲染任何内容
+              null
+          )}
         </ContentSection>
 
         <ContentSection id="interests" title="Students with Interests">
@@ -75,7 +99,7 @@ export default function Home() {
                 We are trying to extend the original raft into the practical scenarios. That is providing scalable and cheap distributed services within the Raft protocol. The main contribution of this research is to extending the scope of a strong consensus algorithm into a very unreliable platform and make it work statistically in practice.
               </p>
               <p className={`leading-relaxed ${themeColors.textColorTertiary}`}>
-                Here we promote our eRaft. eRaft is a high-performance C++ Raft library. This project is mainly developed by graduates from our GOOD lab. The Raft algorithm shall be accredited to Dr. Diego Ongaro. At present, our project has been included in the official distribution. We hope to explore the possibility of optimizing the existing algorithms on the basis of realizing a stable practical Raft library. If you are interested, please join us. Anyone interested may refer project. {/* Consider adding a link here later */}
+                Here we promote our eRaft. eRaft is a high-performance C++ Raft library. This project is mainly developed by graduates from our GOOD lab. The Raft algorithm shall be accredited to Dr. Diego Ongaro. At present, our project has been included in the official distribution. We hope to explore the possibility of optimizing the existing algorithms on the basis of realizing a stable practical Raft library. If you are interested, please join us. Anyone interested may refer project. {/* 考虑稍后在此处添加链接 */}
               </p>
             </div>
           </div>
@@ -113,14 +137,13 @@ export default function Home() {
           </ul>
         </ContentSection>
 
-        {/* Placeholder sections */}
+        {/* 用于导航的占位符区域 */} 
         <section id="professor" className="scroll-mt-16"></section>
         <section id="members" className="scroll-mt-16"></section>
         <section id="contact" className="scroll-mt-16"></section>
-        {/* <ContentSection id="gallery" ... /> 及其内部的 PhotoGallery 已移除 */}
         <section id="blog" className="scroll-mt-16"></section>
 
-      </div> {/* End of main content div */}
+      </div> {/* 主要内容 div 结束 */}
 
     </main>
   );
