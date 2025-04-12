@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { Lock, Unlock, AlertTriangle, ExternalLink, Terminal, Save, Upload, History, Loader2, X, Edit, ArrowLeft, Server, Wrench } from 'lucide-react';
+import { Lock, Unlock, AlertTriangle, ExternalLink, Terminal, Save, Upload, History, Loader2, X, Edit, ArrowLeft, Server, Wrench, Key } from 'lucide-react';
 import { themeColors } from '@/styles/theme';
 import Typewriter from '@/components/Typewriter';
 
@@ -12,16 +12,33 @@ import PhotoManager from '@/components/developer/PhotoManager';
 import MemberManager from '@/components/developer/MemberManager';
 import CodeServerManager from '@/components/developer/CodeServerManager';
 import OpsManager from '@/components/developer/OpsManager';
+import KeyGenerator from '@/components/developer/KeyGenerator';
 
 // --- Password Verification --- //
-const verifyPassword = (password: string): boolean => {
-  const correctPassword = "308666";
-  return password === correctPassword;
+const MASTER_PASSWORD = "308666";
+const TEMP_KEY_ADD_MEMBER = "temp-add-member-key-123";
+
+const verifyCredentials = (input: string): { authenticated: boolean; permissions: string[] | null; isFullAccess: boolean } => {
+  if (input === MASTER_PASSWORD) {
+    return { 
+      authenticated: true, 
+      permissions: ['manage_news', 'manage_photos', 'manage_members', 'manage_codeservers', 'manage_ops', 'generate_keys'], 
+      isFullAccess: true 
+    };
+  }
+  if (input === TEMP_KEY_ADD_MEMBER) {
+    return { 
+      authenticated: true, 
+      permissions: ['manage_members'], 
+      isFullAccess: false 
+    };
+  }
+  return { authenticated: false, permissions: null, isFullAccess: false };
 };
 
 // --- Developer Page Component --- //
 const DeveloperPage: React.FC = () => {
-  const [password, setPassword] = useState('');
+  const [inputCredential, setInputCredential] = useState('');
   const [linuxPasswordInput, setLinuxPasswordInput] = useState('');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -30,24 +47,33 @@ const DeveloperPage: React.FC = () => {
 
   const [activeTool, setActiveTool] = useState<string | null>(null);
 
-  const handleLoginAttempt = useCallback((enteredPassword: string) => {
+  const [grantedPermissions, setGrantedPermissions] = useState<string[] | null>(null);
+  const [isFullAccess, setIsFullAccess] = useState<boolean>(false);
+
+  const handleLoginAttempt = useCallback((enteredCredential: string) => {
     setError(null);
-    if (verifyPassword(enteredPassword)) {
+    const verificationResult = verifyCredentials(enteredCredential);
+
+    if (verificationResult.authenticated) {
       setIsAuthenticated(true);
-      setActiveTool(null); // Reset active tool on successful login
-      console.log('Developer access granted.');
+      setGrantedPermissions(verificationResult.permissions);
+      setIsFullAccess(verificationResult.isFullAccess);
+      setActiveTool(null);
+      console.log('Access granted. Permissions:', verificationResult.permissions);
     } else {
-      setError('Authentication failed.');
-      console.warn('Failed developer login attempt.');
+      setError('Authentication failed. Invalid password or key.');
+      setGrantedPermissions(null);
+      setIsFullAccess(false);
+      console.warn('Failed login attempt.');
     }
-    setPassword('');
+    setInputCredential('');
     setLinuxPasswordInput('');
     setIsPromptComplete(false);
   }, []);
 
   const handleFormSubmit = (event: React.FormEvent) => {
     event.preventDefault();
-    handleLoginAttempt(password);
+    handleLoginAttempt(inputCredential);
   };
 
   // 处理 Linux 风格登录界面的键盘输入
@@ -91,8 +117,8 @@ const DeveloperPage: React.FC = () => {
   }, [isAuthenticated]);
 
 
-  const normalIntroText = "Whoa! You found the secret passage!\nAre you one of us, or just randomly mashing buttons?\nProve your worthiness!";
-  const linuxIntroText = `[root@goodlab ~]# access --level=developer --session=new\nWARNING: /proc/secrets/dev_access requires elevation.\nAuthentication required. Password:`;
+  const normalIntroText = "Whoa! You found the secret passage!\nEnter your password or access key:";
+  const linuxIntroText = `[root@goodlab ~]# access --level=developer --session=new\nWARNING: /proc/secrets/dev_access requires elevation.\nAuthentication required. Password or Key:`;
 
   // --- Login Screen UI --- //
   if (!isAuthenticated) {
@@ -110,7 +136,7 @@ const DeveloperPage: React.FC = () => {
              <Terminal size={18} />
           </button>
           <AlertTriangle size={52} className="mx-auto text-yellow-500 mb-5" />
-          <h1 className={`text-3xl font-bold mb-5 ${themeColors.ccfBText}`}>Developer Access Only</h1>
+          <h1 className={`text-3xl font-bold mb-5 ${themeColors.ccfBText}`}>Developer Access</h1>
           <div className={`mb-8 text-left text-sm ${themeColors.textColorSecondary} min-h-[6em] whitespace-pre-wrap pl-0 ml-0`} >
             <Typewriter
               key={displayMode}
@@ -128,12 +154,12 @@ const DeveloperPage: React.FC = () => {
           {displayMode === 'normal' && (
             <form onSubmit={handleFormSubmit} className="space-y-5">
               <div>
-                <label htmlFor="dev-password" className="sr-only">Developer Password</label>
+                <label htmlFor="dev-credential" className="sr-only">Password or Access Key</label>
                 <input
-                  id="dev-password" name="dev-password" type="password"
-                  autoComplete="current-password" required value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Password"
+                  id="dev-credential" name="dev-credential" type="password"
+                  autoComplete="off" required value={inputCredential}
+                  onChange={(e) => setInputCredential(e.target.value)}
+                  placeholder="Password or Access Key"
                   className={`py-3 px-4 block w-full shadow-sm ${themeColors.textColorPrimary} ${themeColors.backgroundWhite} focus:ring-indigo-500 focus:border-indigo-500 border ${error ? 'border-red-500' : themeColors.borderMedium} rounded-md text-base`}
                 />
               </div>
@@ -142,7 +168,7 @@ const DeveloperPage: React.FC = () => {
                 type="submit"
                 className={`w-full inline-flex items-center justify-center px-6 py-3 border border-transparent rounded-md shadow-sm text-base font-medium ${themeColors.textWhite} ${themeColors.ccfABg} hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-opacity`}
               >
-                <Lock size={18} className="mr-2" /> Unlock Developer Tools
+                <Lock size={18} className="mr-2" /> Authenticate
               </button>
             </form>
           )}
@@ -164,9 +190,9 @@ const DeveloperPage: React.FC = () => {
         className="text-center mb-12"
       >
         <h1 className={`text-4xl font-bold text-green-400 mb-2 flex items-center justify-center gap-3`}>
-          <Unlock size={36} /> Developer Toolbox Activated!
+          <Unlock size={36} /> Developer Toolbox {isFullAccess ? 'Activated' : 'Limited Access'}
         </h1>
-        <p className="text-gray-400">Welcome back, master builder! Here are your tools. Use them wisely.</p>
+        <p className="text-gray-400">Welcome! Available tools depend on your access level.</p>
       </motion.div>
 
       {/* --- Conditional Rendering: Tool Cards Grid OR Active Tool View --- */}
@@ -184,6 +210,7 @@ const DeveloperPage: React.FC = () => {
             buttonText="Manage Servers"
             icon={<Server size={16} className="mr-2"/>}
             onButtonClick={() => setActiveTool('codeserver')}
+            disabled={!grantedPermissions?.includes('manage_codeservers')}
             delay={0.1}
           />
 
@@ -194,6 +221,7 @@ const DeveloperPage: React.FC = () => {
             buttonText="Manage News"
             icon={<Edit size={16} className="mr-2"/>}
             onButtonClick={() => setActiveTool('news')}
+            disabled={!grantedPermissions?.includes('manage_news')}
             delay={0.2}
           />
 
@@ -204,7 +232,7 @@ const DeveloperPage: React.FC = () => {
             buttonText="Upload Photo"
             icon={<Upload size={16} className="mr-2"/>}
             onButtonClick={() => setActiveTool('photo')}
-            disabled={true}
+            disabled={!grantedPermissions?.includes('manage_photos')}
             delay={0.3}
           />
 
@@ -215,7 +243,7 @@ const DeveloperPage: React.FC = () => {
             buttonText="Add Member"
             icon={<Unlock size={16} className="mr-2"/>}
             onButtonClick={() => setActiveTool('member')}
-            disabled={true}
+            disabled={!grantedPermissions?.includes('manage_members')}
             delay={0.4}
           />
 
@@ -226,8 +254,19 @@ const DeveloperPage: React.FC = () => {
             buttonText="Open Ops Tools"
             icon={<Wrench size={16} className="mr-2"/>}
             onButtonClick={() => setActiveTool('ops')}
-            disabled={true}
+            disabled={!grantedPermissions?.includes('manage_ops')}
             delay={0.5}
+          />
+
+          {/* Tool: Generate Access Key */}
+          <ToolCard
+            title="Generate Access Key"
+            description="Create temporary keys with specific permissions."
+            buttonText="Generate Key"
+            icon={<Key size={16} className="mr-2"/>}
+            onButtonClick={() => setActiveTool('keyGenerator')}
+            disabled={!isFullAccess}
+            delay={0.6}
           />
 
         </motion.div>
@@ -245,6 +284,7 @@ const DeveloperPage: React.FC = () => {
           {activeTool === 'member' && <MemberManager onClose={() => setActiveTool(null)} />}
           {activeTool === 'codeserver' && <CodeServerManager onClose={() => setActiveTool(null)} />}
           {activeTool === 'ops' && <OpsManager onClose={() => setActiveTool(null)} />}
+          {activeTool === 'keyGenerator' && <KeyGenerator onClose={() => setActiveTool(null)} />}
         </motion.div>
       )}
     </div>
