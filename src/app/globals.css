@@ -13,18 +13,6 @@
   --color-theme-muted: #7f8c8d;
   --color-theme-dark: #1a252f;
   --color-theme: #3498db;
-
-  /* 开发者工具主题色 */
-  --dev-color-bg-card: #1f2937;      /* gray-800 */
-  --dev-color-bg-btn-disabled: #374151; /* gray-700 */
-  --dev-color-border: #374151;       /* gray-700 */
-  --dev-color-border-btn-disabled: #4b5563; /* gray-600 */
-  --dev-color-text-title: #4ade80;    /* green-400 */
-  --dev-color-text-desc: #9ca3af;     /* gray-400 */
-  --dev-color-text-disabled: #6b7280; /* gray-500 */
-  --dev-color-text-desc-disabled: #4b5563; /* gray-600 - 用于禁用时的描述 */
-  --dev-color-button-bg: #4f46e5;      /* indigo-600 */
-  --dev-color-button-text: #ffffff;   /* white */
 }
 
 /* --- Base Styles --- */
@@ -88,20 +76,6 @@ body {
 .border-theme-primary { border-color: var(--color-theme-primary); }
 .border-theme { border-color: var(--color-theme); }
 
-/* 开发者工具主题辅助类 */
-.dev-bg-card { background-color: var(--dev-color-bg-card); }
-.dev-border { border-color: var(--dev-color-border); }
-.dev-text-title { color: var(--dev-color-text-title); }
-.dev-text-desc { color: var(--dev-color-text-desc); }
-.dev-text-disabled { color: var(--dev-color-text-disabled); }
-.dev-text-desc-disabled { color: var(--dev-color-text-desc-disabled); }
-.dev-bg-button { background-color: var(--dev-color-button-bg); }
-.dev-text-button { color: var(--dev-color-button-text); }
-.dev-bg-button-disabled { background-color: var(--dev-color-bg-btn-disabled); }
-.dev-border-disabled { border-color: var(--dev-color-border-btn-disabled); }
-
-
-/* --- Global Overrides (Developer Mode) --- */
 
 body.developer-mode-active {
   @apply bg-gray-900; /* 设置开发者模式下的主背景色 */
