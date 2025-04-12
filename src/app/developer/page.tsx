@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { Lock, Unlock, AlertTriangle, ExternalLink, Terminal, Save, Upload, History, Loader2, X, Edit, ArrowLeft } from 'lucide-react';
+import { Lock, Unlock, AlertTriangle, ExternalLink, Terminal, Save, Upload, History, Loader2, X, Edit, ArrowLeft, Server, Wrench } from 'lucide-react';
 import { themeColors } from '@/styles/theme';
 import Typewriter from '@/components/Typewriter';
 
@@ -10,6 +10,8 @@ import ToolCard from '@/components/developer/ToolCard';
 import NewsEditor from '@/components/developer/NewsEditor';
 import PhotoManager from '@/components/developer/PhotoManager';
 import MemberManager from '@/components/developer/MemberManager';
+import CodeServerManager from '@/components/developer/CodeServerManager';
+import OpsManager from '@/components/developer/OpsManager';
 
 // --- Password Verification --- //
 const verifyPassword = (password: string): boolean => {
@@ -175,15 +177,14 @@ const DeveloperPage: React.FC = () => {
           transition={{ duration: 0.5, delay: 0.1 }}
           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
         >
-          {/* Tool: Code Server Link */}
+          {/* Tool: Manage Code Servers */}
           <ToolCard
-            title="Code Server Access"
-            description="Direct link to the internal Code Server instance."
-            buttonText="Open Code Server"
-            externalLink="http://47.115.228.15:18080/" // Confirmed this link
-            icon={<Terminal size={16} className="mr-2"/>}
-            onButtonClick={() => {}} // No internal action needed
-            delay={0.1} // Stagger animation
+            title="Manage Code Servers"
+            description="View, add, or remove Code Server instances."
+            buttonText="Manage Servers"
+            icon={<Server size={16} className="mr-2"/>}
+            onButtonClick={() => setActiveTool('codeserver')}
+            delay={0.1}
           />
 
           {/* Tool: Update News */}
@@ -193,7 +194,7 @@ const DeveloperPage: React.FC = () => {
             buttonText="Manage News"
             icon={<Edit size={16} className="mr-2"/>}
             onButtonClick={() => setActiveTool('news')}
-            delay={0.2} // Stagger animation
+            delay={0.2}
           />
 
           {/* Tool: Add Photo (Placeholder) */}
@@ -203,8 +204,8 @@ const DeveloperPage: React.FC = () => {
             buttonText="Upload Photo"
             icon={<Upload size={16} className="mr-2"/>}
             onButtonClick={() => setActiveTool('photo')}
-            disabled={true} // Indicate coming soon
-            delay={0.3} // Stagger animation
+            disabled={true}
+            delay={0.3}
           />
 
           {/* Tool: Add Member (Placeholder) */}
@@ -212,10 +213,21 @@ const DeveloperPage: React.FC = () => {
             title="Add New Member"
             description="Add information for a new lab member."
             buttonText="Add Member"
-             icon={<Unlock size={16} className="mr-2"/>} // Using Unlock as example icon
+            icon={<Unlock size={16} className="mr-2"/>}
             onButtonClick={() => setActiveTool('member')}
-            disabled={true} // Indicate coming soon
-            delay={0.4} // Stagger animation
+            disabled={true}
+            delay={0.4}
+          />
+
+          {/* Tool: Operations Tools */}
+          <ToolCard
+            title="Operations Tools"
+            description="Access tools for server maintenance and monitoring."
+            buttonText="Open Ops Tools"
+            icon={<Wrench size={16} className="mr-2"/>}
+            onButtonClick={() => setActiveTool('ops')}
+            disabled={true}
+            delay={0.5}
           />
 
         </motion.div>
@@ -231,6 +243,8 @@ const DeveloperPage: React.FC = () => {
           {activeTool === 'news' && <NewsEditor onClose={() => setActiveTool(null)} />}
           {activeTool === 'photo' && <PhotoManager onClose={() => setActiveTool(null)} />}
           {activeTool === 'member' && <MemberManager onClose={() => setActiveTool(null)} />}
+          {activeTool === 'codeserver' && <CodeServerManager onClose={() => setActiveTool(null)} />}
+          {activeTool === 'ops' && <OpsManager onClose={() => setActiveTool(null)} />}
         </motion.div>
       )}
     </div>
