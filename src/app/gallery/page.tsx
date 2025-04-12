@@ -11,7 +11,7 @@ export default function GalleryPage() {
       {/* <Navbar /> 移除 Navbar 渲染 */}
       <main className="flex-grow container mx-auto px-4 py-8 md:py-12">
         {/* 页面主标题 */}
-        <h1 className={`text-3xl md:text-4xl font-serif font-bold mb-8 border-b pb-3 ${themeColors.textColorPrimary}`}>
+        <h1 className={`text-3xl md:text-4xl font-serif font-bold mb-8 border-b pb-3 ${themeColors.textColorPrimary} text-center`}>
           Lab Photo Gallery
         </h1>
 
