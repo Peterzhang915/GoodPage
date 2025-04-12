@@ -51,26 +51,7 @@ export default function ProfessorPage() {
           {/* 出版物 */}
           <section className="mb-12">
             <h2 className="text-2xl font-bold border-b border-theme-dark pb-2 text-theme-primary">Selected Publications</h2>
-            <p className="mt-5 text-theme-secondary">
-              Please refer to <Link href="/publications" className="text-theme-primary font-medium hover:underline">GOOD Publications</Link> for complete list.
-            </p>
-            <div className="mt-5 space-y-5">
-              <div className="border-l-4 border-theme-dark pl-4 py-1">
-                <p className="font-medium text-theme-primary">Data-oriented Computing: A New Paradigm for Sustainable Computing</p>
-                <p className="text-theme-muted text-sm">Z. Xu, Y. Wang, J. Liu</p>
-                <p className="text-theme-muted italic">ACM Computing Surveys, 2023</p>
-              </div>
-              <div className="border-l-4 border-theme-dark pl-4 py-1">
-                <p className="font-medium text-theme-primary">Resource Optimization in Edge Systems: A Case Study</p>
-                <p className="text-theme-muted text-sm">Z. Xu, H. Li, P. Zhang</p>
-                <p className="text-theme-muted italic">IEEE Transactions on Sustainable Computing, 2022</p>
-              </div>
-              <div className="border-l-4 border-theme-dark pl-4 py-1">
-                <p className="font-medium text-theme-primary">Efficient Data Management for IoT Applications</p>
-                <p className="text-theme-muted text-sm">Z. Xu, L. Chen, W. Wu</p>
-                <p className="text-theme-muted italic">ICDE, 2022</p>
-              </div>
-            </div>
+            {/* 等待被开发 */}
           </section>
 
           {/* 学术服务 */}
