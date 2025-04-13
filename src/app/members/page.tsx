@@ -9,11 +9,11 @@ import { AlertTriangle } from 'lucide-react';         // 用于错误显示
 
 // 定义分组标题 (保持不变)
 const statusTitles: Record<string, string> = {
-  '教师': 'Head of Lab',
+  'PROFESSOR': 'Head of Lab',
   '博士后': 'Postdoctoral Researchers',
-  '博士生': 'PhD Students',
-  '硕士生': 'Master Students',
-  '本科生': 'Undergraduate Students',
+  'PHD_STUDENT': 'PhD Students',
+  'MASTER_STUDENT': 'Master Students',
+  'UNDERGRADUATE': 'Undergraduate Students',
   '访问学者': 'Visiting Scholars',
   '校友': 'Alumni',
   '其他': 'Other Members',

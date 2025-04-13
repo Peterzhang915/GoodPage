@@ -126,7 +126,7 @@ export default async function MemberProfilePage({ params }: MemberPageProps) {
 
     return (
         // V1 Container Style
-        <div className={`max-w-4xl mx-auto my-8 sm:my-12 ${themeColors.navBackground} shadow-lg rounded-lg overflow-hidden`}>
+        <div className={`max-w-7xl mx-auto my-8 sm:my-12 ${themeColors.navBackground} shadow-lg rounded-lg overflow-hidden`}>
             {/* V1 Layout Style */}
             <div className="md:flex">
 
@@ -160,10 +160,10 @@ export default async function MemberProfilePage({ params }: MemberPageProps) {
                     </div>
 
                     {/* Additional Sidebar Info (Styled concisely) */}
-                    <div className="w-full space-y-3 text-xs border-t ${themeColors.footerBorder} pt-4 mt-auto"> {/* Pushes to bottom if sidebar grows */}
-                         {member.office_location && (<p className={`${themeColors.textColorTertiary} flex items-center justify-center gap-x-1`}><Building size={12} /> {member.office_location}</p>)}
-                         {member.office_hours && (<p className={`${themeColors.textColorTertiary} flex items-center justify-center gap-x-1`}><Clock size={12} /> {member.office_hours}</p>)}
-                         {member.recruiting_status && (<div className={`p-1.5 rounded ${themeColors.ccfCBg} ${themeColors.ccfBText} font-medium flex items-center justify-center gap-x-1`}><UserCheck size={12} /> {member.recruiting_status}</div>)}
+                    <div className="w-full space-y-3 text-xs border-t ${themeColors.footerBorder} pt-4"> {/* Pushes to bottom if sidebar grows */}
+                         {member.office_location && (<p className={`${themeColors.textColorTertiary} flex items-center justify-center gap-x-1`}>office_location: <Building size={12} /> {member.office_location}</p>)}
+                         {member.office_hours && (<p className={`${themeColors.textColorTertiary} flex items-center justify-center gap-x-1`}>office_hours: <Clock size={12} /> {member.office_hours}</p>)}
+                         {member.recruiting_status && (<div className={`${themeColors.textColorTertiary} flex items-center justify-center gap-x-1`}><UserCheck size={12} /> {member.recruiting_status}</div>)}
                          {member.skills && (
                              <div className="text-center">
                                  <h3 className={`text-xs font-semibold ${themeColors.textColorPrimary} mb-1`}>Skills</h3>
