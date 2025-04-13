@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { Lock, Unlock, AlertTriangle, ExternalLink, Terminal, Save, Upload, History, Loader2, X, Edit, ArrowLeft, Server, Wrench, Key } from 'lucide-react';
+import { Lock, Unlock, AlertTriangle, ExternalLink, Terminal, Save, Upload, History, Loader2, X, Edit, ArrowLeft, Server, Wrench, Key, BookUp, FileText as LogIcon } from 'lucide-react';
 import { themeColors } from '@/styles/theme';
 import Typewriter from '@/components/Typewriter';
 
@@ -13,6 +13,7 @@ import MemberManager from '@/components/developer/MemberManager';
 import CodeServerManager from '@/components/developer/CodeServerManager';
 import OpsManager from '@/components/developer/OpsManager';
 import KeyGenerator from '@/components/developer/KeyGenerator';
+import PublicationManager from '@/components/developer/PublicationManager';
 
 // --- Password Verification --- //
 const MASTER_PASSWORD = "308666";
@@ -22,7 +23,7 @@ const verifyCredentials = (input: string): { authenticated: boolean; permissions
   if (input === MASTER_PASSWORD) {
     return { 
       authenticated: true, 
-      permissions: ['manage_news', 'manage_photos', 'manage_members', 'manage_codeservers', 'manage_ops', 'generate_keys'], 
+      permissions: ['manage_news', 'manage_photos', 'manage_members', 'manage_codeservers', 'manage_ops', 'generate_keys', 'manage_publications', 'view_logs'],
       isFullAccess: true 
     };
   }
@@ -49,6 +50,11 @@ const DeveloperPage: React.FC = () => {
 
   const [grantedPermissions, setGrantedPermissions] = useState<string[] | null>(null);
   const [isFullAccess, setIsFullAccess] = useState<boolean>(false);
+
+  // Callback to close the active tool view
+  const handleCloseTool = useCallback(() => {
+    setActiveTool(null);
+  }, []);
 
   const handleLoginAttempt = useCallback((enteredCredential: string) => {
     setError(null);
@@ -270,8 +276,30 @@ const DeveloperPage: React.FC = () => {
             buttonText="Generate Key"
             icon={<Key size={16} className="mr-2"/>}
             onButtonClick={() => setActiveTool('keyGenerator')}
-            disabled={!isFullAccess}
+            disabled={!grantedPermissions?.includes('generate_keys')}
             delay={0.6}
+          />
+
+          {/* Tool: Manage Publications */}
+          <ToolCard
+            title="Manage Publications"
+            description="Upload BibTeX file or manually add/edit publication entries."
+            buttonText="Manage Publications"
+            icon={<BookUp size={16} className="mr-2" />}
+            onButtonClick={() => setActiveTool('publication')}
+            disabled={!grantedPermissions?.includes('manage_publications')}
+            delay={0.7}
+          />
+
+          {/* Tool: System Logs */}
+          <ToolCard
+            title="System Logs"
+            description="View application and server logs (requires permission)."
+            buttonText="View Logs"
+            icon={<LogIcon size={16} className="mr-2" />}
+            onButtonClick={() => setActiveTool('logs')}
+            disabled={!grantedPermissions?.includes('view_logs')}
+            delay={0.8}
           />
 
         </motion.div>
@@ -284,12 +312,23 @@ const DeveloperPage: React.FC = () => {
           exit={{ opacity: 0, y: -30 }}
           transition={{ duration: 0.3, ease: "easeInOut" }}
         >
-          {activeTool === 'news' && <NewsEditor onClose={() => setActiveTool(null)} />}
-          {activeTool === 'photo' && <PhotoManager onClose={() => setActiveTool(null)} />}
-          {activeTool === 'member' && <MemberManager onClose={() => setActiveTool(null)} />}
-          {activeTool === 'codeserver' && <CodeServerManager onClose={() => setActiveTool(null)} />}
-          {activeTool === 'ops' && <OpsManager onClose={() => setActiveTool(null)} />}
-          {activeTool === 'keyGenerator' && <KeyGenerator onClose={() => setActiveTool(null)} />}
+          <button onClick={handleCloseTool} className={`mb-6 inline-flex items-center px-4 py-2 border border-gray-600 rounded-md shadow-sm text-sm font-medium ${themeColors.devDescText} ${themeColors.devCardBg} hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 focus:ring-indigo-500 transition-colors`}>
+            <ArrowLeft size={16} className="mr-2" /> Back to Tools
+          </button>
+
+          {activeTool === 'news' && <NewsEditor onClose={handleCloseTool} />}
+          {activeTool === 'photo' && <PhotoManager onClose={handleCloseTool} />}
+          {activeTool === 'member' && <MemberManager onClose={handleCloseTool} />}
+          {activeTool === 'codeserver' && <CodeServerManager onClose={handleCloseTool} />}
+          {activeTool === 'ops' && <OpsManager onClose={handleCloseTool} />}
+          {activeTool === 'keyGenerator' && <KeyGenerator onClose={handleCloseTool} />}
+          {activeTool === 'publication' && <PublicationManager onClose={handleCloseTool} />}
+          {activeTool === 'logs' && (
+            <div className={`p-6 rounded-lg border ${themeColors.devBorder} ${themeColors.devCardBg} shadow-md`}>
+              <h3 className={`text-lg font-semibold mb-4 ${themeColors.devTitleText}`}>System Logs</h3>
+              <p className={`${themeColors.devDescText}`}>Log viewing functionality is under development.</p>
+            </div>
+          )}
         </motion.div>
       )}
     </div>

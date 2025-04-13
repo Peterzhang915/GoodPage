@@ -1,0 +1,58 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL") // 指向 prisma/dev.db 文件
+}
+
+// 实验室成员模型
+model Member {
+  id          String   @id @default(cuid()) // 使用 CUID 作为唯一标识符
+  name_en     String                        // 英文名
+  name_zh     String?                       // 中文名 (可选)
+  email       String?  @unique              // 邮箱 (可选, 唯一)
+  status      String   @default("Current")   // 状态 (例如: Current, Alumni, Visiting)
+  role        String?                       // 角色 (例如: Professor, PhD Student, Master Student)
+  avatar_url  String?                       // 头像图片 URL (可选)
+  website_url String?                       // 个人网站 URL (可选)
+  research_interests String?                // 研究方向 (可选, 可以是逗号分隔的字符串或 JSON)
+  joined_date DateTime?                     // 加入日期 (可选)
+  left_date   DateTime?                     // 离开日期 (可选)
+
+  // 关联到出版物 (多对多)
+  publications Publication[] @relation("PublicationAuthors")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// 出版物模型
+model Publication {
+  id          String   @id @default(cuid()) // 使用 CUID 作为唯一标识符
+  title       String                        // 标题
+  venue       String?                       // 发表位置 (期刊/会议)
+  year        Int?                          // 发表年份
+  ccf_rank    String?                       // CCF 等级 (例如: A, B, C, None)
+  abstract    String?                       // 摘要
+  keywords    String?                       // 关键词 (逗号分隔字符串)
+  doi_url     String?                       // DOI 链接
+  pdf_url     String?                       // PDF 链接
+  bibtex_entry String?                       // 存储原始 BibTeX 条目 (可选)
+  source      String?                       // 数据来源 (例如: bibtex_import, manual_entry)
+  status      String   @default("approved")  // 状态 (例如: pending_review, approved, rejected)
+  raw_authors String?                       // 存储从 BibTeX 解析的原始作者字符串
+
+  // 关联到作者 (多对多)
+  authors Member[] @relation("PublicationAuthors") // 关联关系保持不变
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
