@@ -1,58 +1,331 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
+// prisma/schema.prisma
 
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
-generator client {
-  provider = "prisma-client-js"
-}
-
+// 定义数据源 (datasource): 指定数据库连接方式
 datasource db {
-  provider = "sqlite"
-  url      = env("DATABASE_URL") // 指向 prisma/dev.db 文件
+  provider = "sqlite" // 使用 SQLite 数据库
+  url      = env("DATABASE_URL") // 数据库连接 URL，从环境变量 DATABASE_URL 读取
+                                // 例如 "file:./data/lab.db" 或 "file:../data/lab.db" (路径相对于 prisma 目录)
 }
 
-// 实验室成员模型
+// 定义 Prisma 客户端生成器 (generator)
+generator client {
+  provider = "prisma-client-js" // 指定生成 JavaScript/TypeScript 版本的 Prisma Client
+  // output = "../node_modules/.prisma/client" // 可选: 明确指定客户端生成路径 (建议添加以消除警告)
+}
+
+// --- 枚举定义 (Enum Definitions) ---
+// 使用枚举可以限制字段只能接受预定义的值，提高数据一致性和类型安全
+
+// 成员状态枚举
+enum MemberStatus {
+  PROFESSOR        // 教师 (教授/副教授/讲师等)
+  POSTDOC          // 博士后
+  PHD_STUDENT      // 博士生
+  MASTER_STUDENT   // 硕士生
+  UNDERGRADUATE    // 本科生
+  VISITING_SCHOLAR // 访问学者
+  RESEARCH_STAFF   // 研究人员/工程师
+  ALUMNI           // 校友 (已毕业或离开)
+  OTHER            // 其他身份
+}
+
+// 出版物类型枚举
+enum PublicationType {
+  CONFERENCE       // 会议论文
+  JOURNAL          // 期刊文章
+  WORKSHOP         // Workshop 论文
+  PREPRINT         // 预印本 (例如 arXiv 上的文章)
+  BOOK_CHAPTER     // 书籍章节
+  BOOK             // 整本书
+  THESIS           // 学位论文 (博士/硕士)
+  PATENT           // 专利 (虽然也定义了 Patent 模型，但有时也作为一种出版类型)
+  TECHNICAL_REPORT // 技术报告
+  OTHER            // 其他类型
+}
+
+// 软件/数据集类型枚举 (Artefact: 人工制品，泛指产出物)
+enum ArtefactType {
+  SOFTWARE // 软件项目/库
+  DATASET  // 数据集
+}
+
+// --- 数据模型定义 (Data Model Definitions) ---
+
+// 成员模型 (代表实验室的每一个人)
 model Member {
-  id          String   @id @default(cuid()) // 使用 CUID 作为唯一标识符
-  name_en     String                        // 英文名
-  name_zh     String?                       // 中文名 (可选)
-  email       String?  @unique              // 邮箱 (可选, 唯一)
-  status      String   @default("Current")   // 状态 (例如: Current, Alumni, Visiting)
-  role        String?                       // 角色 (例如: Professor, PhD Student, Master Student)
-  avatar_url  String?                       // 头像图片 URL (可选)
-  website_url String?                       // 个人网站 URL (可选)
-  research_interests String?                // 研究方向 (可选, 可以是逗号分隔的字符串或 JSON)
-  joined_date DateTime?                     // 加入日期 (可选)
-  left_date   DateTime?                     // 离开日期 (可选)
+  // --- 核心身份信息 ---
+  id               String  @id @unique // 成员的唯一标识符 (例如学号、工号或自定义ID)，作为主键且必须唯一
+  name_en          String            // 成员的英文名称 (必填)
+  name_zh          String?           // 成员的中文名称 (可选)
+  status           MemberStatus      // 成员当前的状态 (使用 MemberStatus 枚举，必填)
+  enrollment_year  Int?              // 入学或入职的年份 (可选，对于校友可能是毕业年份)
 
-  // 关联到出版物 (多对多)
-  publications Publication[] @relation("PublicationAuthors")
+  // --- 职位与学术信息 ---
+  title_zh         String?           // 中文头衔 (例如 "教授", "副研究员", "工程师") (可选)
+  title_en         String?           // 英文头衔 (例如 "Professor", "Research Fellow") (可选)
+  major            String?           // 专业领域 (例如 "Computer Science", "Software Engineering") (可选)
+  research_group   String?           // 所属的内部科研小组或主要研究方向 (例如 "AI Systems Group", "Database Group") (可选，简单文本)
+  research_interests String?         // 具体的研究兴趣 (建议使用逗号分隔的文本，或未来重构为关联表) (可选)
+  skills           String?           // 掌握的技能 (同上，可以是逗号分隔文本) (可选)
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  // --- 详细与个性化信息 ---
+  bio_zh           String?           // 中文个人简介 (可以是较长文本) (可选)
+  bio_en           String?           // 英文个人简介 (同上) (可选)
+  more_about_me    String?           // “更多关于我”部分，可以放更个性化、非正式的介绍 (支持 Markdown 格式?) (可选)
+  interests_hobbies String?          // 非学术方面的兴趣爱好 (可选)
+  avatar_url       String?           // 个人头像图片的 URL (可选)
+  office_location  String?           // 办公室地点/门牌号 (可选)
+  office_hours     String?           // 新增: 办公时间 (例如 "周一 10:00-12:00 或邮件预约") (可选)
+  pronouns         String?           // 个人代词 (例如 "she/her", "he/him", "they/them") (可选)
+
+  // --- 联系与链接 ---
+  email            String? @unique   // 电子邮箱 (可选，但如果提供则必须是唯一的)
+  phone_number     String?           // 电话号码 (可选)
+  personal_website String?           // 个人主页或博客的 URL (可选)
+  cv_url           String?           // 个人简历 (CV) 的下载链接 (可选)
+  github_url       String?           // GitHub 主页链接 (可选)
+  linkedin_url     String?           // LinkedIn 主页链接 (可选)
+  google_scholar_id String?          // Google Scholar 的用户 ID (可选)
+  dblp_id          String?           // DBLP 的作者 ID 或个人主页 URL (可选)
+  semantic_scholar_id String?        // Semantic Scholar 的作者 ID (可选)
+  orcid_id         String?           // ORCID ID (可选)
+  favorite_emojis   String?           // 网站的 favicon 图标的 URL (可选)
+
+  // --- 状态与时间信息 ---
+  start_date       DateTime?         // 加入实验室或开始当前身份的日期 (可选)
+  graduation_details String?         // 毕业去向或其他离职后的信息 (主要用于校友) (可选)
+  recruiting_status String?          // 招生/招聘/合作状态的文本描述 (主要用于教师/PI) (可选)
+  is_profile_public Boolean  @default(true) // 个人主页信息默认是否公开可见
+  createdAt        DateTime @default(now()) // 记录创建时间 (自动设置)
+  updatedAt        DateTime @updatedAt      // 记录最后更新时间 (自动更新)
+
+  // --- 关系定义 ---
+  // 导师/学生关系 (Self-Relation, 自我关联)
+  supervisor       Member?  @relation("Supervision", fields: [supervisor_id], references: [id], onDelete: SetNull, onUpdate: Cascade) // 指向其导师 (是可选的)
+  supervisor_id    String?  @map("supervisor_id") // 存储导师 member.id 的外键列，允许为空。@map 用于指定数据库中的列名（可选，如果 Prisma 默认生成的符合预期）
+  supervisees      Member[] @relation("Supervision") // 指向该成员指导的学生列表 (一对多关系的反向)
+
+  // --- 关联到其他表 (表示该成员拥有的相关记录) ---
+  authoredPublications PublicationAuthor[] @relation("MemberPublications") // 作为作者参与的出版物 (通过 PublicationAuthor 连接)
+  educationHistory     Education[]         // 教育经历列表
+  awards               Award[]             // 所获荣誉列表
+  projects             ProjectMember[]     // 参与的项目列表 (通过 ProjectMember 连接)
+  teachingRoles        Teaching[]          // 教学经历列表
+  presentations        Presentation[]      // 学术报告列表
+  softwareAndDatasets  SoftwareDataset[]   // 发布的软件/数据集列表
+  patents              Patent[]            // 获得的专利列表
+  academicServices     AcademicService[]   // 参与的学术服务列表
+  newsMentions         News[]              // 提及该成员的新闻列表
 }
 
-// 出版物模型
+// 教育经历模型 (Education Table)
+model Education {
+  id            Int      @id @default(autoincrement()) // 自增 ID 作为主键
+  member        Member   @relation(fields: [member_id], references: [id], onDelete: Cascade) // 定义与 Member 的多对一关系，并设置级联删除
+  member_id     String   // 外键，关联到 Member 表的 id
+  degree        String   // 学位名称 (例如 "B.Eng.", "M.Sc.", "Ph.D.") (必填)
+  field         String?  // 专业领域 (例如 "Computer Science") (可选)
+  school        String   // 学校名称 (必填)
+  start_year    Int?     // 开始年份 (可选)
+  end_year      Int?     // 结束/毕业年份 (对于在读学生可以为空)
+  thesis_title  String?  // 学位论文题目 (可选)
+  description   String?  // 额外描述信息 (例如 "优等毕业", "交换生经历") (可选)
+  display_order Int      @default(0) // 用于控制在列表中显示的顺序，数字越小越靠前
+
+  @@index([member_id]) // 在 member_id 上创建索引，加速根据成员查询教育经历
+}
+
+// 奖项荣誉模型 (Award Table)
+model Award {
+  id            Int      @id @default(autoincrement()) // 自增 ID 主键
+  member        Member   @relation(fields: [member_id], references: [id], onDelete: Cascade) // 关联到 Member
+  member_id     String   // 外键
+  title         String   // 奖项/荣誉名称 (必填)
+  organization  String?  // 颁发组织 (可选)
+  year          Int?     // 获奖年份 (可选)
+  award_type    String?  // 奖项类型 (例如 "奖学金", "最佳论文", "竞赛奖") (可选)
+  description   String?  // 额外描述 (可选)
+  link_url      String?  // 相关证明或新闻链接 (可选)
+  display_order Int      @default(0) // 显示顺序
+
+  @@index([member_id]) // 成员 ID 索引
+}
+
+// 项目模型 (Project Table)
+model Project {
+  id             Int      @id @default(autoincrement()) // 自增 ID 主键
+  title          String   // 项目名称 (必填)
+  description    String?  // 项目详细描述 (长文本) (可选)
+  status         String?  // 项目当前状态 (例如 "进行中", "已完成", "核心项目") (可选)
+  start_year     Int?     // 项目开始年份 (可选)
+  end_year       Int?     // 项目结束年份 (可选)
+  url            String?  // 项目主页、代码库或演示链接 (可选)
+  funding_source String?  // 项目资金来源 (例如 "NSFC", "企业合作") (可选)
+  logo_url       String?  // 项目 Logo 图片 URL (可选)
+  tags           String?  // 项目标签或关键词 (逗号分隔文本?) (可选)
+  is_featured    Boolean  @default(false) // 是否是特色项目 (可用于在首页等处突出显示)
+  createdAt      DateTime @default(now()) // 记录创建时间
+  updatedAt      DateTime @updatedAt      // 记录最后更新时间
+
+  // 关系字段
+  members        ProjectMember[] // 参与该项目的成员列表 (通过 ProjectMember 连接)
+  // publications   ProjectPublication[] // 未来可以添加项目与出版物的关联
+}
+
+// 项目-成员关系模型 (ProjectMember Junction Table)
+// 用于连接 Project 和 Member，实现多对多关系
+model ProjectMember {
+  project        Project @relation(fields: [project_id], references: [id], onDelete: Cascade) // 关联到 Project
+  project_id     Int     // 外键
+  member         Member  @relation(fields: [member_id], references: [id], onDelete: Cascade) // 关联到 Member
+  member_id      String  // 外键
+  role           String? // 成员在该项目中的角色 (例如 "负责人(PI)", "参与者", "主要开发者") (可选)
+
+  @@id([project_id, member_id]) // 使用 project_id 和 member_id 组成复合主键
+  @@index([member_id])         // 在 member_id 上加索引，方便查询某人参与的所有项目
+}
+
+// 教学经历模型 (Teaching Table)
+model Teaching {
+  id              Int      @id @default(autoincrement()) // 自增 ID 主键
+  member          Member   @relation(fields: [member_id], references: [id], onDelete: Cascade) // 关联到 Member
+  member_id       String   // 外键
+  course_code     String?  // 课程代码 (可选)
+  course_title    String   // 课程标题 (必填)
+  semester        String?  // 开课学期 (例如 "Fall 2024", "Spring 2023") (可选)
+  year            Int?     // 开课年份 (可选)
+  role            String   @default("Instructor") // 担任角色 (默认为 "Instructor", 可以是 "TA", "Guest Lecturer" 等)
+  university      String?  // 授课大学 (如果不是成员所在的主要大学) (可选)
+  description_url String?  // 课程描述、大纲或资源的链接 (可选)
+  display_order   Int      @default(0) // 显示顺序
+
+  @@index([member_id]) // 成员 ID 索引
+}
+
+// 学术报告模型 (Presentation Table)
+model Presentation {
+  id            Int      @id @default(autoincrement()) // 自增 ID 主键
+  member        Member   @relation(fields: [member_id], references: [id], onDelete: Cascade) // 关联到 Member
+  member_id     String   // 外键
+  title         String   // 报告标题 (必填)
+  event_name    String?  // 作报告的会议或活动名称 (例如 "ICSE 2024", "Invited Talk at XYZ University") (可选)
+  conference_url String? // 会议/活动链接 (可选)
+  location      String?  // 报告地点 (例如 "Nanchang, China", "Virtual") (可选)
+  year          Int?     // 报告年份 (可选)
+  url           String?  // 幻灯片 (Slides) 或报告视频的链接 (可选)
+  is_invited    Boolean  @default(false) // 是否是受邀报告 (Invited Talk)
+  display_order Int      @default(0) // 显示顺序
+
+  @@index([member_id]) // 成员 ID 索引
+}
+
+// 软件/数据集模型 (SoftwareDataset Table)
+model SoftwareDataset {
+  id             Int          @id @default(autoincrement()) // 自增 ID 主键
+  member         Member       @relation(fields: [member_id], references: [id], onDelete: Cascade) // 关联到 Member (贡献者/维护者)
+  member_id      String       // 外键
+  title          String       // 软件或数据集的名称 (必填)
+  description    String?      // 详细描述 (可选)
+  type           ArtefactType @default(SOFTWARE) // 类型: 软件还是数据集 (使用 ArtefactType 枚举)
+  repository_url String?      // 代码仓库链接 (例如 GitHub, GitLab) (可选)
+  project_url    String?      // 项目主页、文档或演示链接 (可选)
+  license        String?      // 使用的开源许可证 (例如 "MIT", "Apache 2.0") (可选)
+  version        String?      // 当前版本号 (可选)
+  status         String?      // 项目状态 (例如 "Active", "Beta", "Archived") (可选)
+  display_order  Int          @default(0) // 显示顺序
+
+  @@index([member_id]) // 成员 ID 索引
+}
+
+// 专利模型 (Patent Table)
+model Patent {
+  id             Int      @id @default(autoincrement()) // 自增 ID 主键
+  member         Member   @relation(fields: [member_id], references: [id], onDelete: Cascade) // 关联到 Member (发明人之一)
+  member_id      String   // 外键 (注意：专利通常有多个发明人，这里简化为只关联一个主要成员，或者需要多对多关系)
+                          // 如果需要表示所有发明人，可能需要一个 PatentInventor 连接表或在 inventors_string 中存储
+  title          String   // 专利名称 (必填)
+  patent_number  String?  @unique // 专利号 (如果提供，应唯一)
+  inventors_string String? // 发明人列表 (按专利官方格式的字符串) (可选)
+  issue_date     String?  // 授权日期 (使用 String 保持格式灵活性, e.g., "YYYY-MM-DD") (可选)
+  status         String?  // 专利状态 (例如 "申请中/Filed", "已授权/Granted") (可选)
+  url            String?  // 专利查询链接 (例如 Google Patents URL) (可选)
+  display_order  Int      @default(0) // 显示顺序
+
+  @@index([member_id]) // 成员 ID 索引
+}
+
+// 学术服务模型 (AcademicService Table)
+model AcademicService {
+  id            Int      @id @default(autoincrement()) // 自增 ID 主键
+  member        Member   @relation(fields: [member_id], references: [id], onDelete: Cascade) // 关联到 Member
+  member_id     String   // 外键
+  role          String   // 担任的角色 (例如 "PC Member", "Reviewer", "Session Chair", "Guest Editor", "期刊编委/Editorial Board Member") (必填)
+  event         String   // 服务的会议/期刊/组织 (例如 "ICSE 2024", "IEEE TSE", "NSFC Grant Review Panel") (必填)
+  year          Int?     // 服务发生的年份 (可选)
+  display_order Int      @default(0) // 显示顺序
+
+  @@index([member_id]) // 成员 ID 索引
+}
+
+// 新闻/动态模型 (News Table)
+model News {
+  id                   Int      @id @default(autoincrement()) // 自增 ID 主键
+  title                String   // 新闻标题 (必填)
+  content              String   // 新闻内容 (长文本, 可能支持 Markdown) (必填)
+  createdAt            DateTime @default(now()) // 新闻创建时间 (自动设置)
+  updatedAt            DateTime @updatedAt      // 新闻最后更新时间 (自动更新)
+  is_pinned            Boolean  @default(false) // 是否置顶显示
+
+  // (可选) 将新闻关联到特定的出版物或成员
+  related_publication Publication? @relation(fields: [related_publication_id], references: [id], onDelete: SetNull) // 关联到 Publication (可选, 设为 NULL 如果论文被删除)
+  related_publication_id Int?      @unique // 强制一条新闻最多关联一篇论文
+  related_member      Member?      @relation(fields: [related_member_id], references: [id], onDelete: SetNull) // 关联到 Member (可选, 设为 NULL 如果成员被删除)
+  related_member_id   String?      // 外键
+}
+
+
+// 出版物模型 (Publication Table) - 增强版
 model Publication {
-  id          String   @id @default(cuid()) // 使用 CUID 作为唯一标识符
-  title       String                        // 标题
-  venue       String?                       // 发表位置 (期刊/会议)
-  year        Int?                          // 发表年份
-  ccf_rank    String?                       // CCF 等级 (例如: A, B, C, None)
-  abstract    String?                       // 摘要
-  keywords    String?                       // 关键词 (逗号分隔字符串)
-  doi_url     String?                       // DOI 链接
-  pdf_url     String?                       // PDF 链接
-  bibtex_entry String?                       // 存储原始 BibTeX 条目 (可选)
-  source      String?                       // 数据来源 (例如: bibtex_import, manual_entry)
-  status      String   @default("approved")  // 状态 (例如: pending_review, approved, rejected)
-  raw_authors String?                       // 存储从 BibTeX 解析的原始作者字符串
+  id                    Int              @id @default(autoincrement()) // 自增 ID 主键
+  title                 String           // 论文标题 (必填)
+  venue                 String?          // 发表地点 (会议/期刊名称) (可选)
+  year                  Int              // 发表年份 (必填)
+  ccf_rank              String?          // CCF 等级 (可选)
+  doi_url               String?          @unique // DOI 链接 (可选, 唯一)
+  pdf_url               String?          // PDF 文件链接 (可选)
+  abstract              String?          // 摘要 (可选)
+  keywords              String?          // 关键词 (逗号分隔文本?) (可选)
+  type                  PublicationType? @default(CONFERENCE) // 出版物类型 (使用枚举, 默认为会议)
+  bibtex                String?          // BibTeX 引用条目 (可选)
+  slides_url            String?          // 相关的幻灯片链接 (可选)
+  video_url             String?          // 相关的报告视频链接 (可选)
+  code_repository_url   String?          // 相关的代码库链接 (可选)
+  project_page_url      String?          // 相关的项目主页链接 (可选)
+  is_peer_reviewed      Boolean?         // 是否经过同行评审 (可选)
+  publication_status    String?          // 发表状态 (例如 "Published", "Accepted", "Submitted", "Preprint") (可选)
+  authors_full_string   String?          // 完整的、用于直接显示的作者列表字符串（包含格式和机构等）(可选)
+  createdAt             DateTime         @default(now()) // 记录创建时间
+  updatedAt             DateTime         @updatedAt      // 记录最后更新时间
 
-  // 关联到作者 (多对多)
-  authors Member[] @relation("PublicationAuthors") // 关联关系保持不变
+  // 关系字段
+  authors               PublicationAuthor[] @relation("PublicationAuthors") // 作者列表 (通过 PublicationAuthor 连接)
+  newsItems             News[]              // 与此出版物相关的新闻列表 (一对多)
+}
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+// 出版物-作者关系模型 (PublicationAuthor Junction Table) - 增强版
+model PublicationAuthor {
+  // 外键和关系定义
+  publication           Publication @relation("PublicationAuthors", fields: [publication_id], references: [id], onDelete: Cascade) // 关联到 Publication
+  publication_id        Int         // 外键
+  author                Member      @relation("MemberPublications", fields: [member_id], references: [id], onDelete: Cascade) // 关联到 Member
+  member_id             String      // 外键
+
+  // 关系属性
+  author_order          Int         // 作者顺序 (必填)
+  is_corresponding_author Boolean @default(false) // 是否为通讯作者 (可选)
+
+  // 约束和索引
+  @@id([publication_id, member_id])     // 复合主键: 同一篇论文，一个作者只出现一次
+  @@unique([publication_id, author_order]) // 唯一约束: 同一篇论文，一个顺序只有一个作者
+  @@index([member_id])                  // 索引: 加速按作者查找论文
 }
