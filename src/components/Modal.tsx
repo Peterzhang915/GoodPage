@@ -32,7 +32,7 @@ const Modal: React.FC<ModalProps> = ({ image, onClose }) => {
         initial={{ opacity: 0 }} // 初始状态：完全透明
         animate={{ opacity: 1 }} // 动画到状态：完全不透明
         exit={{ opacity: 0 }}    // 退出动画：渐变至透明
-        className={`fixed inset-0 ${themeColors.backgroundBlack} ${themeColors.opacityLight} z-50 flex items-center justify-center`} // 定位、背景、层级、布局
+        className="fixed inset-0 backdrop-blur-sm bg-transparent z-50 flex items-center justify-center" // 改为透明背景，只保留模糊效果
         onClick={onClose} // 点击背景遮罩层时调用 onClose 关闭模态框
       >
         {/* 模态框内容容器 */}
@@ -42,41 +42,71 @@ const Modal: React.FC<ModalProps> = ({ image, onClose }) => {
           animate={{ scale: 1, opacity: 1 }}   // 动画到状态：正常大小、不透明
           exit={{ scale: 0.7, opacity: 0 }}    // 退出动画：缩小、变透明
           transition={{ type: "spring", stiffness: 300, damping: 30 }} // 使用弹簧动画效果
-          className={`relative ${themeColors.backgroundWhite} rounded-lg shadow-xl overflow-hidden max-w-4xl w-full max-h-[90vh] flex flex-col`} // 样式、尺寸限制、布局
+          className="relative bg-transparent rounded-lg overflow-hidden max-w-5xl w-auto max-h-[90vh] flex flex-col" // 改为透明背景，移除阴影和白色背景
           onClick={(e) => e.stopPropagation()} // 阻止点击内容区域时触发背景层的 onClick，防止意外关闭
         >
           {/* 关闭按钮 (X) */}
           <button
             onClick={onClose} // 点击按钮时调用 onClose 关闭模态框
-            className={`absolute top-4 right-4 p-1 rounded-full ${themeColors.textGrayMedium} hover:${themeColors.textColorPrimary} hover:bg-gray-200 transition-all duration-150 ease-in-out z-10`} // 定位、内边距、圆角、颜色、背景悬停、过渡动画、层级
+            className="absolute top-4 right-4 p-2 rounded-full bg-black/30 text-white hover:bg-black/50 transition-all duration-150 ease-in-out z-10" // 修改样式以适应透明背景
             aria-label="关闭模态框" // WAI-ARIA 属性，提高可访问性
           >
             {/* SVG 图标 */}
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
 
           {/* 图片容器 */}
-          <div className="relative w-full flex-shrink-0 overflow-hidden" style={{ maxHeight: 'calc(90vh - 100px)' }}> {/* 限制最大高度，为下方信息区域预留空间 */}
-            <Image
-              src={image.src}
-              alt={image.alt}
-              width={1200} // 提供一个较大的宽度值供 Next.js 优化参考
-              height={800} // 提供一个较大的高度值供 Next.js 优化参考
-              style={{ width: '100%', height: 'auto', objectFit: 'contain', display: 'block', margin: 'auto' }} // 关键样式：宽度100%，高度自适应，保持比例，居中显示
-              priority // 优先加载模态框中的图片
-              unoptimized={image.src.endsWith('.gif')} // 如果是 GIF 则不进行优化
-            />
-          </div>
-
-          {/* 图片信息区域 (仅当有 caption 或 date 时显示) */}
-          {(image.caption || image.date) && (
-            <div className={`p-4 ${themeColors.backgroundLight} border-t flex-shrink-0`}> {/* 背景、边框、防止被压缩 */}
-              {image.caption && <p className="font-semibold text-lg mb-1">{image.caption}</p>}
-              {image.date && <p className={`text-sm ${themeColors.textGrayMedium}`}>{image.date}</p>}
+          <div className="relative w-full flex-shrink-0 flex justify-center items-center" style={{ maxHeight: 'calc(90vh - 80px)' }}> 
+            <div className="relative inline-block">
+              <Image
+                src={image.src}
+                alt={image.alt}
+                width={1200}
+                height={800}
+                style={{ 
+                  maxWidth: '100%', 
+                  maxHeight: 'calc(90vh - 80px)', 
+                  objectFit: 'contain',
+                  display: 'block'
+                }}
+                priority
+                unoptimized={image.src.endsWith('.gif')}
+                className="rounded-t-lg shadow-lg"
+              />
+              
+              {/* 图片信息区域 (仅当有 caption 或 date 时显示) - 位于图片底部，宽度与图片相同 */}
+              {(image.caption || image.date) && (
+                <motion.div 
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.3, duration: 0.4 }}
+                  className="bg-white rounded-b-lg text-left"
+                  style={{ 
+                    boxShadow: '0 6px 20px rgba(0, 0, 0, 0.15)',
+                    borderTop: '3px solid #3b82f6',
+                    borderLeft: '1px solid #e5e7eb',
+                    borderRight: '1px solid #e5e7eb',
+                    borderBottom: '1px solid #e5e7eb'
+                  }}
+                >
+                  <div className="flex flex-col py-3 px-5">
+                    {image.caption && (
+                      <span className="text-sm font-semibold text-gray-800">
+                        {image.caption}
+                      </span>
+                    )}
+                    {image.date && (
+                      <span className="text-xs text-gray-600 mt-1">
+                        {image.date}
+                      </span>
+                    )}
+                  </div>
+                </motion.div>
+              )}
             </div>
-          )}
+          </div>
         </motion.div>
       </motion.div>
     </AnimatePresence>

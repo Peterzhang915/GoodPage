@@ -22,7 +22,7 @@ type GalleryView = 'highlight' | 'waterfall';
 const images: GalleryImage[] = [
   { id: 1, src: '/images/gallery/placeholder1.jpg', alt: 'Placeholder 1', caption: '示例活动 1', date: '2025.01.01', category: 'Events' },
   { id: 2, src: '/images/gallery/placeholder2.jpg', alt: 'Placeholder 2', caption: '示例会议', date: '2024.12.15', category: 'Meetings' },
-  { id: 3, src: '/images/gallery/placeholder3.jpg', alt: 'Placeholder 3', caption: '毕业合影', date: '2024.06.10', category: 'Graduation' },
+  { id: 3, src: '/2024.6/1.jpg', alt: '毕业合影', caption: '毕业合影', date: '2024.06.10', category: 'Graduation' },
   { id: 4, src: '/images/gallery/placeholder4.jpg', alt: 'Placeholder 4', caption: '团建活动', date: '2024.08.20', category: 'Team Building' },
   { id: 5, src: '/images/gallery/placeholder5.jpg', alt: 'Placeholder 5', caption: '羽毛球周常', date: '2025.03.10', category: 'Sports' },
   { id: 6, src: '/images/gallery/placeholder1.jpg', alt: 'Placeholder 1 Again', caption: '另一个活动', date: '2025.01.02', category: 'Events' },
@@ -317,12 +317,10 @@ const PhotoGallery: React.FC = () => {
                     />
                     {/* 图片信息悬停层 */} 
                     {(image.caption || image.date) && (
-                      <div className={`absolute inset-0 ${themeColors.backgroundBlack} ${themeColors.opacityLight} transition-opacity duration-300 group-hover:opacity-100`}>
-                        <div className={`absolute inset-0 flex items-center justify-center ${themeColors.textWhite} text-center p-4`}>
-                          <div>
-                            {image.caption && <p className="text-sm select-none">{image.caption}</p>}
-                            {image.date && <p className="text-xs select-none">{image.date}</p>}
-                          </div>
+                      <div className="absolute inset-0 transition-opacity duration-300 opacity-0 group-hover:opacity-100">
+                        <div className="absolute bottom-2 left-2 bg-black/60 text-white text-left rounded px-3 py-2 max-w-[80%]">
+                          {image.caption && <p className="text-sm font-medium truncate select-none">{image.caption}</p>}
+                          {image.date && <p className="text-xs select-none">{image.date}</p>}
                         </div>
                       </div>
                     )}

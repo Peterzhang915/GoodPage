@@ -87,12 +87,12 @@ const WaterfallView: React.FC<WaterfallViewProps> = ({
               unoptimized={image.src.endsWith('.gif')} // GIF 图片不进行 Next.js 优化
               priority={images.indexOf(image) < 10} // 优先加载视口内可能出现的前10张图片
             />
-            {/* 悬停时显示的遮罩和信息 */}
+            {/* 悬停时显示的信息标签 */}
             {(image.caption || image.date) && (
-              <div className={`absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300`}>
-                <div className={`${themeColors.textWhite} text-center p-2`}>
-                  {image.caption && <p className="font-semibold text-sm mb-1 truncate">{image.caption}</p>}
-                  {image.date && <p className="text-xs">{image.date}</p>}
+              <div className="absolute inset-0 transition-opacity duration-300 opacity-0 group-hover:opacity-100">
+                <div className="absolute bottom-2 left-2 bg-black/60 text-white text-left rounded px-3 py-2 max-w-[80%]">
+                  {image.caption && <p className="text-sm font-medium truncate select-none">{image.caption}</p>}
+                  {image.date && <p className="text-xs select-none">{image.date}</p>}
                 </div>
               </div>
             )}
