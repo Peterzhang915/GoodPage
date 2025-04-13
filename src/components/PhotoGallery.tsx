@@ -20,29 +20,13 @@ type GalleryView = 'highlight' | 'waterfall';
 
 // 示例图片数据 (扩展)
 const images: GalleryImage[] = [
-  { id: 1, src: '/images/gallery/placeholder1.jpg', alt: 'Placeholder 1', caption: '示例活动 1', date: '2025.01.01', category: 'Events' },
   { id: 2, src: '/images/gallery/Meetings/CCF/CCF_Sys.png', alt: 'CCF会议', caption: 'CCF会议', date: '2023.9.30', category: 'Meetings' },
   { id: 3, src: '/images/gallery/Graduation/2024.6/1.jpg', alt: '毕业合影', caption: '毕业合影', date: '2024.06.10', category: 'Graduation' },
   { id: 4, src: '/images/gallery/Events/groupbuild/Picnic.jpg', alt: 'Picnic', caption: 'Picnic', date: '2024.08.20', category: 'Team Building' },
   { id: 5, src: '/images/gallery/Sports/badminton/20241030.jpg', alt: '羽毛球周常', caption: '羽毛球周常', date: '2025.03.10', category: 'Sports' },
   { id: 6, src: '/images/gallery/Graduation/2024.6/Member-2023-2.jpg', alt: '合照', caption: '合照', date: '2025.01.02', category: 'Lab Life' },
-  { id: 7, src: '/images/gallery/placeholder2.jpg', alt: 'Placeholder 2 Again', caption: '小组会议', date: '2024.12.16', category: 'Meetings' },
   // --- 添加更多图片 ---
-  { id: 8, src: '/images/gallery/placeholder4.jpg', alt: 'Placeholder 4 Repeat', caption: '户外拓展', date: '2024.09.05', category: 'Team Building' },
-  { id: 9, src: '/images/gallery/placeholder3.jpg', alt: 'Placeholder 3 Repeat', caption: '实验室日常', date: '2024.11.11', category: 'Lab Life' }, // 新类别
-  { id: 10, src: '/images/gallery/placeholder5.jpg', alt: 'Placeholder 5 Repeat', caption: '篮球友谊赛', date: '2025.04.18', category: 'Sports' },
-  { id: 11, src: '/images/gallery/placeholder1.jpg', alt: 'Placeholder 1 Third', caption: '迎新晚会', date: '2024.09.01', category: 'Events' },
-  { id: 12, src: '/images/gallery/placeholder2.jpg', alt: 'Placeholder 2 Third', caption: '学术报告', date: '2025.02.20', category: 'Meetings' },
-  { id: 13, src: '/images/gallery/placeholder3.jpg', alt: 'Placeholder 3 Third', caption: '毕业典礼现场', date: '2024.06.11', category: 'Graduation' },
-  { id: 14, src: '/images/gallery/placeholder4.jpg', alt: 'Placeholder 4 Fourth', caption: '节日聚餐', date: '2024.12.24', category: 'Team Building' },
-  { id: 15, src: '/images/gallery/placeholder5.jpg', alt: 'Placeholder 5 Fourth', caption: '乒乓球练习', date: '2025.05.01', category: 'Sports' },
-  { id: 16, src: '/images/gallery/placeholder1.jpg', alt: 'Placeholder 1 Fourth', caption: '开放日活动', date: '2025.06.15', category: 'Events' },
-  { id: 17, src: '/images/gallery/placeholder3.jpg', alt: 'Placeholder 3 Fourth', caption: '实验瞬间', date: '2025.01.20', category: 'Lab Life' },
-  { id: 18, src: '/images/gallery/placeholder4.jpg', alt: 'Placeholder 4 Fifth', caption: '春游', date: '2025.04.05', category: 'Team Building' },
-  { id: 19, src: '/images/gallery/placeholder5.jpg', alt: 'Placeholder 5 Fifth', caption: '跑步打卡', date: '2025.07.01', category: 'Sports' },
-  { id: 20, src: '/images/gallery/placeholder2.jpg', alt: 'Placeholder 2 Fifth', caption: '周会讨论', date: '2025.03.03', category: 'Meetings' },
-  { id: 21, src: '/images/gallery/placeholder3.jpg', alt: 'Competition 1', caption: '人工智能大赛', date: '2024.08.15', category: 'Competition' },
-  { id: 22, src: '/images/gallery/placeholder1.jpg', alt: 'Competition 2', caption: '黑客马拉松', date: '2024.11.20', category: 'Competition' },
+  { id: 7, src: '/images/gallery/placeholder1.jpg', alt: 'Competition 2', caption: '黑客马拉松', date: '2024.11.20', category: 'Competition' },
 ];
 
 // 从图片数据中提取唯一的类别
