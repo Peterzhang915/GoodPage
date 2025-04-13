@@ -21,11 +21,11 @@ type GalleryView = 'highlight' | 'waterfall';
 // 示例图片数据 (扩展)
 const images: GalleryImage[] = [
   { id: 1, src: '/images/gallery/placeholder1.jpg', alt: 'Placeholder 1', caption: '示例活动 1', date: '2025.01.01', category: 'Events' },
-  { id: 2, src: '/images/gallery/placeholder2.jpg', alt: 'Placeholder 2', caption: '示例会议', date: '2024.12.15', category: 'Meetings' },
-  { id: 3, src: '/2024.6/1.jpg', alt: '毕业合影', caption: '毕业合影', date: '2024.06.10', category: 'Graduation' },
-  { id: 4, src: '/images/gallery/placeholder4.jpg', alt: 'Placeholder 4', caption: '团建活动', date: '2024.08.20', category: 'Team Building' },
-  { id: 5, src: '/images/gallery/placeholder5.jpg', alt: 'Placeholder 5', caption: '羽毛球周常', date: '2025.03.10', category: 'Sports' },
-  { id: 6, src: '/images/gallery/placeholder1.jpg', alt: 'Placeholder 1 Again', caption: '另一个活动', date: '2025.01.02', category: 'Events' },
+  { id: 2, src: '/images/gallery/Meetings/CCF/CCF_Sys.png', alt: 'CCF会议', caption: 'CCF会议', date: '2023.9.30', category: 'Meetings' },
+  { id: 3, src: '/images/gallery/Graduation/2024.6/1.jpg', alt: '毕业合影', caption: '毕业合影', date: '2024.06.10', category: 'Graduation' },
+  { id: 4, src: '/images/gallery/Events/groupbuild/Picnic.jpg', alt: 'Picnic', caption: 'Picnic', date: '2024.08.20', category: 'Team Building' },
+  { id: 5, src: '/images/gallery/Sports/badminton/20241030.jpg', alt: '羽毛球周常', caption: '羽毛球周常', date: '2025.03.10', category: 'Sports' },
+  { id: 6, src: '/images/gallery/Graduation/2024.6/Member-2023-2.jpg', alt: '合照', caption: '合照', date: '2025.01.02', category: 'Lab Life' },
   { id: 7, src: '/images/gallery/placeholder2.jpg', alt: 'Placeholder 2 Again', caption: '小组会议', date: '2024.12.16', category: 'Meetings' },
   // --- 添加更多图片 ---
   { id: 8, src: '/images/gallery/placeholder4.jpg', alt: 'Placeholder 4 Repeat', caption: '户外拓展', date: '2024.09.05', category: 'Team Building' },
@@ -41,6 +41,8 @@ const images: GalleryImage[] = [
   { id: 18, src: '/images/gallery/placeholder4.jpg', alt: 'Placeholder 4 Fifth', caption: '春游', date: '2025.04.05', category: 'Team Building' },
   { id: 19, src: '/images/gallery/placeholder5.jpg', alt: 'Placeholder 5 Fifth', caption: '跑步打卡', date: '2025.07.01', category: 'Sports' },
   { id: 20, src: '/images/gallery/placeholder2.jpg', alt: 'Placeholder 2 Fifth', caption: '周会讨论', date: '2025.03.03', category: 'Meetings' },
+  { id: 21, src: '/images/gallery/placeholder3.jpg', alt: 'Competition 1', caption: '人工智能大赛', date: '2024.08.15', category: 'Competition' },
+  { id: 22, src: '/images/gallery/placeholder1.jpg', alt: 'Competition 2', caption: '黑客马拉松', date: '2024.11.20', category: 'Competition' },
 ];
 
 // 从图片数据中提取唯一的类别
@@ -54,6 +56,7 @@ const categoryEmojis: { [key: string]: string } = {
   'Team Building': '🚀',
   Sports: '🏸',
   'Lab Life': '🔬', // 新类别的 Emoji
+  Competition: '🏆', // 比赛类别的 Emoji
   Default: '🖼️', // 如果类别没有对应图标，使用此默认图标
 };
 
