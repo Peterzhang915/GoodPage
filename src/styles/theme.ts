@@ -53,6 +53,10 @@ export const themeColors = {
   devButtonText: 'text-white',             // 开发者工具中主要按钮的文字颜色
   devButtonDisabledBg: 'bg-gray-700',      // 开发者工具中禁用按钮的背景色
   devButtonDisabledBorder: 'border-gray-600', // 开发者工具中禁用按钮的边框颜色
+  // --- 新增的开发者工具颜色 --- 
+  devHeaderBg: 'bg-gray-700/50',             // 开发者工具表格标题背景
+  devHeaderText: 'text-gray-300',          // 开发者工具表格标题文字
+  devRowHover: 'hover:bg-gray-700/40',     // 开发者工具表格行悬停背景
 
   // --- 新增的背景色：扩展背景选项 ---
   // 这些背景色用于不同场景，提供更多灵活性
