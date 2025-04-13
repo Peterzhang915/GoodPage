@@ -318,9 +318,9 @@ const PhotoGallery: React.FC = () => {
                     {/* 图片信息悬停层 */} 
                     {(image.caption || image.date) && (
                       <div className="absolute inset-0 transition-opacity duration-300 opacity-0 group-hover:opacity-100">
-                        <div className="absolute bottom-2 left-2 bg-black/60 text-white text-left rounded px-3 py-2 max-w-[80%]">
-                          {image.caption && <p className="text-sm font-medium truncate select-none">{image.caption}</p>}
-                          {image.date && <p className="text-xs select-none">{image.date}</p>}
+                        <div className="absolute bottom-0 left-0 right-0 bg-white/85 py-2 px-3 text-left transform translate-y-full group-hover:translate-y-0 transition-transform duration-300 border-t-2 border-blue-500">
+                          {image.caption && <p className="text-xs font-medium text-gray-800 truncate">{image.caption}</p>}
+                          {image.date && <p className="text-xs text-gray-600">{image.date}</p>}
                         </div>
                       </div>
                     )}
