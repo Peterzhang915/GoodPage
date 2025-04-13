@@ -1,112 +1,111 @@
-import { getAllPublications, Publication } from '@/lib/db';
+// src/app/publications/page.tsx
+import React from 'react';
+// 【修改】从正确的文件导入类型和函数
+import { getAllPublicationsFormatted } from '@/lib/publications';
+import type { PublicationInfo, AuthorInfo } from '@/lib/types'; // 导入 PublicationInfo 和 AuthorInfo
 import Link from 'next/link';
-// 恢复之前的图标导入或移除
-import { BookOpen, Link as LinkIcon, FileText, Calendar, Users } from 'lucide-react';
-import { themeColors } from '@/styles/theme';  // Assume this is where we'll import from; create if needed
+import { BookOpen, Link as LinkIcon, FileText, Calendar, Users, Copy } from 'lucide-react';
+import { themeColors } from '@/styles/theme';
 
-// 恢复之前的单个论文条目组件
-function PublicationItem({ pub }: { pub: Publication }) {
-  return (
-    // 恢复之前的样式
-    <li id={`pub-${pub.id}`} className={`mb-8 p-6 ${themeColors.backgroundWhite} rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 ${themeColors.borderLight} scroll-mt-20`}> 
-      <h3 className={`text-lg font-semibold ${themeColors.textColorPrimary} mb-3 leading-tight flex items-start`}>
-        <BookOpen className={`w-5 h-5 mr-2 mt-0.5 ${themeColors.primary} flex-shrink-0`} />
-        <span>{pub.title}</span>
-      </h3>
-      {pub.authors && pub.authors.length > 0 && (
-        <div className={`text-sm ${themeColors.textColorSecondary} mb-2 flex items-center flex-wrap gap-x-1`}>
-          <Users className={`w-4 h-4 mr-1.5 ${themeColors.textColorTertiary} flex-shrink-0`} />
-          {pub.authors.map((author, index) => (
-            <span key={author.id}>
-              <Link href={`/members/${author.id}`} className={`${themeColors.linkColor} hover:underline ${themeColors.linkColor === 'text-blue-600' ? 'hover:text-blue-800' : themeColors.linkColor.replace('text-', 'hover:text-')} transition-colors`}>
-                {author.name_zh}
-              </Link>
-              {index < pub.authors!.length - 1 ? ',' : ''}
-            </span>
-          ))}
-        </div>
-      )}
-      <div className={`text-sm ${themeColors.textColorTertiary} mb-3 flex flex-wrap items-center gap-x-4 gap-y-1`}>
-        {pub.venue && (
-          <span className="flex items-center">
-            <span className="font-medium mr-1">Venue:</span> {pub.venue}
-          </span>
-        )}
-        {pub.year && (
-          <span className="flex items-center">
-            <Calendar className={`w-4 h-4 mr-1 ${themeColors.textColorTertiary} flex-shrink-0`} /> {pub.year}
-          </span>
-        )}
-        {pub.ccf_rank && (
-          <span className={`px-2 py-0.5 rounded-md text-xs font-medium ${pub.ccf_rank === 'A' ? `${themeColors.ccfAText} ${themeColors.ccfABg}` : pub.ccf_rank === 'B' ? `${themeColors.ccfBText} ${themeColors.ccfBBg}` : `${themeColors.ccfCText} ${themeColors.ccfCBg}`}`}>
-            CCF {pub.ccf_rank}
-          </span>
-        )}
-      </div>
-      {pub.abstract && (
-         <details className={`text-sm ${themeColors.textColorTertiary} mt-3 group`}>
-             <summary className={`cursor-pointer ${themeColors.linkColor} ${themeColors.accentColor} hover:underline hover:${themeColors.linkColor.replace('text-', 'hover:text-')} font-medium list-none group-open:mb-2`}>Show Abstract</summary>
-             <p className={`italic ${themeColors.textColorTertiary} border-l-2 ${themeColors.borderLight} pl-3`}>{pub.abstract}</p>
-         </details>
-      )}
-      {pub.keywords && (
-         <div className={`mt-3 text-xs ${themeColors.textColorTertiary}`}>
-             <span className="font-medium mr-1">Keywords:</span> {pub.keywords}
-         </div>
-      )}
-      <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
-        {pub.doi_url && (
-          <a href={`https://doi.org/${pub.doi_url}`} target="_blank" rel="noopener noreferrer" className={`${themeColors.linkColor} hover:underline hover:${themeColors.linkColor.replace('text-', 'hover:text-')} transition-colors font-medium flex items-center`}>
-            <LinkIcon className="w-4 h-4 mr-1" /> DOI
-          </a>
-        )}
-        {pub.pdf_url && (
-          <a href={pub.pdf_url.startsWith('http') ? pub.pdf_url : pub.pdf_url} target="_blank" rel="noopener noreferrer" className={`${themeColors.linkColor} hover:underline hover:${themeColors.linkColor.replace('text-', 'hover:text-')} transition-colors font-medium flex items-center`}>
-            <FileText className="w-4 h-4 mr-1" /> PDF
-          </a>
-        )}
-      </div>
-    </li>
-  );
+// --- 单个论文条目组件 ---
+// 修改: pub 的类型变为 PublicationInfo (来自 types.ts)
+function PublicationItem({ pub }: { pub: PublicationInfo }) {
+    const pdfHref = pub.pdf_url
+        ? pub.pdf_url.startsWith('http') ? pub.pdf_url : `/pdfs/${pub.pdf_url}`
+        : undefined;
+
+    // ... handleCopyBibtex (如果需要作为 Client Component) ...
+
+    return (
+        <li id={`pub-${pub.id}`} className={`mb-6 md:mb-8 p-4 md:p-6 ${themeColors.backgroundWhite ?? 'bg-white'} rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 border ${themeColors.borderLight ?? 'border-gray-200 dark:border-gray-700'} scroll-mt-20`}>
+            <h3 className={`text-base md:text-lg font-semibold ${themeColors.textColorPrimary ?? ''} mb-2 leading-tight flex items-start`}>
+                <BookOpen className={`w-5 h-5 mr-2 mt-0.5 ${themeColors.primary ?? 'text-blue-600'} flex-shrink-0`} />
+                <span className="flex-grow">{pub.title}</span>
+            </h3>
+
+            {pub.authors && pub.authors.length > 0 && (
+                <div className={`text-sm ${themeColors.textColorSecondary ?? ''} mb-2 pl-7 flex items-center flex-wrap gap-x-1.5 gap-y-1`}>
+                    <Users className={`w-4 h-4 mr-1 ${themeColors.textColorTertiary ?? 'text-gray-500'} flex-shrink-0`} />
+                    {/* 【修复 TS7006】: 为 author 和 index 添加显式类型 */}
+                    {pub.authors.map((author: AuthorInfo, index: number) => (
+                        <span key={author.id} className="inline-block">
+                            <Link
+                               href={`/members/${author.id}`}
+                               className={`${themeColors.linkColor ?? 'text-blue-600'} hover:underline transition-colors`}
+                             >
+                                {author.name_zh || author.name_en}
+                            </Link>
+                            {index < pub.authors.length - 1 ? <span className="ml-0.5 mr-0.5">,</span> : ''}
+                        </span>
+                    ))}
+                </div>
+            )}
+
+            {/* ... 其他部分 (Venue, Year, CCF, Abstract, Keywords, Links) 保持不变 ... */}
+            <div className={`text-xs sm:text-sm ${themeColors.textColorTertiary ?? 'text-gray-500'} mb-3 pl-7 flex flex-wrap items-center gap-x-4 gap-y-1`}>
+                {pub.venue && (<span className="flex items-center"><i>{pub.venue}</i></span>)}
+                {pub.year && (<span className="flex items-center"><Calendar className={`w-4 h-4 mr-1 flex-shrink-0`} /> {pub.year}</span>)}
+                {pub.ccf_rank && (<span className={`px-2 py-0.5 rounded-md text-xs font-medium bg-opacity-15 ${ pub.ccf_rank === 'A' ? 'bg-red-500 text-red-700 dark:text-red-400' : pub.ccf_rank === 'B' ? 'bg-blue-500 text-blue-700 dark:text-blue-400' : pub.ccf_rank === 'C' ? 'bg-green-500 text-green-700 dark:text-green-400' : `${themeColors.backgroundDark ?? 'bg-gray-500'} ${themeColors.textColorSecondary ?? 'text-gray-700'}` }`}> CCF {pub.ccf_rank} </span>)}
+                {pub.type && pub.type !== 'CONFERENCE' && pub.type !== 'JOURNAL' && (<span className={`px-2 py-0.5 rounded-md text-xs font-medium bg-opacity-15 ${themeColors.backgroundDark ?? 'bg-gray-500'} ${themeColors.textColorSecondary ?? 'text-gray-700'}`}>{pub.type}</span>)}
+            </div>
+            {pub.abstract && (<details className={`text-sm ${themeColors.textColorSecondary ?? ''} mt-3 group pl-7`}><summary className={`cursor-pointer ${themeColors.linkColor ?? 'text-blue-600'} hover:underline font-medium list-none group-open:mb-2 text-xs sm:text-sm`}>Show Abstract</summary><p className={`italic ${themeColors.textColorTertiary ?? 'text-gray-600'} border-l-2 ${themeColors.borderLight ?? 'border-gray-300'} pl-3 text-xs sm:text-sm leading-relaxed`}>{pub.abstract}</p></details>)}
+            {pub.keywords && (<div className={`mt-3 text-xs sm:text-sm ${themeColors.textColorTertiary ?? 'text-gray-500'} pl-7`}><span className="font-semibold mr-1">Keywords:</span> {pub.keywords}</div>)}
+            {(pub.doi_url || pdfHref || pub.slides_url || pub.video_url || pub.code_repository_url || pub.project_page_url || pub.bibtex) && (
+                <div className="mt-4 pl-7 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
+                    {pub.doi_url && (<a href={`https://doi.org/${pub.doi_url}`} target="_blank" rel="noopener noreferrer" className={`${themeColors.linkColor ?? 'text-blue-600'} hover:underline transition-colors font-medium flex items-center`}><LinkIcon className="w-4 h-4 mr-1" /> DOI</a>)}
+                    {pdfHref && pdfHref !== '#' && (<a href={pdfHref} target="_blank" rel="noopener noreferrer" className={`${themeColors.primary ?? 'text-red-600'} hover:underline transition-colors font-medium flex items-center`}><FileText className="w-4 h-4 mr-1" /> PDF</a>)}
+                    {/* 其他链接占位符 */}
+                </div>
+             )}
+        </li>
+    );
 }
 
-// 恢复为服务器端组件
+// --- 主页面组件 (Server Component) ---
 export default async function PublicationsPage() {
-  const publications = await getAllPublications();
+  // 调用正确的函数
+  let publications: PublicationInfo[] = [];
+  let error: string | null = null;
 
-  // 恢复之前的按年份分组逻辑
-  const groupedPublications: Record<string, Publication[]> = {};
+  try {
+      publications = await getAllPublicationsFormatted();
+  } catch (err) {
+      console.error("Failed to load publications:", err);
+      error = err instanceof Error ? err.message : "无法加载出版物列表";
+  }
+
+  // 按年份分组逻辑 (使用 PublicationInfo 类型)
+  const groupedPublications: Record<string, PublicationInfo[]> = {};
   publications.forEach(pub => {
     const year = pub.year.toString();
-    if (!groupedPublications[year]) {
-      groupedPublications[year] = [];
-    }
+    if (!groupedPublications[year]) groupedPublications[year] = [];
     groupedPublications[year].push(pub);
   });
-
-  const sortedYears = Object.keys(groupedPublications).sort((a, b) => parseInt(b) - parseInt(a)); // 年份降序
+  const sortedYears = Object.keys(groupedPublications).sort((a, b) => parseInt(b) - parseInt(a));
 
   return (
-    <div className="container mx-auto px-4 py-12">
-      <h1 className={`text-4xl font-bold text-center ${themeColors.textColorPrimary} mb-16`}>Publications</h1>
-      
-      {/* 移除搜索和排序控件 */} 
+    <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16">
+      <h1 className={`text-3xl sm:text-4xl font-bold text-center ${themeColors.textColorPrimary ?? ''} mb-12 md:mb-16`}>Publications</h1>
 
-      {publications.length > 0 ? (
+      {/* 错误处理 */}
+      {error && (<p className={`text-center text-red-600 dark:text-red-400 ${themeColors.footerBackground ?? 'bg-red-50'} p-4 rounded-lg`}>Error: {error}</p>)}
+
+      {/* 主内容区域 */}
+      {!error && publications.length > 0 ? (
         sortedYears.map(year => (
-          <section key={year} className="mb-16">
-            {/* 恢复之前的年份标题样式 */}
-            <h2 className={`text-2xl font-semibold ${themeColors.textColorPrimary} border-b ${themeColors.footerBorder} pb-3 mb-8 flex items-center gap-3`}>{year}</h2>
+          <section key={year} className="mb-12 md:mb-16">
+            <h2 id={`year-${year}`} className={`text-2xl sm:text-3xl font-semibold ${themeColors.textColorPrimary ?? ''} border-b ${themeColors.footerBorder ?? 'border-gray-300'} pb-3 mb-8 scroll-mt-20`}>{year}</h2>
             <ul className="list-none p-0">
               {groupedPublications[year].map((pub) => (
-                <PublicationItem key={pub.id} pub={pub} />
+                // 传递 PublicationInfo 类型的 pub
+                <PublicationItem key={pub.id ?? pub.doi_url ?? pub.title} pub={pub} />
               ))}
             </ul>
           </section>
         ))
       ) : (
-        <p className={`text-center ${themeColors.textColorTertiary} text-lg`}>No publications found.</p>
+        !error && <p className={`text-center ${themeColors.textColorTertiary ?? 'text-gray-500'} text-lg mt-8`}>No publications found.</p>
       )}
     </div>
   );
-} 
+}

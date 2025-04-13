@@ -1,48 +1,15 @@
-"use client"; // 转换为客户端组件
-
-import React, { useState, useEffect } from 'react'; // 显式导入 React
-// 移除直接导入数据库函数，改为从 API 获取
-// import { getAllMembers, Member, calculateMemberGradeStatus } from '@/lib/db'; 
-import { MemberCard } from '@/components/MemberCard';
+// src/app/members/page.tsx
+import React from 'react';
+// 修改: 导入新的数据获取函数和类型
+import { getAllMembersGrouped } from '@/lib/members'; // 从 members.ts 导入
+import type { MemberForCard } from '@/lib/types';     // 从 types.ts 导入
+import { MemberList } from '@/components/MemberList';  // 导入新的客户端组件
 import { themeColors } from '@/styles/theme';
+import { AlertTriangle } from 'lucide-react';         // 用于错误显示
 
-// 定义成员类型，包含显示状态 (需要与 API 返回的类型一致)
-interface Member {
-  id: string;
-  name_en: string | null;
-  name_zh: string;
-  title_zh: string | null;
-  title_en: string | null;
-  status: string;
-  enrollment_year: number;
-  bio_zh: string | null;
-  bio_en: string | null;
-  avatar_url: string | null;
-  email: string | null;
-  research_interests: string | null;
-  favorite_emojis: string | null; // 确保与 Member 类型一致
-  github_url: string | null;  // Added to match expected type
-  blog_url: string | null;     // Added to match expected type
-  linkedin_url: string | null; // Added to match expected type
-}
-interface MemberWithDisplayStatus extends Member {
-  displayStatus: string;
-}
-
-// 定义分组的顺序和标题
-const statusOrder: Record<string, number> = {
-  '教师': 1,
-  '博士后': 2,
-  '博士生': 3,
-  '硕士生': 4,
-  '本科生': 5,
-  '访问学者': 6,
-  '校友': 7,
-};
-
-// 恢复美化后的英文标题
+// 定义分组标题 (保持不变)
 const statusTitles: Record<string, string> = {
-  '教师': 'Head of Lab', 
+  '教师': 'Head of Lab',
   '博士后': 'Postdoctoral Researchers',
   '博士生': 'PhD Students',
   '硕士生': 'Master Students',
@@ -52,111 +19,52 @@ const statusTitles: Record<string, string> = {
   '其他': 'Other Members',
 };
 
-export default function MembersPage() {
-  const [members, setMembers] = useState<MemberWithDisplayStatus[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [isEmojiEnabled, setIsEmojiEnabled] = useState(false);
 
-  useEffect(() => {
-    async function loadMembersFromApi() {
-      setIsLoading(true);
-      setError(null);
-      try {
-        const response = await fetch('/api/members');
-        if (!response.ok) {
-          let errorData;
-          try {
-            errorData = await response.json();
-          } catch (parseError) {
-            throw new Error(`API request failed with status ${response.status}: ${response.statusText}`);
-          }
-          throw new Error(errorData.message || `API request failed with status ${response.status}`);
-        }
-        const data: MemberWithDisplayStatus[] = await response.json();
-        setMembers(data);
-      } catch (err) {
-        console.error("Failed to load members from API:", err);
-        setError(err instanceof Error ? err.message : '加载成员信息失败');
-      } finally {
-        setIsLoading(false);
-      }
-    }
-    loadMembersFromApi();
-  }, []);
+// 修改: 组件变为 async 函数
+export default async function MembersPage() {
+  let groupedMembers: Record<string, MemberForCard[]> = {};
+  let error: string | null = null;
 
-  // 恢复美化后的分组渲染方式
-  const renderGroupedSections = () => {
-    const grouped: Record<string, MemberWithDisplayStatus[]> = {};
-    members.forEach(member => {
-      const groupKey = member.status || '其他';
-      if (!grouped[groupKey]) {
-        grouped[groupKey] = [];
-      }
-      grouped[groupKey].push(member);
-    });
-  
-    const sortedGroupKeys = Object.keys(grouped).sort((a, b) => {
-      const orderA = statusOrder[a] || 99;
-      const orderB = statusOrder[b] || 99;
-      return orderA - orderB;
-    });
-  
-    return sortedGroupKeys.map(groupKey => {
-      // 先对组内成员按 enrollment_year 降序排序
-      const sortedMembers = [...grouped[groupKey]].sort((a, b) => a.enrollment_year - b.enrollment_year);
-      
-      return (
-        <section key={groupKey} className="mb-16"> 
-          <h2 className={`text-2xl font-semibold ${themeColors.textColorPrimary} border-b ${themeColors.footerBorder} pb-3 mb-8 flex items-center gap-3`}>
-            {groupKey === '教师' && <span className="text-2xl"></span>}
-            {groupKey === '博士后' && <span className="text-2xl"></span>}
-            {groupKey === '博士生' && <span className="text-2xl"></span>}
-            {groupKey === '硕士生' && <span className="text-2xl"></span>}
-            {groupKey === '本科生' && <span className="text-2xl"></span>}
-            {groupKey === '访问学者' && <span className="text-2xl"></span>}
-            {groupKey === '校友' && <span className="text-2xl"></span>}
-            {statusTitles[groupKey] || 'Other Members'} 
-          </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-x-6 gap-y-8"> 
-            {sortedMembers.map((member) => (
-              <MemberCard key={member.id} member={member} isEmojiEnabled={isEmojiEnabled} />
-            ))}
-          </div>
-        </section>
-      );
-    });
-  };
-  
+  // 直接在服务器组件中获取数据
+  try {
+    groupedMembers = await getAllMembersGrouped();
+  } catch (err) {
+    console.error("Failed to load members data:", err);
+    error = err instanceof Error ? err.message : '加载成员信息失败';
+  }
 
-
+  // 页面骨架渲染
   return (
-    <div className="container mx-auto px-4 py-12">
-      <h1 className={`text-4xl font-bold text-center ${themeColors.textColorPrimary} mb-16`}>Meet the Team</h1>
+    // 容器样式微调
+    <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16">
+      {/* 页面大标题 */}
+      <h1 className={`text-3xl sm:text-4xl font-bold text-center ${themeColors.textColorPrimary ?? ''} mb-12 md:mb-16`}>Meet the Team</h1>
 
-      {isLoading ? (
-        <p className={`text-center ${themeColors.textColorTertiary} text-lg`}>Loading members...</p>
-      ) : error ? (
-        <p className={`text-center ${themeColors.accentColor} ${themeColors.footerBackground} p-4 rounded-lg`}>Error: {error}</p>
-      ) : members.length > 0 ? (
-         renderGroupedSections()
+      {/* 错误处理显示 */}
+      {error && (
+         <div className={`flex items-center justify-center space-x-2 text-red-600 dark:text-red-400 ${themeColors.footerBackground ?? 'bg-red-50'} p-4 rounded-lg mb-8`}>
+              <AlertTriangle className="h-5 w-5" />
+              <span>Error loading members: {error}</span>
+           </div>
+      )}
+
+      {/* 条件渲染客户端组件或提示信息 */}
+      {!error && Object.keys(groupedMembers).length > 0 ? (
+        // 渲染客户端组件，传入获取到的数据和标题映射
+        <MemberList groupedMembers={groupedMembers} statusTitles={statusTitles} />
       ) : (
-        <p className={`text-center ${themeColors.textColorTertiary} text-lg`}>No members found.</p>
+        // 如果没有错误但也没有数据
+        !error && <p className={`text-center ${themeColors.textColorTertiary ?? 'text-gray-500'} text-lg mt-8`}>No members found.</p>
       )}
 
-      {/* 优化 Emoji 按钮位置和添加呼吸动画 */}
-      {!isLoading && !error && members.length > 0 && (
-        <div className="mt-24 text-center mx-auto w-full flex justify-center">
-          <button
-            onClick={() => setIsEmojiEnabled(!isEmojiEnabled)}
-            title={isEmojiEnabled ? 'Disable Fun Emojis' : 'Enable Fun Emojis'}
-            className={`w-12 h-12 rounded-full shadow-md hover:shadow-lg flex items-center justify-center transition-shadow duration-200 select-none animate-[breathe-scale_2s_infinite] ${isEmojiEnabled ? `${themeColors.footerBackground} hover:${themeColors.accentColor}` : `${themeColors.footerBackground} hover:${themeColors.textColorSecondary}`}`}
-            aria-label="Toggle Emojis"
-          >
-            <span className="text-2xl select-none">{isEmojiEnabled ? '🎉' : '✨'}</span>
-          </button>
-        </div>
-      )}
+      {/* 注意：Emoji 按钮现在移到了 MemberList 客户端组件中 */}
     </div>
   );
-} 
+}
+
+// 可选: 添加 loading.tsx 和 error.tsx 文件来处理加载和错误状态的 UI
+// 例如，在 app/members/ 目录下创建 loading.tsx:
+// export default function Loading() { return <p>Loading members...</p>; }
+// 在 app/members/ 目录下创建 error.tsx:
+// "use client"; export default function Error({ error }: { error: Error }) { return <p>Error loading members: {error.message}</p>; }
+// 如果使用了这两个文件，可以简化 MembersPage 中的 isLoading 和 error 处理逻辑。

@@ -329,3 +329,52 @@ model PublicationAuthor {
   @@unique([publication_id, author_order]) // 唯一约束: 同一篇论文，一个顺序只有一个作者
   @@index([member_id])                  // 索引: 加速按作者查找论文
 }
+
+// 照片标签模型 (用于管理所有标签)
+model PhotoTag {
+  id     Int      @id @default(autoincrement()) // 标签的唯一自增 ID
+  name   String   @unique // 标签名称 (例如 "团建", "会议", "实验室日常", "2024级"), 必须唯一
+
+  // 关系字段: 指向使用此标签的所有照片记录 (通过 LabPhotoTag 连接)
+  photos LabPhotoTag[]
+}
+
+// 实验室照片模型 - 【修改】移除了上传者关联
+model LabPhoto {
+  id             Int      @id @default(autoincrement()) // 照片记录的唯一自增 ID
+  url            String   // 照片文件的 URL 或存储路径 (必填)
+  description    String?  // 照片的描述或说明文字 (可选)
+  alt_text       String?  // 图像的替代文本 (用于 SEO 和无障碍访问) (可选)
+  location       String?  // 拍摄地点 (可选)
+  taken_at       DateTime? // 照片实际拍摄日期和时间 (可选)
+  is_featured    Boolean  @default(false) // 是否为特色照片 (例如用于首页展示)
+  display_order  Int      @default(0)     // 自定义显示顺序 (可选)
+  createdAt      DateTime @default(now()) // 照片记录创建时间 (自动)
+  updatedAt      DateTime @updatedAt      // 照片记录更新时间 (自动)
+
+  // --- 移除了以下字段 ---
+  // uploader    Member?  @relation(fields: [uploader_id], references: [id], onDelete: SetNull)
+  // uploader_id String?
+  // --- 移除了 uploader_id 索引 ---
+  // @@index([uploader_id])
+
+  // 关系字段: 指向该照片拥有的所有标签记录 (通过 LabPhotoTag 连接)
+  tags           LabPhotoTag[]
+
+  // 为其他可能常用的查询字段添加索引
+  @@index([taken_at])    // 如果经常按拍摄时间排序或查询
+  @@index([is_featured]) // 如果经常查询特色照片
+}
+
+// 照片-标签关系模型 (连接表) - (保持不变)
+model LabPhotoTag {
+  photo    LabPhoto @relation(fields: [photo_id], references: [id], onDelete: Cascade)
+  photo_id Int
+  tag      PhotoTag @relation(fields: [tag_id], references: [id], onDelete: Cascade)
+  tag_id   Int
+
+  assignedAt DateTime @default(now())
+
+  @@id([photo_id, tag_id])
+  @@index([tag_id])
+}
