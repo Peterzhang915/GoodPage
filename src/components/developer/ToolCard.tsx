@@ -14,7 +14,7 @@ interface ToolCardProps {
   description: string; // 卡片描述
   buttonText: string; // 按钮或链接的文本
   icon?: React.ReactNode; // 可选的按钮/链接图标
-  onButtonClick: () => void; // 按钮点击时的回调函数（内部操作）
+  onButtonClick?: () => void; // 按钮点击时的回调函数（内部操作） - 改为可选
   disabled?: boolean; // 是否禁用按钮（默认为 false），现在也用于控制内容的显示
   externalLink?: string; // 可选的外部链接地址，如果提供，则渲染为 <a> 标签
   delay?: number; // 卡片动画的延迟时间（秒，默认为 0）

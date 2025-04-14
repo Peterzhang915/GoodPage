@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { Lock, Unlock, AlertTriangle, ExternalLink, Terminal, Save, Upload, History, Loader2, X, Edit, ArrowLeft, Server, Wrench, Key, BookUp, FileText as LogIcon } from 'lucide-react';
+import { Lock, Unlock, AlertTriangle, ExternalLink, Terminal, Save, Upload, History, Loader2, X, Edit, ArrowLeft, Server, Wrench, Key, BookUp, FileText as LogIcon, Database } from 'lucide-react';
 import { themeColors } from '@/styles/theme';
 import Typewriter from '@/components/Typewriter';
 
@@ -236,28 +236,6 @@ const DeveloperPage: React.FC = () => {
             delay={0.2}
           />
 
-          {/* Tool: Add Photo (Placeholder) */}
-          <ToolCard
-            title="Add New Photo"
-            description="Quickly upload and add a new photo to the gallery."
-            buttonText="Upload Photo"
-            icon={<Upload size={16} className="mr-2"/>}
-            onButtonClick={() => setActiveTool('photo')}
-            disabled={!grantedPermissions?.includes('manage_photos')}
-            delay={0.3}
-          />
-
-          {/* Tool: Add Member (Placeholder) */}
-          <ToolCard
-            title="Add New Member"
-            description="Add information for a new lab member."
-            buttonText="Add Member"
-            icon={<Unlock size={16} className="mr-2"/>}
-            onButtonClick={() => setActiveTool('member')}
-            disabled={!grantedPermissions?.includes('manage_members')}
-            delay={0.4}
-          />
-
           {/* Tool: Operations Tools */}
           <ToolCard
             title="Operations Tools"
@@ -280,14 +258,14 @@ const DeveloperPage: React.FC = () => {
             delay={0.6}
           />
 
-          {/* Tool: Manage Publications */}
+          {/* Tool: Database Management (Prisma Studio) */}
           <ToolCard
-            title="Manage Publications"
-            description="Upload BibTeX file or manually add/edit publication entries."
-            buttonText="Manage Publications"
-            icon={<BookUp size={16} className="mr-2" />}
-            onButtonClick={() => setActiveTool('publication')}
-            disabled={!grantedPermissions?.includes('manage_publications')}
+            title="Database Management"
+            description="Open the running Prisma Studio instance directly in your browser to manage the database."
+            buttonText="Open Prisma Studio"
+            icon={<Database size={16} className="mr-2" />}
+            onButtonClick={() => window.open('http://localhost:5555', '_blank')}
+            disabled={!isFullAccess} 
             delay={0.7}
           />
 
@@ -317,12 +295,9 @@ const DeveloperPage: React.FC = () => {
           </button>
 
           {activeTool === 'news' && <NewsEditor onClose={handleCloseTool} />}
-          {activeTool === 'photo' && <PhotoManager onClose={handleCloseTool} />}
-          {activeTool === 'member' && <MemberManager onClose={handleCloseTool} />}
           {activeTool === 'codeserver' && <CodeServerManager onClose={handleCloseTool} />}
           {activeTool === 'ops' && <OpsManager onClose={handleCloseTool} />}
           {activeTool === 'keyGenerator' && <KeyGenerator onClose={handleCloseTool} />}
-          {activeTool === 'publication' && <PublicationManager onClose={handleCloseTool} />}
           {activeTool === 'logs' && (
             <div className={`p-6 rounded-lg border ${themeColors.devBorder} ${themeColors.devCardBg} shadow-md`}>
               <h3 className={`text-lg font-semibold mb-4 ${themeColors.devTitleText}`}>System Logs</h3>
