@@ -4,7 +4,10 @@ import React from 'react';
 import { motion } from 'framer-motion'; // Import motion
 // import { themeColors } from '@/styles/theme'; // 如果需要主题颜色，取消注释
 
-// Animation Variants
+/**
+ * Framer Motion variants for the container element.
+ * Controls the overall opacity and staggering of children animations.
+ */
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: {
@@ -16,6 +19,10 @@ const containerVariants = {
   }
 };
 
+/**
+ * Framer Motion variants for individual items within the HeroSection.
+ * Controls opacity and vertical slide-in animation.
+ */
 const itemVariants = {
   hidden: { opacity: 0, y: 20 },
   visible: {
@@ -28,6 +35,16 @@ const itemVariants = {
   }
 };
 
+/**
+ * HeroSection Component
+ * 
+ * Displays the main introductory banner at the top of the homepage.
+ * Includes the lab's full name, its name in Chinese, a short motto,
+ * and uses Framer Motion for entrance animations.
+ * 
+ * This component is specifically styled and hardcoded for the homepage.
+ * It uses a gradient background with a subtle grid pattern.
+ */
 const HeroSection: React.FC = () => {
   return (
     // 最外层容器: 相对定位，全宽，响应式垂直内边距，隐藏溢出

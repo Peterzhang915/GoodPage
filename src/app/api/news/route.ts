@@ -24,47 +24,51 @@
       news: string[];
     }
 
-    // --- GET Handler (Modified for new data structure) ---
+    // --- GET Handler (Modified for new data structure and standard response) ---
     export async function GET() {
       try {
         const jsonData = await fs.promises.readFile(NEWS_FILE_PATH, 'utf-8');
         try {
-          // Try parsing the new object format first
           const data = JSON.parse(jsonData);
           if (typeof data === 'object' && data !== null && Array.isArray(data.news) && typeof data.title === 'string') {
-            // Validate basic structure
             if (data.news.every((item: unknown) => typeof item === 'string')) {
-              return NextResponse.json(data, { status: 200 });
+              // Standard success response
+              return NextResponse.json({ success: true, data: data }, { status: 200 });
             } else {
                console.warn('Invalid news array items in news.json, returning default.');
-               return NextResponse.json(defaultNews, { status: 200 });
+               // Standard success response with default data
+               return NextResponse.json({ success: true, data: defaultNews }, { status: 200 });
             }
           } else {
-             // If not the new object format, try parsing as old string array format
              if (Array.isArray(data) && data.every(item => typeof item === 'string')) {
                 console.log('Found legacy news format (string array), wrapping with default title.');
-                return NextResponse.json({ title: "(Untitled Legacy News)", news: data }, { status: 200 });
+                // Standard success response wrapping legacy data
+                return NextResponse.json({ success: true, data: { title: "(Untitled Legacy News)", news: data } }, { status: 200 });
              } else {
                  console.warn('Invalid data format in news.json (neither object nor string array), returning default.');
-                return NextResponse.json(defaultNews, { status: 200 });
+                 // Standard success response with default data
+                return NextResponse.json({ success: true, data: defaultNews }, { status: 200 });
              }
           }
         } catch (parseError) {
           console.error('Error parsing news.json:', parseError);
-          return NextResponse.json(defaultNews, { status: 500, statusText: 'Failed to parse news data' });
+          // Standard error response
+          return NextResponse.json({ success: false, error: { code: 'PARSE_ERROR', message: 'Failed to parse news data' } }, { status: 500 });
         }
       } catch (error) {
         if (error instanceof Error && 'code' in error && error.code === 'ENOENT') {
           console.log('news.json not found, returning default news.');
-          return NextResponse.json(defaultNews, { status: 200 });
+          // Standard success response with default data (treating not found as default success)
+          return NextResponse.json({ success: true, data: defaultNews }, { status: 200 });
         } else {
           console.error('API GET /api/news Error reading file:', error);
-          return NextResponse.json(defaultNews, { status: 500, statusText: 'Failed to read news data' });
+          // Standard error response
+          return NextResponse.json({ success: false, error: { code: 'READ_ERROR', message: 'Failed to read news data' } }, { status: 500 });
         }
       }
     }
 
-    // --- POST Handler (Modified for new data structure and history) ---
+    // --- POST Handler (Modified for new data structure, history, and standard response) ---
     export async function POST(req: Request) {
       try {
         // 1. Parse and validate the incoming request body
@@ -81,7 +85,8 @@
           }
           newNewsData = rawData;
         } catch (parseError) {
-          return NextResponse.json({ error: 'Invalid JSON or data format in request body.' }, { status: 400 });
+          // Standard error response for invalid input
+          return NextResponse.json({ success: false, error: { code: 'INVALID_INPUT', message: 'Invalid JSON or data format in request body.' } }, { status: 400 });
         }
 
         // 2. Read current news data (to be saved as history)
@@ -158,7 +163,8 @@
 
           } catch (histUpdateError) {
             console.error('Error updating news history:', histUpdateError);
-            // Log error but don't block saving the main news file
+            // Log error but don't block saving the main news file - consider if this should return an error?
+            // For now, proceeding as before.
           }
         } else {
           console.log('New news data is identical to current version. Skipping history update.');
@@ -169,13 +175,14 @@
         await fs.promises.writeFile(NEWS_FILE_PATH, jsonToWrite, 'utf-8');
         console.log('News data updated successfully.');
 
-        // 5. Return the newly saved data
-        return NextResponse.json(newNewsData, { status: 200 });
+        // 5. Return the newly saved data in standard success format
+        return NextResponse.json({ success: true, data: newNewsData }, { status: 200 });
 
       } catch (error) {
         // Catch unexpected errors during the process
         console.error('Unexpected API POST /api/news Error:', error);
-        return NextResponse.json({ error: 'Failed to update news data due to an internal error.' }, { status: 500 });
+        // Standard error response for internal error
+        return NextResponse.json({ success: false, error: { code: 'INTERNAL_SERVER_ERROR', message: 'Failed to update news data due to an internal error.' } }, { status: 500 });
       }
     }
 

@@ -1,16 +1,28 @@
 "use client";
 
 import React from 'react';
-import { motion, MotionProps } from 'framer-motion';
+import { motion, MotionProps, Transition } from 'framer-motion';
 
-interface ContentSectionProps extends MotionProps {
+/**
+ * Type definition for the props of the ContentSection component.
+ * Extends Framer Motion's MotionProps to allow passing animation properties.
+ */
+type ContentSectionProps = Omit<MotionProps, 'children'> & { // Omit original children to avoid conflict
+  /** The unique ID for the section element, used for navigation. */
   id: string;
+  /** The title text displayed at the top of the section. */
   title: string;
+  /** The content to be rendered within the section. */
   children: React.ReactNode;
-  // 可以添加更多自定义样式的 props，例如标题样式、边距等
+  /** Optional additional CSS classes to apply to the section container. Defaults to 'mb-16'. */
   className?: string;
+  /** Optional additional CSS classes to apply to the title (h2) element. */
   titleClassName?: string;
-}
+  // Animation props are implicitly included via MotionProps
+  // We don't need to redefine initial, whileInView, viewport, transition here
+  // unless we want to make their types more specific or required.
+  // Defaults are handled in the component implementation.
+};
 
 const ContentSection: React.FC<ContentSectionProps> = ({
   id,
