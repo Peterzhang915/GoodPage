@@ -1,5 +1,12 @@
 [
   {
+    "timestamp": "2025-04-14T14:17:55.256Z",
+    "title": "4.12",
+    "news": [
+      "We update the homepage of GoodLAB."
+    ]
+  },
+  {
     "timestamp": "2025-04-12T07:23:41.728Z",
     "title": "News",
     "news": [
@@ -66,13 +73,6 @@
     "timestamp": "2025-04-12T04:18:14.761Z",
     "news": [
       "111"
-    ]
-  },
-  {
-    "timestamp": "2025-04-12T04:08:16.392Z",
-    "news": [
-      "We always look for self-motivated under/graduate students who are ready to take on ambitious challenges to join my research group (with financial support).",
-      "News: We have won the First Prize of Provincial Technology Advancement Award, the only ONE in Computer Science in 2024."
     ]
   }
 ]

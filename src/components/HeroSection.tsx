@@ -1,7 +1,32 @@
 "use client"; // 声明这是一个客户端组件
 
 import React from 'react';
+import { motion } from 'framer-motion'; // Import motion
 // import { themeColors } from '@/styles/theme'; // 如果需要主题颜色，取消注释
+
+// Animation Variants
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.15, // Stagger delay between children
+      delayChildren: 0.1   // Optional delay before starting the first child
+    }
+  }
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { 
+      duration: 0.6, 
+      ease: 'easeOut' 
+    }
+  }
+};
 
 const HeroSection: React.FC = () => {
   return (
@@ -16,51 +41,44 @@ const HeroSection: React.FC = () => {
 
       {/* 内容容器: 相对定位，限制最大宽度并居中，响应式内边距 */}
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        {/* 文本居中容器: 应用整体的 hover 效果 */}
-        <div className="text-center group transform transition-transform duration-700 ease-out hover:scale-[1.02]"> {/* 将 hover 效果移至父级 */}
-
-          {/* 主标题: 响应式字体大小 (增加 lg/xl 断点)，Serif 字体，加粗，字母间距，颜色，下外边距 */}
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-serif font-bold tracking-tight text-slate-100 mb-4 sm:mb-6">
-          {/* 响应式调整: text-xl -> text-2xl, md:text-4xl -> lg:text-4xl, xl:text-5xl */}
+        {/* Animated container for staggering */} 
+        <motion.div 
+          className="text-center group transition-transform duration-700 ease-out hover:scale-[1.02] sm:hover:scale-100"
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible" // Trigger animation on load
+        >
+          {/* Animated Main Title */}
+          <motion.h1 
+            variants={itemVariants} 
+            className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-serif font-bold tracking-tight text-slate-100 mb-4 sm:mb-6"
+          >
             Generic Operational and Optimal Data Lab
-          </h1>
+          </motion.h1>
 
-          {/* 副标题: 响应式字体大小，Serif 字体，行高，颜色，下外边距 */}
-          <h2 className="text-xl sm:text-2xl lg:text-3xl xl:text-4xl font-serif leading-snug sm:leading-normal text-slate-200 mb-6 sm:mb-8">
-          {/* 响应式调整: text-lg -> text-xl, md:text-3xl -> lg:text-3xl, xl:text-4xl. 调整行高 */}
+          {/* Animated Subtitle */}
+          <motion.h2 
+            variants={itemVariants}
+            className="text-xl sm:text-2xl lg:text-3xl xl:text-4xl font-serif leading-snug sm:leading-normal text-slate-200 mb-6 sm:mb-8"
+          >
             泛在数据分析与优化实验室
-          </h2>
+          </motion.h2>
 
-          {/* 装饰性分隔线: 高度，背景色，居中，下外边距，圆角，响应式初始宽度，响应式动画 */}
-          <div
-            className="h-1 bg-slate-400 mx-auto mb-6 sm:mb-8 rounded-full w-[50px] sm:w-[80px] animate-[length-mobile] sm:animate-[length-desktop]"
-            // 修改: 初始宽度 w-[60px] -> w-[50px] 以匹配动画
-            // 修改: 应用响应式动画名称
+          {/* Animated Divider */}
+          <motion.div
+            variants={itemVariants}
+            className="h-1 bg-slate-400 mx-auto mb-6 sm:mb-8 rounded-full w-[50px] sm:w-[80px] transition-[width] duration-400 ease-in-out sm:group-hover:w-[160px]"
           />
-          {/* 定义响应式动画关键帧 */}
-          <style jsx global>{`
-            /* 小屏幕动画 */
-            @keyframes length-mobile {
-              0% { width: 50px; }   /* 匹配 w-[50px] */
-              50% { width: 100px; } /* 适度扩展 */
-              100% { width: 50px; }
-            }
-            /* 大屏幕动画 (sm 及以上) */
-            @keyframes length-desktop {
-              0% { width: 80px; }   /* 匹配 sm:w-[80px] */
-              50% { width: 160px; } /* 更大范围扩展 */
-              100% { width: 80px; }
-            }
-            /* 旧的 @media 查询方式不再需要，因为动画切换由 Tailwind 类控制 */
-          `}</style>
 
-          {/* 简短描述: 响应式字体大小，颜色 */}
-          <p className="text-sm sm:text-base lg:text-lg text-slate-300 max-w-3xl mx-auto">
-          {/* 响应式调整: 增加 lg:text-lg. 添加 max-w-3xl mx-auto 限制段落宽度使其更易读 */}
+          {/* Animated Description */}
+          <motion.p 
+            variants={itemVariants}
+            className="text-sm sm:text-base lg:text-lg text-slate-300 max-w-3xl mx-auto"
+          >
             Advancing the frontiers of data analysis and optimization through innovative research
-          </p>
+          </motion.p>
 
-        </div>
+        </motion.div>
       </div>
     </div>
   );

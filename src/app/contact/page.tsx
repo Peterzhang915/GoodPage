@@ -3,7 +3,7 @@
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Mail, Phone, MapPin, Building2, School, ChevronDown, ChevronUp, Map as MapIcon, ExternalLink } from 'lucide-react'; // 导入图标
+import { Mail, Phone, MapPin, Building2, School, ChevronDown, ChevronUp, ExternalLink } from 'lucide-react'; // 导入图标
 import { themeColors } from '@/styles/theme';
 
 // 定义动画变体
@@ -28,13 +28,27 @@ const itemVariants = {
 };
 
 const expandingSectionVariants = {
-  hidden: { opacity: 0, height: 0, marginTop: 0, marginBottom: 0, overflow: 'hidden' },
+  hidden: { 
+    opacity: 0, 
+    height: 0, 
+    marginTop: 0, 
+    marginBottom: 0, 
+    overflow: 'hidden', 
+    clipPath: 'inset(0 0 100% 0)', // Start clipped from bottom
+  },
   visible: {
     opacity: 1,
     height: 'auto',
-    marginTop: '0.5rem', // 减小展开时的上边距
+    marginTop: '0.5rem',
+    marginBottom: '1rem', // Add some bottom margin when expanded
     overflow: 'visible',
-    transition: { duration: 0.3, ease: "easeInOut" }
+    clipPath: 'inset(0 0 0% 0)', // Fully revealed
+    transition: { 
+      duration: 0.4, // Slightly longer duration for combined effect
+      ease: "easeInOut",
+      // Ensure opacity/height/clipPath animate together
+      when: "beforeChildren"
+    }
   },
   exit: {
     opacity: 0,
@@ -42,19 +56,22 @@ const expandingSectionVariants = {
     marginTop: 0,
     marginBottom: 0,
     overflow: 'hidden',
-    transition: { duration: 0.3, ease: "easeInOut" }
+    clipPath: 'inset(0 0 100% 0)', // Clip back on exit
+    transition: { 
+      duration: 0.3, 
+      ease: "easeInOut" 
+    }
   }
 };
 
 const ContactPage: React.FC = () => {
   const [isFormExpanded, setIsFormExpanded] = useState(false);
-  const [isMapExpanded, setIsMapExpanded] = useState(false);
   const [isAddressHovered, setIsAddressHovered] = useState(false); // 新增: 地址悬停状态
 
   return (
     <div className={`px-4 py-12 ${themeColors.textColorPrimary}`}>
       <motion.h1 
-        className={`text-4xl font-bold mb-16 text-center`}
+        className={`text-4xl font-bold mb-12 text-center`}
         initial={{ opacity: 0, y: -30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, ease: "easeOut" }}
@@ -68,100 +85,111 @@ const ContactPage: React.FC = () => {
         initial="hidden"
         animate="visible"
       >
-        <motion.div variants={itemVariants} className="mb-8"> {/* 分块 1: 实验室名称 */}
+        <motion.div variants={itemVariants} className="mb-8"> 
           <h3 className={`text-2xl font-semibold mb-2 ${themeColors.textColorPrimary}`}> 
             Generic Operational and Optimal Data Lab
         </h3>
           <p className="text-xl text-gray-600">泛在数据分析与优化实验室</p>
         </motion.div>
 
-        <motion.div variants={itemVariants} className="space-y-5 mb-8"> {/* 分块 2: 地址信息 */}
-          <div className="flex items-start gap-4">
-            <School size={20} className={`mt-1 ${themeColors.textColorSecondary}`} />
-            <div>
-              {/* 学校链接 */}
-              <motion.a 
-                href="https://smcs.ncu.edu.cn/" 
-                target="_blank" 
-                rel="noopener noreferrer" 
-                className={`inline-flex items-center gap-1 ${themeColors.textColorPrimary} hover:${themeColors.ccfAText} transition-colors group`}
-                whileHover={{ y: -1 }}
-              >
-                School of Information Engineering
-                <ExternalLink size={14} className="opacity-50 group-hover:opacity-100 transition-opacity"/>
-              </motion.a>
-              {/* 部门信息 - 紧随学校下方，添加缩进和样式 */}
-              <p className={`text-sm ${themeColors.textColorSecondary} pl-1`}>
-                Department of Computer Science and Engineering
-              </p>
-              {/* 大学链接 - 稍微隔开 */} 
-              <motion.a 
-                href="https://www.ncu.edu.cn/" 
-                target="_blank" 
-                rel="noopener noreferrer" 
-                className={`inline-flex items-center gap-1 mt-1 ${themeColors.textColorPrimary} hover:${themeColors.ccfAText} transition-colors group`}
-                whileHover={{ y: -1 }}
-              >
-                The Nanchang University
-                <ExternalLink size={14} className="opacity-50 group-hover:opacity-100 transition-opacity"/>
-              </motion.a>
-            </div>
-          </div>
-          {/* 修改地址交互：悬停提示，点击展开 */}
-          <motion.div 
-            className="cursor-pointer relative" // 添加 relative 定位
-            onClick={() => setIsMapExpanded(!isMapExpanded)} // 点击切换地图
-            onHoverStart={() => setIsAddressHovered(true)} // 记录悬停开始
-            onHoverEnd={() => setIsAddressHovered(false)}   // 记录悬停结束
+        {/* School Info Block - Now a direct child, added mb-5 */}
+        <motion.div variants={itemVariants} className="flex items-start gap-4 mb-5"> 
+          {/* Wrap School Icon */}
+          <motion.div
+            whileHover={{ scale: 1.15, y: -2, color: themeColors.ccfAText }} 
+            transition={{ duration: 0.2 }}
+            className={`mt-1 ${themeColors.textColorSecondary}`} 
           >
-            <div className="flex items-start gap-4"> {/* 原地址容器 */}
-              <MapPin size={20} className={`mt-1 ${themeColors.textColorSecondary}`} />
-              <div>
-                <p>IEB A608-1, 999 Xuefu BLVD</p> 
-          <p>Nanchang, Jiangxi, 330000</p>
-                <p>China</p> 
-              </div>
+            <School size={20} />
+          </motion.div>
+          {/* School Text Content */}
+          <div>
+            {/* 学校链接 */}
+            <motion.a 
+              href="https://smcs.ncu.edu.cn/" 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              className={`inline-flex items-center gap-1 ${themeColors.textColorPrimary} hover:${themeColors.ccfAText} transition-colors group`}
+              whileHover={{ y: -1 }}
+            >
+              School of Information Engineering
+              <ExternalLink size={14} className="opacity-50 group-hover:opacity-100 transition-opacity"/>
+            </motion.a>
+            {/* 部门信息 */}
+            <p className={`text-sm ${themeColors.textColorSecondary}`}> 
+              Department of Computer Science and Engineering
+            </p>
+            {/* 大学链接 */} 
+            <motion.a 
+              href="https://www.ncu.edu.cn/" 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              className={`inline-flex items-center gap-1 mt-1 ${themeColors.textColorPrimary} hover:${themeColors.ccfAText} transition-colors group`}
+              whileHover={{ y: -1 }}
+            >
+              The Nanchang University
+              <ExternalLink size={14} className="opacity-50 group-hover:opacity-100 transition-opacity"/>
+            </motion.a>
+          </div>
+        </motion.div>
+
+        {/* Address Info Block - Now a direct child (link), added mb-8 */}
+        <a 
+          href="https://ditu.amap.com/search?query=南昌大学前湖校区信息工程学院&center=115.879329,28.570309&zoom=15"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="block text-current no-underline group mb-8" // Added mb-8
+        >
+          {/* Apply itemVariants animation to the inner motion.div if needed, or remove if link itself shouldn't animate */}
+          <motion.div 
+            variants={itemVariants} // Apply animation here if desired
+            className="relative flex items-start gap-4"
+            onHoverStart={() => setIsAddressHovered(true)} 
+            onHoverEnd={() => setIsAddressHovered(false)}   
+          >
+            {/* MapPin Icon */}
+            <motion.div
+              variants={{
+                normal: { y: 0, color: themeColors.textColorSecondary },
+                hover: { 
+                  y: [0, -3, 0],
+                  color: themeColors.ccfAText, 
+                  transition: { duration: 0.5, ease: "easeInOut", repeat: Infinity, repeatDelay: 0.1 }
+                }
+              }}
+              animate={isAddressHovered ? "hover" : "normal"}
+              className="mt-1 flex-shrink-0 transition-colors duration-200 ease-in-out group-hover:text-[${themeColors.ccfAText}]"
+            >
+              <MapPin size={20} />
+            </motion.div>
+            {/* Address Text Content */}
+            <div className="flex-grow transition-colors duration-200 ease-in-out group-hover:text-[${themeColors.ccfAText}]"> 
+              <p>IEB A608-1, 999 Xuefu BLVD</p> 
+              <p>Nanchang, Jiangxi, 330000</p>
+              <p>China</p> 
             </div>
-            {/* 条件渲染悬停提示 */} 
+            {/* Conditional Hint Text */}
             <AnimatePresence>
-              {isAddressHovered && !isMapExpanded && (
+              {isAddressHovered && (
                 <motion.div
-                  initial={{ opacity: 0, y: 5, scale: 0.95 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: 5, scale: 0.95 }}
+                  initial={{ opacity: 0, scale: 0.9 }} 
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.9 }}
                   transition={{ duration: 0.2, ease: "easeOut" }}
-                  className={`text-sm ${themeColors.ccfAText} mt-2 ml-10 absolute -bottom-5 left-0 whitespace-nowrap`}
+                  className={`text-sm ${themeColors.ccfAText} whitespace-nowrap flex-shrink-0`}
                 >
-                  Click here 👇 to show location
+                  Go here! 👉
                 </motion.div>
               )}
             </AnimatePresence>
           </motion.div>
-          
-          {/* 地图内容 (展开逻辑不变) */}
-          <AnimatePresence initial={false}>
-            {isMapExpanded && (
-              <motion.div
-                key="map-section"
-                variants={expandingSectionVariants}
-                initial="hidden"
-                animate="visible"
-                exit="exit"
-                className="bg-gray-50 rounded border border-gray-200 p-4 mt-2 ml-10" // 添加左边距对齐提示
-              >
-                {/* TODO: 在这里嵌入地图组件或 iframe */}
-                <p className="text-center text-gray-500">Map will be displayed here.</p>
-                <div className="aspect-video bg-gray-200 rounded flex items-center justify-center">
-                  <MapIcon size={48} className="text-gray-400" />
-        </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </motion.div>
+        </a>
         
-        <motion.div variants={itemVariants} className="space-y-4 mb-8"> {/* 分块 3: 联系方式 - 增加 mb-8 */}
+        {/* Contact Info Block - Kept mb-8 */}
+        <motion.div variants={itemVariants} className="space-y-4 mb-8"> 
+          {/* Mail section */}
           <motion.div 
-            className="flex items-center gap-4 group cursor-pointer"
+            className="flex items-start gap-4 group cursor-pointer"
             whileHover="hover"
           >
             <motion.div variants={{ hover: { x: 3, y: -2, rotate: 5, scale: 1.1, color: themeColors.ccfAText } }} transition={{ duration: 0.2 }}>
@@ -171,8 +199,9 @@ const ContactPage: React.FC = () => {
               xuz@ncu.edu.cn
             </a>
           </motion.div>
+          {/* Phone section */}
           <motion.div 
-            className="flex items-center gap-4 group cursor-pointer"
+            className="flex items-start gap-4 group cursor-pointer"
             whileHover="hover"
           >
             <motion.div 
@@ -277,7 +306,7 @@ const ContactPage: React.FC = () => {
                   >
                     Send Message
                   </button>
-      </div>
+                </div>
               </form>
             </motion.div>
           )}

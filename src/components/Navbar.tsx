@@ -25,9 +25,12 @@ const Navbar: React.FC = () => {
     <nav className={`${themeColors.navBackground} shadow-sm sticky top-0 z-50 w-full`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          {/* 左侧 Logo - 调整为响应式字体大小 */}
+          {/* 左侧 Logo - 添加 hover 效果 */}
           <div className="flex-shrink-0">
-            <a href="/" className={`text-xl sm:text-2xl font-semibold ${themeColors.navTextColor}`}>
+            <a 
+              href="/"
+              className={`text-xl sm:text-2xl font-semibold ${themeColors.navTextColor} hover:[text-shadow:0_1px_2px_rgba(0,0,0,0.15)] transition-all duration-200 ease-in-out`}
+            >
               Good HomePage
             </a>
           </div>
@@ -38,7 +41,7 @@ const Navbar: React.FC = () => {
               <a
                 key={item.name}
                 href={item.href}
-                className={`inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium ${themeColors.navTextColor} hover:${themeColors.navHoverBorder} hover:${themeColors.navHoverText}`}
+                className={`inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium ${themeColors.navTextColor} hover:${themeColors.navHoverBorder} hover:${themeColors.navHoverText} hover:[text-shadow:0_1px_2px_rgba(0,0,0,0.15)] transition-all duration-200 ease-in-out`}
               >
                 {item.name}
               </a>
@@ -66,7 +69,7 @@ const Navbar: React.FC = () => {
                   <li key={item.name}>
                     <a
                       href={item.href}
-                      className={`block px-3 py-2 text-sm ${themeColors.navTextColor} hover:${themeColors.navHoverText}`}
+                      className={`block px-3 py-2 text-sm ${themeColors.navTextColor} hover:${themeColors.navHoverText} hover:[text-shadow:0_1px_2px_rgba(0,0,0,0.15)] transition-all duration-200 ease-in-out`}
                       onClick={() => setIsMenuOpen(false)}
                     >
                       {item.name}

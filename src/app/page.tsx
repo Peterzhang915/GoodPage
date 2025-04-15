@@ -61,9 +61,9 @@ export default async function Home() {
             viewport={{ once: true, amount: 0.2 }}
             transition={{ duration: 0.6, ease: "easeOut" }}
           >
-            {/* 招聘信息段落: 确认基础文字大小和行高 */}
+            {/* 招聘信息段落: 使用 JSX 并添加 strong 标签 */}
             <p className={`mb-6 text-base leading-relaxed ${themeColors.textColorSecondary}`}>
-              {recruitmentText}
+              We always look for <strong>self-motivated</strong> under/graduate students who are ready to take on ambitious challenges to join my research group (with <strong>financial support</strong>).
             </p>
 
             {/* 分隔线 */}
