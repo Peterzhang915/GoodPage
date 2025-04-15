@@ -10,7 +10,7 @@ interface NavItem {
 
 const Navbar: React.FC = () => {
   const navItems: NavItem[] = [
-    { name: 'Professor Zichen Xu', href: '/xuz' },
+    { name: 'Professor Zichen Xu', href: '/lab_leader' },
     { name: 'Lab Members', href: '/members' },
     { name: 'Publications', href: '/publications' },
     { name: 'Lab Photo Gallery', href: '/gallery' },
