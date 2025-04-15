@@ -75,7 +75,7 @@ const HeroSection: React.FC = () => {
             variants={itemVariants}
             className="text-sm sm:text-base lg:text-lg text-slate-300 max-w-3xl mx-auto"
           >
-            Advancing the frontiers of data analysis and optimization through innovative research
+            Good Data Inspired AI Infinite System and Beyond
           </motion.p>
 
         </motion.div>
