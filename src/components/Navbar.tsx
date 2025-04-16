@@ -10,7 +10,7 @@ interface NavItem {
 
 const Navbar: React.FC = () => {
   const navItems: NavItem[] = [
-    { name: 'Professor Zichen Xu', href: '/lab_leader' },
+    { name: 'Lab Leader', href: '/lab_leader' },
     { name: 'Lab Members', href: '/members' },
     { name: 'Publications', href: '/publications' },
     { name: 'Lab Photo Gallery', href: '/gallery' },
@@ -31,7 +31,7 @@ const Navbar: React.FC = () => {
               href="/"
               className={`text-xl sm:text-2xl font-semibold ${themeColors.navTextColor} hover:[text-shadow:0_1px_2px_rgba(0,0,0,0.15)] transition-all duration-200 ease-in-out`}
             >
-              Good HomePage
+              Good Home
             </a>
           </div>
 
