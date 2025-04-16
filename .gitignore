@@ -44,3 +44,7 @@ visits.db
 data/info.csv
 
 package-lock.json
+
+# cursor
+/.cursor/
+
