@@ -28,6 +28,7 @@ import PatentsSection from '@/components/members/sections/PatentsSection'; // Im
 import AcademicServicesSection from '@/components/members/sections/AcademicServicesSection'; // Import AcademicServicesSection
 import MoreAboutMeSection from '@/components/members/sections/MoreAboutMeSection'; // Import MoreAboutMeSection
 import SuperviseesSection from '@/components/members/sections/SuperviseesSection'; // Import SuperviseesSection
+import MemberSidebar from '@/components/members/MemberSidebar'; // Import MemberSidebar
 
 // 【新增】定义需要高亮的论文标题集合 (小写), 与 PublicationItem 保持一致
 const highlightedPaperTitles = new Set([
@@ -84,59 +85,8 @@ export default async function MemberProfilePage({ params }: MemberPageProps) {
             <div className="md:flex">
 
                 {/* --- 左侧边栏 (V1 Style) --- */}
-                {/* V1 Width, Gradient, Padding, Alignment */}
-                <aside className={`md:w-1/3 p-6 bg-gradient-to-br from-${themeColors.ccfCBg} to-${themeColors.ccfBBg} flex flex-col items-center justify-start text-center`}>
-                    {/* V1 Avatar Style */}
-                    <div className={`w-32 h-32 rounded-full overflow-hidden border-4 ${themeColors.footerBorder} shadow-md mb-4 flex-shrink-0`}>
-                        <MemberProfileImage src={member.avatar_url || placeholderAvatar} alt={`${member.name_zh || member.name_en} 头像`} width={128} height={128} />
-                    </div>
-                    {/* V1 Text Styles */}
-                    <h1 className={`text-2xl font-bold ${themeColors.textColorPrimary}`}>{member.name_zh || member.name_en}</h1>
-                    {member.name_en && member.name_zh && <p className={`text-md ${themeColors.textColorSecondary} mb-1`}>{member.name_en}</p>}
-                    {/* 使用 V1 的 displayStatus 样式 */}
-                    <p className={`text-sm font-semibold ${themeColors.textColorPrimary} mb-2`}>{displayStatus}</p>
-                    {/* V1 Email Style */}
-                    {member.email && (
-                        <a href={`mailto:${member.email}`} className={`text-sm ${themeColors.linkColor} hover:underline break-all mb-3 block flex items-center justify-center gap-x-1`}>
-                           <Mail size={14} /> {member.email}
-                        </a>
-                    )}
-
-                    {/* V1 Social Icons Style (at the bottom of primary info) */}
-                    <div className="flex justify-center items-center space-x-4 mt-2 mb-4 flex-wrap gap-y-2">
-                         {member.github_username && <a href={`https://github.com/${member.github_username}`} target="_blank" rel="noopener noreferrer" title="GitHub" className={`${themeColors.textColorSecondary} hover:${themeColors.textColorPrimary} transition-colors`}><Github size={20} /></a>}
-                         {member.personal_website && <a href={member.personal_website} target="_blank" rel="noopener noreferrer" title="Website" className={`${themeColors.textColorSecondary} hover:${themeColors.textColorPrimary} transition-colors`}><ExternalLink size={20} /></a>}
-                         {member.linkedin_url && <a href={member.linkedin_url} target="_blank" rel="noopener noreferrer" title="LinkedIn" className={`${themeColors.textColorSecondary} hover:${themeColors.textColorPrimary} transition-colors`}><Linkedin size={20} /></a>}
-                         {member.google_scholar_id && <a href={`https://scholar.google.com/citations?user=${member.google_scholar_id}`} target="_blank" rel="noopener noreferrer" title="Google Scholar" className={`${themeColors.textColorSecondary} hover:${themeColors.textColorPrimary} transition-colors`}><GraduationCap size={20} /></a>}
-                         {member.dblp_id && <a href={`https://dblp.org/pid/${member.dblp_id}.html`} target="_blank" rel="noopener noreferrer" title="DBLP" className={`${themeColors.textColorSecondary} hover:${themeColors.textColorPrimary} transition-colors`}><BookCopy size={20} /></a>}
-                         {member.cv_url && <a href={member.cv_url} target="_blank" rel="noopener noreferrer" title="CV" className={`${themeColors.textColorSecondary} hover:${themeColors.textColorPrimary} transition-colors`}><FileIcon size={20} /></a>}
-                    </div>
-
-                    {/* Additional Sidebar Info (Styled concisely) */}
-                    <div className="w-full space-y-3 text-xs border-t ${themeColors.footerBorder} pt-4"> {/* Pushes to bottom if sidebar grows */}
-                         {member.office_location && (<p className={`${themeColors.textColorTertiary} flex items-center justify-center gap-x-1`}>office_location: <Building size={12} /> {member.office_location}</p>)}
-                         {member.office_hours && (<p className={`${themeColors.textColorTertiary} flex items-center justify-center gap-x-1`}>office_hours: <Clock size={12} /> {member.office_hours}</p>)}
-                         {member.recruiting_status && (<div className={`${themeColors.textColorTertiary} flex items-center justify-center gap-x-1`}><UserCheck size={12} /> {member.recruiting_status}</div>)}
-                         {member.skills && (
-                             <div className="text-center">
-                                 <h3 className={`text-xs font-semibold ${themeColors.textColorPrimary} mb-1`}>Skills</h3>
-                                 <div className="flex flex-wrap justify-center gap-1">
-                                     {member.skills.split(',').map(s => s.trim()).filter(Boolean).map((skill, i) => (
-                                         <span key={i} className={`font-medium px-1.5 py-0.5 rounded ${themeColors.ccfCBg} ${themeColors.textColorSecondary}`}>{skill}</span>
-                                     ))}
-                                 </div>
-                             </div>
-                          )}
-                         {supervisor && (
-                             <div className="text-center">
-                                 <h3 className={`text-xs font-semibold ${themeColors.textColorPrimary} mb-0.5`}>Supervisor</h3>
-                                 <Link href={`/members/${supervisor.id}`} className={`${themeColors.linkColor} hover:underline`}>
-                                     {supervisor.name_zh || supervisor.name_en}
-                                 </Link>
-                             </div>
-                         )}
-                    </div>
-                </aside>
+                {/* 【修改】使用 MemberSidebar 组件 */} 
+                <MemberSidebar member={member} displayStatus={displayStatus} />
 
                 {/* --- 右侧主内容区 (V1 Style) --- */}
                 {/* V1 Width and Padding */}
