@@ -79,6 +79,8 @@ model Member {
   // --- 详细与个性化信息 ---
   bio_zh           String?
   bio_en           String?
+  research_statement_zh String? // 新增: 长篇研究陈述 (中文)
+  research_statement_en String? // 新增: 长篇研究陈述 (英文)
   more_about_me    String?           // "更多关于我"部分，可以放更个性化、非正式的介绍 (支持 Markdown 格式?) (可选)
   interests_hobbies String?          // 非学术方面的兴趣爱好 (可选)
   avatar_url       String?
