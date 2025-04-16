@@ -15,6 +15,19 @@ import {
 } from 'lucide-react';
 import Image from 'next/image';
 import { themeColors } from '@/styles/theme'; // 导入 V2 提供的 themeColors
+import BioSection from '@/components/members/sections/BioSection'; // Import the new component
+import EducationSection from '@/components/members/sections/EducationSection'; // Import EducationSection
+import ResearchInterestsSection from '@/components/members/sections/ResearchInterestsSection'; // Import ResearchInterestsSection
+import PublicationsSection from '@/components/members/sections/PublicationsSection'; // Import PublicationsSection
+import AwardsSection from '@/components/members/sections/AwardsSection'; // Import AwardsSection
+import ProjectsSection from '@/components/members/sections/ProjectsSection'; // Import ProjectsSection
+import TeachingSection from '@/components/members/sections/TeachingSection'; // Import TeachingSection
+import PresentationsSection from '@/components/members/sections/PresentationsSection'; // Import PresentationsSection
+import SoftwareDatasetsSection from '@/components/members/sections/SoftwareDatasetsSection'; // Import SoftwareDatasetsSection
+import PatentsSection from '@/components/members/sections/PatentsSection'; // Import PatentsSection
+import AcademicServicesSection from '@/components/members/sections/AcademicServicesSection'; // Import AcademicServicesSection
+import MoreAboutMeSection from '@/components/members/sections/MoreAboutMeSection'; // Import MoreAboutMeSection
+import SuperviseesSection from '@/components/members/sections/SuperviseesSection'; // Import SuperviseesSection
 
 // 【新增】定义需要高亮的论文标题集合 (小写), 与 PublicationItem 保持一致
 const highlightedPaperTitles = new Set([
@@ -36,104 +49,6 @@ interface MemberPageProps {
         memberId: string;
     }
 }
-
-// --- 单个论文条目组件 (样式调整以接近 V1) ---
-function MemberPublicationItem({ pub }: { pub: PublicationInfo }) {
-    const pdfHref = pub.pdf_url
-        ? pub.pdf_url.startsWith('http') ? pub.pdf_url : `/pdfs/${pub.pdf_url}` // 假设本地 PDF 在 /public/pdfs
-        : undefined;
-
-    // Use pub.id or title as a fallback key
-    const itemKey = pub.id ?? pub.title;
-
-    // 【新增】检查当前论文是否需要高亮
-    const isHighlighted = pub.title && highlightedPaperTitles.has(pub.title.toLowerCase());
-
-    return (
-        // V1 边框和间距
-        <li className={`mb-4 pb-4 border-b ${themeColors.footerBorder} last:border-b-0`}>
-            {/* V1 标题样式 */}
-            <h4 className={`text-md font-semibold ${themeColors.textColorPrimary} mb-1`}>{pub.title}</h4>
-
-            {/* 作者信息 (使用 displayAuthors, 调整样式) */}
-            {pub.displayAuthors && pub.displayAuthors.length > 0 && (
-                <div className={`text-xs ${themeColors.textColorSecondary} mb-1 flex flex-wrap items-center gap-x-1.5 gap-y-1`}>
-                    <Users className={`w-3 h-3 mr-0.5 ${themeColors.textColorTertiary} flex-shrink-0`} />
-                    {pub.displayAuthors.map((author, index) => (
-                         <span key={`${itemKey}-author-${author.order}`} className="inline-block">
-                            {author.type === 'internal' ? (
-                                <Link href={`/members/${author.id}`} className={`${themeColors.linkColor} hover:underline`}>
-                                    {author.name_zh || author.name_en}
-                                    {author.is_corresponding && <span title="Corresponding Author" className="text-red-500 ml-0.5">*</span>}
-                                </Link>
-                            ) : (
-                                <span className={themeColors.textColorSecondary}>{author.text}</span>
-                            )}
-                            {index < pub.displayAuthors.length - 1 ? <span className="opacity-80">, </span> : ''}
-                        </span>
-                    ))}
-                </div>
-            )}
-
-            {/* V1 Venue/Year/CCF 行样式 */}
-            <div className={`text-xs ${themeColors.textColorTertiary} flex flex-wrap items-center gap-x-2 gap-y-1`}> {/* Adjusted gap */}
-                {pub.venue && <span className="flex items-center"><i>{pub.venue}</i></span>}
-                {pub.year && <span className="flex items-center"><Calendar className={`w-4 h-4 mr-1 flex-shrink-0`} /> {pub.year}</span>}
-                {/* 【新增】高亮标签 */} 
-                {isHighlighted && (
-                  <span
-                    className={`px-2 py-0.5 rounded-md text-xs font-medium tracking-wide ${themeColors.highlightText ?? 'text-amber-900'} ${themeColors.highlightBg ?? 'bg-amber-100'} border border-amber-200`}
-                  >
-                    🔥 Highly Cited
-                  </span>
-                )}
-                {/* 【修改】CCF Rank 标签样式 */}
-                {pub.ccf_rank && pub.ccf_rank !== 'N/A' && (
-                  <span 
-                    className={`px-2 py-0.5 rounded-md text-xs font-medium tracking-wide ${ // Added tracking-wide
-                      pub.ccf_rank === 'A' ? `${themeColors.ccfAText ?? 'text-blue-900'} ${themeColors.ccfABg ?? 'bg-blue-200'} border border-blue-300` :
-                      pub.ccf_rank === 'B' ? `${themeColors.ccfBText ?? 'text-blue-700'} ${themeColors.ccfBBg ?? 'bg-blue-100'} border border-blue-200` :
-                      pub.ccf_rank === 'C' ? `${themeColors.ccfCText ?? 'text-blue-600'} ${themeColors.ccfCBg ?? 'bg-blue-50'} border border-blue-100` :
-                      'bg-gray-100 text-gray-600 border border-gray-200' // Fallback style
-                    }`}
-                  >
-                     CCF {pub.ccf_rank}
-                  </span>
-                )}
-                {pub.type && !['CONFERENCE', 'JOURNAL'].includes(pub.type) && (
-                    <span className={`px-1.5 py-0.5 rounded text-xs font-medium ${themeColors.ccfCBg ?? 'bg-gray-100'} ${themeColors.ccfCText ?? 'text-gray-600'} border ${themeColors.footerBorder ?? 'border-gray-200'}`}> {/* Adjusted styling for other types */}
-                        {pub.type.charAt(0) + pub.type.slice(1).toLowerCase()} {/* Format type e.g., 'Book' */}
-                    </span>
-                )}
-            </div>
-
-            {/* Abstract & Keywords (保持 V2 内容, 调整样式) */}
-             {pub.abstract && (
-                <details className="mt-2 group">
-                    <summary className={`cursor-pointer text-xs ${themeColors.linkColor} hover:underline font-medium list-none group-open:mb-1`}>Abstract</summary>
-                    <p className={`italic text-xs ${themeColors.textColorTertiary} border-l-2 ${themeColors.footerBorder} pl-2 leading-relaxed`}>{pub.abstract}</p>
-                </details>
-             )}
-            {pub.keywords && (<div className={`mt-1 text-xs ${themeColors.textColorTertiary}`}><span className="font-semibold mr-1">Keywords:</span> {pub.keywords}</div>)}
-
-            {/* V1 链接区域样式 */}
-            {(pdfHref || pub.slides_url || pub.video_url || pub.code_repository_url || pub.project_page_url || pub.dblp_url) && ( // Removed doi_url and bibtex check, kept dblp_url if needed
-                <div className="flex flex-wrap items-center space-x-3 text-xs mt-1">
-                    {/* Removed DOI link */}
-                    {pdfHref && pdfHref !== '#' && <a href={pdfHref} target="_blank" rel="noopener noreferrer" className={`${themeColors.primary /* V1 used primary for PDF */} hover:underline flex items-center gap-0.5`}><FileIcon size={12}/>PDF</a>}
-                    {/* Keep DBLP link if dblp_url exists */}
-                    {pub.dblp_url && <a href={pub.dblp_url} target="_blank" rel="noopener noreferrer" className={`${themeColors.linkColor} hover:underline flex items-center gap-0.5`}><LinkIcon size={12}/>DBLP</a>}
-                    {/* 简化其他链接显示，可按需添加图标和样式 */}
-                    {pub.slides_url && <a href={pub.slides_url} target="_blank" rel="noopener noreferrer" className={`${themeColors.linkColor} hover:underline`}>Slides</a>}
-                    {pub.video_url && <a href={pub.video_url} target="_blank" rel="noopener noreferrer" className={`${themeColors.linkColor} hover:underline`}>Video</a>}
-                    {pub.code_repository_url && <a href={pub.code_repository_url} target="_blank" rel="noopener noreferrer" className={`${themeColors.linkColor} hover:underline`}>Code</a>}
-                    {pub.project_page_url && <a href={pub.project_page_url} target="_blank" rel="noopener noreferrer" className={`${themeColors.linkColor} hover:underline`}>Project</a>}
-                </div>
-            )}
-        </li>
-    );
-}
-
 
 // --- 主页面组件 (Server Component) ---
 export default async function MemberProfilePage({ params }: MemberPageProps) {
@@ -229,14 +144,7 @@ export default async function MemberProfilePage({ params }: MemberPageProps) {
                     {/* V1 Section Spacing */}
                     <div className="space-y-6 md:space-y-8">
                         {/* 个人简介 */}
-                        {(member.bio_zh || member.bio_en) && (
-                            <section>
-                                {/* V1 Heading Style */}
-                                <h2 className={`text-xl font-semibold ${themeColors.textColorPrimary} border-b ${themeColors.footerBorder} pb-2 mb-3 flex items-center gap-1.5`}><Info size={18}/>个人简介</h2>
-                                {member.bio_zh && <p className={`${themeColors.textColorSecondary} text-sm leading-relaxed mb-2`}>{member.bio_zh}</p>}
-                                {member.bio_en && <p className={`${themeColors.textColorTertiary} italic text-sm leading-relaxed`}>{member.bio_en}</p>}
-                            </section>
-                        )}
+                        <BioSection bio_zh={member.bio_zh} bio_en={member.bio_en} />
 
                         {/* 教育背景 */}
                         {educationHistory && educationHistory.length > 0 && (
@@ -275,187 +183,34 @@ export default async function MemberProfilePage({ params }: MemberPageProps) {
                         )}
 
                         {/* 发表成果 */}
-                        {publications && publications.length > 0 && (
-                             <section>
-                                <h2 className={`text-xl font-semibold ${themeColors.textColorPrimary} border-b ${themeColors.footerBorder} pb-2 mb-3 flex items-center gap-1.5`}><BookOpen size={18}/> 发表成果</h2>
-                                <ul className="list-none p-0 mt-2 space-y-2"> {/* V1 spacing */}
-                                    {publications.map((pub) => (
-                                        <MemberPublicationItem key={pub.id ?? pub.title} pub={pub} />
-                                    ))}
-                                </ul>
-                            </section>
-                        )}
+                        <PublicationsSection publications={publications} />
 
                         {/* 所获荣誉 */}
-                        {awards && awards.length > 0 && (
-                            <section>
-                                <h2 className={`text-xl font-semibold ${themeColors.textColorPrimary} border-b ${themeColors.footerBorder} pb-2 mb-3 flex items-center gap-1.5`}><AwardIcon size={18}/> 所获荣誉</h2>
-                                <ul className="space-y-2 list-disc pl-5 text-sm mt-3">
-                                    {awards.map(award => (
-                                        <li key={award.id} className={`${themeColors.textColorSecondary}`}>
-                                            {award.link_url ? <a href={award.link_url} target='_blank' rel='noopener noreferrer' className='hover:underline'>{award.content}</a> : award.content}
-                                            {award.year ? ` (${award.year})` : ''}
-                                        </li>
-                                    ))}
-                                </ul>
-                            </section>
-                        )}
+                        <AwardsSection awards={awards} />
 
                          {/* 研究项目 */}
-                         {projects && projects.length > 0 && (
-                            <section>
-                                <h2 className={`text-xl font-semibold ${themeColors.textColorPrimary} border-b ${themeColors.footerBorder} pb-2 mb-3 flex items-center gap-1.5`}><Briefcase size={18}/> 研究项目</h2>
-                                <ul className="space-y-4 list-none p-0 mt-3">
-                                    {projects.map(({ project, role }) => (
-                                         <li key={project.id} className={`border-l-3 ${themeColors.ccfBText} pl-3 py-1`}> {/* Slightly thinner border */}
-                                            <h4 className={`font-semibold ${themeColors.textColorPrimary} text-sm`}>
-                                                {project.url ? <a href={project.url} target="_blank" rel="noopener noreferrer" className="hover:underline">{project.title}</a> : project.title}
-                                                {role && <span className={`ml-1.5 text-xs font-normal px-1 py-0.5 rounded ${themeColors.ccfCBg} ${themeColors.textColorSecondary}`}>({role})</span>}
-                                            </h4>
-                                            {project.description && <p className={`text-xs mt-0.5 ${themeColors.textColorSecondary}`}>{project.description}</p>}
-                                            <p className={`text-xs mt-0.5 ${themeColors.textColorTertiary}`}>
-                                                {project.status && <span className="mr-1.5 font-medium">{project.status}</span>}
-                                                ({project.start_year ?? '?'} - {project.end_year ?? 'Present'})
-                                                {project.funding_source && <span className="ml-1.5">(Funded by {project.funding_source})</span>}
-                                            </p>
-                                        </li>
-                                    ))}
-                                </ul>
-                            </section>
-                        )}
+                         <ProjectsSection projects={projects} />
 
                         {/* 教学经历 */}
-                        {teachingRoles && teachingRoles.length > 0 && (
-                            <section>
-                                <h2 className={`text-xl font-semibold ${themeColors.textColorPrimary} border-b ${themeColors.footerBorder} pb-2 mb-3 flex items-center gap-1.5`}><Building size={18}/> 教学经历</h2>
-                                <ul className="space-y-2 list-disc pl-5 text-sm mt-3">
-                                    {teachingRoles.map(teach => (
-                                        <li key={teach.id} className={`${themeColors.textColorSecondary}`}>
-                                            {teach.course_title} {teach.course_code ? `(${teach.course_code})` : ''}
-                                            {teach.semester && `, ${teach.semester}`}
-                                            {teach.role && teach.role !== 'Instructor' ? <span className="ml-1 text-xs">({teach.role})</span> : ''}
-                                            {teach.description_url && <a href={teach.description_url} target="_blank" rel="noopener noreferrer" className={`ml-1.5 text-xs ${themeColors.linkColor} hover:underline`}>[Details]</a>}
-                                        </li>
-                                    ))}
-                                </ul>
-                            </section>
-                         )}
+                        <TeachingSection teachingRoles={teachingRoles} />
 
                         {/* 学术报告 */}
-                        {presentations && presentations.length > 0 && (
-                            <section>
-                                <h2 className={`text-xl font-semibold ${themeColors.textColorPrimary} border-b ${themeColors.footerBorder} pb-2 mb-3 flex items-center gap-1.5`}><PresentationIcon size={18}/> 学术报告</h2>
-                                <ul className="space-y-3 list-none p-0 mt-3">
-                                    {presentations.map(pres => (
-                                        <li key={pres.id} className="text-sm">
-                                            <p className={`font-semibold ${themeColors.textColorPrimary}`}>{pres.title}</p>
-                                            {pres.event_name && <p className={`${themeColors.textColorSecondary}`}>{pres.event_name}</p>}
-                                            <div className={`text-xs ${themeColors.textColorTertiary} flex items-center gap-x-2 mt-0.5`}>
-                                                {pres.location && <span>{pres.location}</span>}
-                                                {pres.year && <span>({pres.year})</span>}
-                                                {pres.url && <a href={pres.url} target="_blank" rel="noopener noreferrer" className={`${themeColors.linkColor} hover:underline flex items-center gap-0.5`}><LinkIcon size={10}/> Slides/Video</a>}
-                                            </div>
-                                            {pres.is_invited && <span className={`text-xs font-medium px-1.5 py-0.5 rounded inline-block mt-1 ${themeColors.ccfBBg} ${themeColors.ccfAText}`}>Invited Talk</span>}
-                                        </li>
-                                    ))}
-                                </ul>
-                            </section>
-                        )}
+                        <PresentationsSection presentations={presentations} />
 
                          {/* 软件与数据集 */}
-                         {softwareAndDatasets && softwareAndDatasets.length > 0 && (
-                            <section>
-                                <h2 className={`text-xl font-semibold ${themeColors.textColorPrimary} border-b ${themeColors.footerBorder} pb-2 mb-3 flex items-center gap-1.5`}>
-                                    <Code size={18}/>/<Database size={18}/> 软件与数据集
-                                </h2>
-                                <ul className="space-y-4 list-none p-0 mt-3">
-                                    {softwareAndDatasets.map(item => (
-                                        <li key={item.id} className="flex items-start gap-x-2.5">
-                                             {item.type === ArtefactType.SOFTWARE
-                                                 ? <Code className={`w-4 h-4 mt-1 ${themeColors.primary} flex-shrink-0`} />
-                                                 : <Database className={`w-4 h-4 mt-1 ${themeColors.primary} flex-shrink-0`} />
-                                             }
-                                            <div className='flex-grow text-sm'>
-                                                <h4 className={`font-semibold ${themeColors.textColorPrimary}`}>{item.title}</h4>
-                                                {item.description && <p className={`text-xs mt-0.5 ${themeColors.textColorSecondary}`}>{item.description}</p>}
-                                                <div className={`flex flex-wrap items-center gap-x-2.5 text-xs mt-0.5 ${themeColors.textColorTertiary}`}>
-                                                    {item.version && <span>v{item.version}</span>}
-                                                    {item.license && <span>{item.license}</span>}
-                                                    {item.status && <span>{item.status}</span>}
-                                                </div>
-                                                <div className="flex flex-wrap items-center gap-x-2.5 text-xs mt-0.5">
-                                                    {item.repository_url && <a href={item.repository_url} target="_blank" rel="noopener noreferrer" className={`${themeColors.linkColor} hover:underline`}>Repository</a>}
-                                                    {item.project_url && <a href={item.project_url} target="_blank" rel="noopener noreferrer" className={`${themeColors.linkColor} hover:underline`}>Project/Demo</a>}
-                                                </div>
-                                            </div>
-                                        </li>
-                                    ))}
-                                </ul>
-                            </section>
-                        )}
+                         <SoftwareDatasetsSection softwareAndDatasets={softwareAndDatasets} />
 
                         {/* 专利 */}
-                        {patents && patents.length > 0 && (
-                            <section>
-                                <h2 className={`text-xl font-semibold ${themeColors.textColorPrimary} border-b ${themeColors.footerBorder} pb-2 mb-3 flex items-center gap-1.5`}><PatentIcon size={18}/> 专利</h2>
-                                <ul className="space-y-2 list-disc pl-5 text-sm mt-3">
-                                    {patents.map(patent => (
-                                        <li key={patent.id} className={`${themeColors.textColorSecondary}`}>
-                                            {patent.title}
-                                            {patent.patent_number ? ` (No. ${patent.patent_number})` : ''}
-                                            {patent.status ? ` [${patent.status}]` : ''}
-                                            {patent.issue_date ? `, Issued: ${patent.issue_date}` : ''}
-                                            {patent.url && <a href={patent.url} target="_blank" rel="noopener noreferrer" className={`ml-1.5 text-xs ${themeColors.linkColor} hover:underline`}>[Link]</a>}
-                                            {patent.inventors_string && <span className="block text-xs italic">Inventors: {patent.inventors_string}</span>}
-                                        </li>
-                                     ))}
-                                </ul>
-                            </section>
-                        )}
+                        <PatentsSection patents={patents} />
 
                         {/* 学术服务 */}
-                        {academicServices && academicServices.length > 0 && (
-                            <section>
-                                <h2 className={`text-xl font-semibold ${themeColors.textColorPrimary} border-b ${themeColors.footerBorder} pb-2 mb-3 flex items-center gap-1.5`}><BriefcaseBusiness size={18}/> 学术服务</h2>
-                                <ul className="space-y-1 list-disc pl-5 text-sm mt-3">
-                                    {academicServices.map(service => (
-                                        <li key={service.id} className={`${themeColors.textColorSecondary}`}>
-                                            {service.content}
-                                        </li>
-                                    ))}
-                                </ul>
-                            </section>
-                        )}
+                        <AcademicServicesSection academicServices={academicServices} />
 
                          {/* "更多关于我" */}
-                        {member.more_about_me && (
-                            <section>
-                                <h2 className={`text-xl font-semibold ${themeColors.textColorPrimary} border-b ${themeColors.footerBorder} pb-2 mb-3 flex items-center gap-1.5`}><Info size={18}/> 更多关于我</h2>
-                                <div className={`text-sm leading-relaxed ${themeColors.textColorSecondary} whitespace-pre-wrap mt-3`}>
-                                    {member.more_about_me}
-                                </div>
-                            </section>
-                        )}
+                         <MoreAboutMeSection more_about_me={member.more_about_me} />
 
                          {/* 指导学生列表 */}
-                        {supervisees && supervisees.length > 0 && (
-                            <section>
-                                <h2 className={`text-xl font-semibold ${themeColors.textColorPrimary} border-b ${themeColors.footerBorder} pb-2 mb-3 flex items-center gap-1.5`}><Users size={18}/> 指导学生</h2>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mt-3">
-                                    {supervisees.map(student => (
-                                        <Link href={`/members/${student.id}`} key={student.id} className={`flex items-center space-x-2 p-1.5 rounded hover:${themeColors.ccfCBg} transition-colors`}>
-                                             <Image src={student.avatar_url || placeholderAvatar} alt={student.name_zh || student.name_en || 'Avatar'} width={28} height={28} className="w-7 h-7 rounded-full object-cover flex-shrink-0" />
-                                            <div className='text-sm'>
-                                                <p className={`font-medium ${themeColors.linkColor}`}>{student.name_zh || student.name_en}</p>
-                                                <p className={`text-xs capitalize ${themeColors.textColorTertiary}`}>
-                                                    {student.status === MemberStatus.ALUMNI ? 'Alumni' : student.status.toLowerCase().replace('_', ' ')}
-                                                </p>
-                                            </div>
-                                        </Link>
-                                    ))}
-                                </div>
-                            </section>
-                        )}
+                         <SuperviseesSection supervisees={supervisees} />
 
                     </div>
                 </div>
