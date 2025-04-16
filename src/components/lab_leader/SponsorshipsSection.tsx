@@ -66,7 +66,7 @@ const SponsorshipsSection: React.FC<SponsorshipsSectionProps> = ({
         </ul>
       )}
 
-      {/* New Expand/Collapse Trigger */}
+      {/* Expand/Collapse Trigger with Text */}
       {hasDetailed && (
         <div
           onClick={toggleDetailedView}
@@ -74,10 +74,13 @@ const SponsorshipsSection: React.FC<SponsorshipsSectionProps> = ({
           aria-expanded={isDetailedViewOpen}
           aria-controls="detailed-sponsorships-content"
         >
-          <hr className={`w-20 border-t ${themeColors.borderLight ?? 'border-gray-300'} group-hover:border-gray-500 transition-colors`} />
+          <hr className={`w-20 border-t ${themeColors.borderLight ?? 'border-gray-300'} group-hover:border-gray-500 transition-colors mb-1`} />
+          <span className={`text-xs font-medium ${themeColors.textColorSecondary ?? 'text-gray-500'} group-hover:text-gray-700 transition-colors mb-1`}>
+            {isDetailedViewOpen ? 'Collapse' : 'View All'}
+          </span>
           {isDetailedViewOpen
-            ? <ChevronUp size={20} className={`mt-1 ${themeColors.textColorSecondary ?? 'text-gray-500'} group-hover:text-gray-700 transition-colors`} />
-            : <ChevronDown size={20} className={`mt-1 ${themeColors.textColorSecondary ?? 'text-gray-500'} group-hover:text-gray-700 transition-colors`} />}
+            ? <ChevronUp size={20} className={`${themeColors.textColorSecondary ?? 'text-gray-500'} group-hover:text-gray-700 transition-colors`} />
+            : <ChevronDown size={20} className={`${themeColors.textColorSecondary ?? 'text-gray-500'} group-hover:text-gray-700 transition-colors`} />}
         </div>
       )}
 

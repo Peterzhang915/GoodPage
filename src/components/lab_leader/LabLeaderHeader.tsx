@@ -14,7 +14,11 @@ type LabLeaderHeaderProps = {
 
 const LabLeaderHeader: React.FC<LabLeaderHeaderProps> = ({ leaderData }) => {
   // Provide default values or handle null case gracefully
-  const nameEn = leaderData?.name_en ?? 'Dr. Zichen Xu'; // Fallback name
+  // 强制添加 Dr. 前缀
+  const rawNameEn = leaderData?.name_en;
+  const nameEn = (rawNameEn && rawNameEn.trim().startsWith('Dr.')) 
+                   ? rawNameEn 
+                   : `Dr. ${rawNameEn ?? 'Zichen Xu'}`;
   const nameZh = leaderData?.name_zh;
   const titleEn = leaderData?.title_en ?? 'Professor, Vice Dean';
   const titleZh = leaderData?.title_zh; // Use if available
@@ -32,8 +36,6 @@ const LabLeaderHeader: React.FC<LabLeaderHeaderProps> = ({ leaderData }) => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col md:flex-row items-center md:items-start justify-between gap-6 md:gap-10">
           <div className="md:pr-8 text-center md:text-left mb-5 md:mb-0 flex-grow">
-             {/* Display Chinese Title if available */}
-             {titleZh && <p className="text-lg sm:text-xl text-gray-300 mb-1">{titleZh}</p>}
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-1">{nameEn}</h1>
             {/* Display Chinese Name if available */}
             {nameZh && <p className="text-lg sm:text-xl text-gray-300 mb-2">{nameZh}</p>}

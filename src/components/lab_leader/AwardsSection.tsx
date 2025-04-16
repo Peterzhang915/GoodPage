@@ -73,6 +73,7 @@ const AwardsSection: React.FC<AwardsSectionProps> = ({
         </ul>
       )}
 
+      {/* Expand/Collapse Trigger with Text */}
       {!fetchError && hasDetailed && (
         <div
           onClick={toggleDetailedView}
@@ -80,10 +81,13 @@ const AwardsSection: React.FC<AwardsSectionProps> = ({
           aria-expanded={isDetailedViewOpen}
           aria-controls="detailed-awards-content"
         >
-          <hr className={`w-20 border-t ${themeColors.borderLight ?? 'border-gray-300'} group-hover:border-gray-500 transition-colors`} />
+          <hr className={`w-20 border-t ${themeColors.borderLight ?? 'border-gray-300'} group-hover:border-gray-500 transition-colors mb-1`} />
+          <span className={`text-xs font-medium ${themeColors.textColorSecondary ?? 'text-gray-500'} group-hover:text-gray-700 transition-colors mb-1`}>
+            {isDetailedViewOpen ? 'Collapse' : 'View All'}
+          </span>
           {isDetailedViewOpen
-            ? <ChevronUp size={20} className={`mt-1 ${themeColors.textColorSecondary ?? 'text-gray-500'} group-hover:text-gray-700 transition-colors`} />
-            : <ChevronDown size={20} className={`mt-1 ${themeColors.textColorSecondary ?? 'text-gray-500'} group-hover:text-gray-700 transition-colors`} />}
+            ? <ChevronUp size={20} className={`${themeColors.textColorSecondary ?? 'text-gray-500'} group-hover:text-gray-700 transition-colors`} />
+            : <ChevronDown size={20} className={`${themeColors.textColorSecondary ?? 'text-gray-500'} group-hover:text-gray-700 transition-colors`} />}
         </div>
       )}
 
