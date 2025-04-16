@@ -13,6 +13,10 @@ export const themeColors = {
   ccfCText: 'text-blue-600',  // C 级文本颜色，蓝色用于标准级显示
   ccfCBg: 'bg-blue-50',  // C 级背景颜色，极浅蓝色背景
 
+  // 【新增】高亮/热门标签颜色
+  highlightText: 'text-amber-800', // 高亮文本颜色 (深琥珀色)
+  highlightBg: 'bg-amber-100', // 高亮背景颜色 (浅琥珀色)
+
   // --- 核心调色板：基础颜色定义 ---
   // 这些是项目的基本颜色，用于背景、边框和文本，确保整体风格简洁一致
   primary: 'text-slate-900',  // 主色调，使用深灰蓝色作为核心主题色

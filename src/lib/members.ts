@@ -6,7 +6,7 @@ import { MemberStatus, Prisma } from '@/lib/prisma';
 import type { Member, Publication, Education, Award, Project, ProjectMember, Teaching, Presentation, SoftwareDataset, Patent, AcademicService, News } from '@/lib/prisma';
 import { calculateMemberGradeStatus } from '@/lib/utils'; // 从新位置导入工具函数
 // 导入在新文件中定义的复合类型
-import type { MemberForCard, MemberProfileData, PublicationInfo } from '@/lib/types';
+import type { MemberForCard, MemberProfileData, PublicationInfo, DisplayAuthor } from '@/lib/types';
 // 注意：不再需要 memberProfileIncludeArgs 和其他 Payload 类型，因为我们简化了查询
 
 // --- 数据获取函数 ---
@@ -79,7 +79,8 @@ export async function getAllMembersGrouped(): Promise<Record<string, MemberForCa
 }
 
 /**
- * 根据 ID 获取单个成员的完整档案信息 (简化版，分步查询)。
+ * 根据 ID 获取单个成员的完整档案信息。
+ * 实现智能作者显示逻辑：合并 authors_full_string 和内部关联作者。
  * @param id - 成员的唯一 ID (string)
  * @returns 包含所有关联数据的成员对象 MemberProfileData，或 null
  */
@@ -104,52 +105,106 @@ export async function getMemberProfileData(id: string): Promise<MemberProfileDat
         }
         console.log(`DB: 成功获取成员 ${id} 基础信息`);
 
-        // 2. 分别获取其他所有关联数据
+        // 2. 分别获取其他所有关联数据 (包括出版物及其完整作者信息)
         console.log(`DB: 开始获取成员 ${id} 的关联数据...`);
         const [
-            educationHistory, awards, projectMembersRaw, // 重命名以示区分
+            educationHistory, awards, projectMembersRaw,
             teachingRoles, presentations, softwareAndDatasets, patents,
             academicServices, newsMentions, memberPublicationsRaw
         ] = await Promise.all([
             prisma.education.findMany({ where: { member_id: id }, orderBy: { end_year: 'desc' } }),
             prisma.award.findMany({ where: { member_id: id }, orderBy: [{ year: 'desc' }, { display_order: 'asc' }] }),
-            prisma.projectMember.findMany({ where: { member_id: id }, include: { project: true }, orderBy: { project: { start_year: 'desc' } } }), // 包含 project 详情
+            prisma.projectMember.findMany({ where: { member_id: id }, include: { project: true }, orderBy: { project: { start_year: 'desc' } } }),
             prisma.teaching.findMany({ where: { member_id: id }, orderBy: [{ year: 'desc' }, { display_order: 'asc' }] }),
             prisma.presentation.findMany({ where: { member_id: id }, orderBy: [{ year: 'desc' }, { display_order: 'asc' }] }),
             prisma.softwareDataset.findMany({ where: { member_id: id }, orderBy: { display_order: 'asc' } }),
             prisma.patent.findMany({ where: { member_id: id }, orderBy: { issue_date: 'desc' } }),
-            prisma.academicService.findMany({ where: { member_id: id }, orderBy: [{ year: 'desc' }, { display_order: 'asc' }] }),
+            prisma.academicService.findMany({ where: { member_id: id }, orderBy: [{ display_order: 'asc' }] }),
             prisma.news.findMany({ where: { related_member_id: id }, orderBy: { createdAt: 'desc' }, take: 5 }),
             prisma.publication.findMany({ // 获取该成员的论文
-                 where: { authors: { some: { member_id: id } } },
-                 orderBy: [{ year: 'desc' }, { id: 'desc' }],
-                 include: { // 包含所有作者信息用于后续格式化
-                     authors: {
-                         orderBy: { author_order: 'asc' },
-                         include: { author: { select: { id: true, name_zh: true, name_en: true } } }
-                     }
-                 }
+                where: { authors: { some: { member_id: id } } },
+                orderBy: [{ year: 'desc' }, { id: 'desc' }],
+                select: { // 选择 Publication 的所有需要字段 + authors 关联
+                    id: true, title: true, venue: true, year: true, volume: true,
+                    number: true, pages: true, publisher: true, ccf_rank: true,
+                    dblp_url: true, pdf_url: true, abstract: true, keywords: true,
+                    type: true, slides_url: true, video_url: true,
+                    code_repository_url: true, project_page_url: true,
+                    is_peer_reviewed: true, publication_status: true,
+                    authors_full_string: true, // 包含原始作者字符串
+                    authors: { // 包含关联的 PublicationAuthor (用于获取内部作者信息)
+                        select: { 
+                            author_order: true, 
+                            is_corresponding_author: true,
+                            author: { // 关联的 Member
+                                select: { id: true, name_en: true, name_zh: true }
+                            }
+                         },
+                         orderBy: { author_order: 'asc' } // 确保内部作者列表有序
+                    }
+                }
              })
         ]);
         console.log(`DB: 成功获取成员 ${id} 的所有关联数据`);
 
-        // 3. 格式化需要处理的数据
-        // 格式化项目列表 (从 ProjectMember 提取)
-        
-        // 格式化出版物列表 (匹配 PublicationInfo 类型)
+        // 3. 格式化出版物列表 (实现智能作者显示)
         const publicationsFormatted: PublicationInfo[] = memberPublicationsRaw.map(p => {
-             // 定义 p 的类型，帮助推断 ap
-            type CurrentPubType = typeof memberPublicationsRaw[0];
-            const formattedAuthors = p.authors.map((ap: CurrentPubType['authors'][0]) => ({ // 显式注解 ap
-                id: ap.author.id,
-                name_zh: ap.author.name_zh,
-                name_en: ap.author.name_en,
-                is_corresponding: ap.is_corresponding_author
-            }));
-            // 【确认修复 TS2322】: 确保解构时保留 PublicationInfo 需要的所有字段
-            // 假设 PublicationInfo = Omit<Publication, 'createdAt' | 'updatedAt' | 'authors_full_string'> & { authors: ... }
-            const { authors, createdAt, updatedAt, authors_full_string, ...rest } = p;
-            return { ...rest, authors: formattedAuthors };
+            // 将内部作者信息提取到 Map 中，方便按 order 查找
+            const internalAuthorsMap = new Map<number, { id: string, name_en: string, name_zh: string | null, is_corresponding: boolean }>();
+            p.authors.forEach(ap => {
+                internalAuthorsMap.set(ap.author_order, {
+                    id: ap.author.id,
+                    name_en: ap.author.name_en,
+                    name_zh: ap.author.name_zh,
+                    is_corresponding: ap.is_corresponding_author
+                });
+            });
+
+            const displayAuthors: DisplayAuthor[] = [];
+            const authorString = p.authors_full_string;
+
+            if (authorString) {
+                const fragments = authorString.split(';').map(f => f.trim()).filter(f => f);
+                fragments.forEach((fragment, index) => {
+                    const internalAuthor = internalAuthorsMap.get(index);
+                    if (internalAuthor) {
+                        // 匹配到内部作者
+                        displayAuthors.push({
+                            type: 'internal',
+                            id: internalAuthor.id,
+                            name_en: internalAuthor.name_en,
+                            name_zh: internalAuthor.name_zh,
+                            order: index,
+                            is_corresponding: internalAuthor.is_corresponding
+                        });
+                    } else {
+                        // 未匹配到内部作者，作为外部作者处理
+                        displayAuthors.push({
+                            type: 'external',
+                            text: fragment, // 直接使用原始片段
+                            order: index
+                        });
+                    }
+                });
+            } else {
+                // 如果没有 authors_full_string，则回退到只显示内部作者 (可能不理想)
+                console.warn(`Publication ID ${p.id} is missing authors_full_string. Falling back to internal authors only.`);
+                p.authors.forEach(ap => {
+                    displayAuthors.push({
+                        type: 'internal',
+                        id: ap.author.id,
+                        name_en: ap.author.name_en,
+                        name_zh: ap.author.name_zh,
+                        order: ap.author_order,
+                        is_corresponding: ap.is_corresponding_author
+                    });
+                });
+            }
+
+            // 移除原始的 authors 关联数据，只保留 displayAuthors
+            const { authors, ...restOfPub } = p;
+
+            return { ...restOfPub, displayAuthors };
         });
 
         // 4. 计算显示状态
@@ -157,12 +212,11 @@ export async function getMemberProfileData(id: string): Promise<MemberProfileDat
 
         // 5. 组装最终返回给页面的对象 (符合 MemberProfileData 类型)
         const profileData = {
-          ...member, // 包含基础信息、supervisor、supervisees
+          ...member, 
           displayStatus,
-          // 添加所有单独查询到的关联数据数组
           educationHistory,
           awards,
-          projects: projectMembersRaw,
+          projects: projectMembersRaw, // 注意：这里还是原始的，如果前端需要格式化，也要处理
           teachingRoles,
           presentations,
           softwareAndDatasets,
@@ -177,7 +231,6 @@ export async function getMemberProfileData(id: string): Promise<MemberProfileDat
 
     } catch (error) {
         console.error(`获取成员 ${id} 档案失败:`, error);
-        // 向上抛出错误，让 Server Component 或 API Route 处理
         throw new Error(`Failed to retrieve profile for member ${id}`);
     }
 }

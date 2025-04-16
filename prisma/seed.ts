@@ -45,6 +45,21 @@ function isValidMemberStatus(value: string): value is keyof typeof MemberStatus 
 async function main() {
     console.log(`开始填充测试数据...`);
 
+    // --- Step 1 Prep: Get Member Name Map ---
+    console.log("Fetching members to create name map...");
+    const members = await prisma.member.findMany({
+        select: { id: true, name_en: true }
+    });
+    const memberNameMap = new Map<string, string>();
+    members.forEach(member => {
+        if (member.name_en) {
+            const normalizedName = member.name_en.toLowerCase().trim();
+            memberNameMap.set(normalizedName, member.id);
+            // Optional: Add variations like 'last, first' if needed, but primary is 'first last'
+        }
+    });
+    console.log(`Created name map with ${memberNameMap.size} members.`);
+
     // --- 1. 从 CSV 创建或更新成员 (使用 upsert) ---
     const csvFilePath = path.join(__dirname, 'initcsv', 'Member.csv');
     console.log(`正在读取成员 CSV 文件: ${csvFilePath}`);
@@ -354,37 +369,201 @@ async function main() {
     // ... (project creation logic) ...
     console.log("Skipping Project seeding for now.");
 
-    // --- 5. 添加出版物和作者关系 (Keep or remove/comment out based on needs) ---
-    // console.log("正在创建/更新 Publication 表及关系...");
-    // ... (publication upsert logic) ...
-    console.log("Skipping Publication seeding for now.");
+    // --- 5. 添加出版物和作者关系 (COMMENT OUT the old placeholder skip log) ---
+    // console.log("Skipping Publication seeding for now."); // Removed this line
 
     // --- 6. 添加教学经历 (Keep or remove/comment out based on needs) ---
     // console.log("正在清空并重新填充 Teaching 表...");
     // ... (teaching creation logic) ...
     console.log("Skipping Teaching seeding for now.");
 
-    // --- 7. 添加学术服务 (!!! REMOVE / COMMENT OUT THIS OLD SECTION !!!) ---
-    /*
-    if (professor) {
-         console.log("正在清空并重新填充 AcademicService 表..."); // This is the OLD section
-         await prisma.academicService.deleteMany({ where: { member_id: professor.id } });
-         await prisma.academicService.createMany({
-            data: [
-                // THIS USES THE OLD SCHEMA (role, event, year as number)
-                { member_id: professor.id, role: 'PC Member', event: 'Some Conference 2025', year: 2025},
-                { member_id: professor.id, role: 'Reviewer', event: 'Some Journal', year: 2024},
-            ],
-        });
-        console.log(`添加了学术服务测试数据`);
+    // --- 8. Seed Publications from CSV (Step 1: Insert Publications) --- 
+    console.log('--- Starting Publication Seeding (Step 1: Insert Publications) ---');
+    console.log('Seeding publications from publication.csv...');
+
+    // --- Load CCF Rankings --- 
+    const ccfRankingsPath = path.join(__dirname, '..', 'data', 'ccf_rankings.json');
+    let ccfRankings: Record<string, string> = {};
+    if (fs.existsSync(ccfRankingsPath)) {
+        try {
+            const ccfJsonContent = fs.readFileSync(ccfRankingsPath, { encoding: 'utf-8' });
+            ccfRankings = JSON.parse(ccfJsonContent);
+            console.log(`Loaded ${Object.keys(ccfRankings).length} CCF rankings from ${ccfRankingsPath}`);
+        } catch (err) {
+            console.error(`Error reading or parsing ccf_rankings.json:`, err);
+            // Proceed without rankings if file is invalid
+        }
     } else {
-        console.warn("跳过添加学术服务，因为教授未找到。");
+        console.warn(`Warning: CCF rankings file not found at ${ccfRankingsPath}. Publications will not have CCF ranks.`);
     }
-    */
-    console.log("Removed/Commented out old AcademicService test data section.")
 
+    // Correct the path to point to the data directory relative to the prisma directory
+    const pubCsvFilePath = path.join(__dirname, '..', 'data', 'publication.csv');
+    if (!fs.existsSync(pubCsvFilePath)) {
+        console.error(`Error: Publication CSV file not found at expected path: ${pubCsvFilePath}`);
+    } else {
+        const pubCsvContent = fs.readFileSync(pubCsvFilePath, { encoding: 'utf-8' });
+        const pubRecords = parse(pubCsvContent, {
+            columns: true,
+            skip_empty_lines: true,
+            trim: true,
+        });
 
-    // --- 其他表 ---
+        console.log(`Read ${pubRecords.length} publication records from CSV. Processing...`);
+
+        const publicationData: Prisma.PublicationCreateManyInput[] = [];
+        let skippedPubCount = 0;
+
+        for (const record of pubRecords) {
+            // Use capitalized keys based on the CSV headers seen in logs
+            const title = record.Title; 
+            const year = parseIntSafe(record.Year); 
+
+            if (!title || !year) {
+                // Log the problematic record for debugging
+                console.warn(`Skipping publication record due to missing or invalid Title/Year:`, record);
+                skippedPubCount++;
+                continue;
+            }
+
+            // Filter out old records (optional, can be removed if all should be seeded)
+            if (year < 2016) { 
+                 // console.log(`Skipping old publication (Year: ${year}): ${title}`);
+                 skippedPubCount++;
+                 continue;
+            }
+
+            // --- Find CCF Rank --- 
+            let ccfRank: string | null = null;
+            // Use 'Publication' column for venue lookup, ensure it's lowercase
+            const venue = record.Publication ? record.Publication.toLowerCase().trim() : null;
+            if (venue && ccfRankings[venue]) {
+                ccfRank = ccfRankings[venue];
+            } else if (venue) {
+                // Try partial match or variations (optional, can be improved)
+                const matchedKey = Object.keys(ccfRankings).find(key => venue.includes(key));
+                if (matchedKey) {
+                    ccfRank = ccfRankings[matchedKey];
+                }
+            }
+
+            // Type conversion
+            let publicationType: PublicationType = PublicationType.CONFERENCE;
+            const typeString = record.Type?.toUpperCase(); 
+            if (typeString && Object.values(PublicationType).includes(typeString as PublicationType)) {
+                publicationType = typeString as PublicationType;
+            }
+
+            publicationData.push({
+                title: title,
+                venue: record.Publication || null, 
+                year: year,
+                volume: record.Volume || null, 
+                number: record.Number || null, 
+                pages: record.Pages || null, 
+                publisher: record.Publisher || null, 
+                ccf_rank: ccfRank, 
+                pdf_url: record.pdf_url || null, 
+                abstract: record.abstract || null, 
+                keywords: record.keywords || null, 
+                type: publicationType,
+                slides_url: record.slides_url || null, 
+                video_url: record.video_url || null, 
+                code_repository_url: record.code_repository_url || null, 
+                project_page_url: record.project_page_url || null, 
+                is_peer_reviewed: parseBoolSafe(record.is_peer_reviewed, true), 
+                publication_status: record.publication_status || null, 
+                authors_full_string: record.Authors || null, // Ensure Authors column name is correct
+            });
+        }
+
+        // --- Clear and Insert Publications (Step 1 End) ---
+        console.log("Clearing existing PublicationAuthor and Publication data...");
+        await prisma.publicationAuthor.deleteMany({}); // Clear links first
+        await prisma.publication.deleteMany({}); 
+        console.log("Existing data cleared.");
+
+        if (publicationData.length > 0) {
+            console.log(`Attempting to insert ${publicationData.length} new publication records...`);
+            try {
+                await prisma.publication.createMany({
+                    data: publicationData,
+                });
+                console.log(`Successfully inserted ${publicationData.length} publication records. Skipped ${skippedPubCount} records from CSV.`);
+            } catch (e) {
+                console.error("Error inserting publications:", e);
+            }
+        } else {
+            console.log("No valid new publication records to insert.");
+        }
+
+        // --- Step 2: Create PublicationAuthor Links ---
+        console.log("--- Starting Author Linking (Step 2: Create PublicationAuthor Links) ---");
+        const createdPublications = await prisma.publication.findMany({
+            select: { id: true, authors_full_string: true }
+        });
+        console.log(`Fetched ${createdPublications.length} created publications to link authors.`);
+
+        const publicationAuthorsToInsert: Prisma.PublicationAuthorCreateManyInput[] = [];
+        let linkedAuthorsCount = 0;
+
+        for (const pub of createdPublications) {
+            const authorString = pub.authors_full_string;
+            if (!authorString) {
+                // console.warn(`Publication ID ${pub.id} has no authors_full_string.`);
+                continue;
+            }
+
+            // Split by semicolon, assuming this is the primary delimiter
+            const authorFragments = authorString.split(';').map(f => f.trim()).filter(f => f); // Trim and remove empty strings
+
+            authorFragments.forEach((fragment, index) => {
+                // Process only fragments likely in "Last, First" format
+                if (fragment.includes(',')) {
+                    const parts = fragment.split(',').map(p => p.trim());
+                    if (parts.length === 2 && parts[0] && parts[1]) {
+                        const lastName = parts[0];
+                        const firstName = parts[1];
+                        // Construct "First Last" format for lookup
+                        const normalizedLookupName = `${firstName} ${lastName}`.toLowerCase();
+
+                        if (memberNameMap.has(normalizedLookupName)) {
+                            const memberId = memberNameMap.get(normalizedLookupName)!;
+                            publicationAuthorsToInsert.push({
+                                publication_id: pub.id,
+                                member_id: memberId,
+                                author_order: index, // Use the index from the split array as order
+                                // is_corresponding_author: false, // Add logic later if needed
+                            });
+                            linkedAuthorsCount++;
+                            // console.log(`Linked: Pub ${pub.id}, Order ${index}, Name '${fragment}' -> Member ${memberId}`);
+                        }
+                    }
+                } 
+                // Optional: Add logic here to handle fragments NOT in "Last, First" format
+                // e.g., try direct lookup if it matches a name in the map, 
+                // but be careful about ambiguity.
+            });
+        }
+
+        // Batch insert the links
+        if (publicationAuthorsToInsert.length > 0) {
+            console.log(`Attempting to insert ${publicationAuthorsToInsert.length} PublicationAuthor links...`);
+            try {
+                 await prisma.publicationAuthor.createMany({
+                     data: publicationAuthorsToInsert,
+                     // skipDuplicates: true, // Might be useful if reprocessing, but ensure logic is correct
+                 });
+                 console.log(`Successfully inserted ${linkedAuthorsCount} author links for ${createdPublications.length} publications.`);
+            } catch (e) {
+                 console.error("Error inserting PublicationAuthor links:", e);
+            }
+    } else {
+            console.log("No author links to insert based on matching.");
+        }
+    }
+
+    // --- 9. Other Tables ---
     console.log(`跳过填充其他表 (无测试数据)`);
 
 }

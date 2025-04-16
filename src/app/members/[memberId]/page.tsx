@@ -16,6 +16,18 @@ import {
 import Image from 'next/image';
 import { themeColors } from '@/styles/theme'; // 导入 V2 提供的 themeColors
 
+// 【新增】定义需要高亮的论文标题集合 (小写), 与 PublicationItem 保持一致
+const highlightedPaperTitles = new Set([
+    "deep learning-based weather prediction: a survey",
+    "exploring power-performance tradeoffs in database systems",
+    "power attack: an increasing threat to data centers.",
+    "blending on-demand and spot instances to lower costs for in-memory storage",
+    "cadre: carbon-aware data replication for geo-diverse services",
+    "pet: reducing database energy cost via query optimization",
+    "{user-guided} device driver synthesis", // 注意特殊字符
+    "when fpga meets cloud: a first look at performance"
+]);
+
 const placeholderAvatar = '/avatars/placeholder.png';
 
 // --- Props 类型定义 ---
@@ -31,41 +43,66 @@ function MemberPublicationItem({ pub }: { pub: PublicationInfo }) {
         ? pub.pdf_url.startsWith('http') ? pub.pdf_url : `/pdfs/${pub.pdf_url}` // 假设本地 PDF 在 /public/pdfs
         : undefined;
 
+    // Use pub.id or title as a fallback key
+    const itemKey = pub.id ?? pub.title;
+
+    // 【新增】检查当前论文是否需要高亮
+    const isHighlighted = pub.title && highlightedPaperTitles.has(pub.title.toLowerCase());
+
     return (
         // V1 边框和间距
         <li className={`mb-4 pb-4 border-b ${themeColors.footerBorder} last:border-b-0`}>
             {/* V1 标题样式 */}
             <h4 className={`text-md font-semibold ${themeColors.textColorPrimary} mb-1`}>{pub.title}</h4>
 
-            {/* 作者信息 (保持 V2 内容, 调整样式) */}
-            {pub.authors && pub.authors.length > 0 && (
+            {/* 作者信息 (使用 displayAuthors, 调整样式) */}
+            {pub.displayAuthors && pub.displayAuthors.length > 0 && (
                 <div className={`text-xs ${themeColors.textColorSecondary} mb-1 flex flex-wrap items-center gap-x-1.5 gap-y-1`}>
                     <Users className={`w-3 h-3 mr-0.5 ${themeColors.textColorTertiary} flex-shrink-0`} />
-                    {pub.authors.map((author, index) => (
-                        <span key={author.id} className="inline-block">
-                            <Link href={`/members/${author.id}`} className={`${themeColors.linkColor} hover:underline`}>
-                                {author.name_zh || author.name_en}
-                            </Link>
-                            {author.is_corresponding && <span title="Corresponding Author" className="text-red-500 ml-0.5">*</span>}
-                            {index < pub.authors.length - 1 ? <span className="opacity-80">, </span> : ''}
+                    {pub.displayAuthors.map((author, index) => (
+                         <span key={`${itemKey}-author-${author.order}`} className="inline-block">
+                            {author.type === 'internal' ? (
+                                <Link href={`/members/${author.id}`} className={`${themeColors.linkColor} hover:underline`}>
+                                    {author.name_zh || author.name_en}
+                                    {author.is_corresponding && <span title="Corresponding Author" className="text-red-500 ml-0.5">*</span>}
+                                </Link>
+                            ) : (
+                                <span className={themeColors.textColorSecondary}>{author.text}</span>
+                            )}
+                            {index < pub.displayAuthors.length - 1 ? <span className="opacity-80">, </span> : ''}
                         </span>
                     ))}
                 </div>
             )}
 
             {/* V1 Venue/Year/CCF 行样式 */}
-            <div className={`text-xs ${themeColors.textColorTertiary}`}>
-                {pub.venue && <span className="mr-2 italic">{pub.venue}</span>}
-                {pub.year && <span className="mr-2">({pub.year})</span>}
-                {/* V1 CCF Rank 样式 */}
-                {pub.ccf_rank && (
-                    <span className={`mr-2 ${pub.ccf_rank === 'A' ? themeColors.ccfAText : pub.ccf_rank === 'B' ? themeColors.ccfBText : pub.ccf_rank === 'C' ? themeColors.ccfCText : themeColors.textColorPrimary}`}>
-                        CCF: <span className="font-medium">{pub.ccf_rank}</span>
-                    </span>
+            <div className={`text-xs ${themeColors.textColorTertiary} flex flex-wrap items-center gap-x-2 gap-y-1`}> {/* Adjusted gap */}
+                {pub.venue && <span className="flex items-center"><i>{pub.venue}</i></span>}
+                {pub.year && <span className="flex items-center"><Calendar className={`w-4 h-4 mr-1 flex-shrink-0`} /> {pub.year}</span>}
+                {/* 【新增】高亮标签 */} 
+                {isHighlighted && (
+                  <span
+                    className={`px-2 py-0.5 rounded-md text-xs font-medium tracking-wide ${themeColors.highlightText ?? 'text-amber-900'} ${themeColors.highlightBg ?? 'bg-amber-100'} border border-amber-200`}
+                  >
+                    🔥 Highly Cited
+                  </span>
+                )}
+                {/* 【修改】CCF Rank 标签样式 */}
+                {pub.ccf_rank && pub.ccf_rank !== 'N/A' && (
+                  <span 
+                    className={`px-2 py-0.5 rounded-md text-xs font-medium tracking-wide ${ // Added tracking-wide
+                      pub.ccf_rank === 'A' ? `${themeColors.ccfAText ?? 'text-blue-900'} ${themeColors.ccfABg ?? 'bg-blue-200'} border border-blue-300` :
+                      pub.ccf_rank === 'B' ? `${themeColors.ccfBText ?? 'text-blue-700'} ${themeColors.ccfBBg ?? 'bg-blue-100'} border border-blue-200` :
+                      pub.ccf_rank === 'C' ? `${themeColors.ccfCText ?? 'text-blue-600'} ${themeColors.ccfCBg ?? 'bg-blue-50'} border border-blue-100` :
+                      'bg-gray-100 text-gray-600 border border-gray-200' // Fallback style
+                    }`}
+                  >
+                     CCF {pub.ccf_rank}
+                  </span>
                 )}
                 {pub.type && !['CONFERENCE', 'JOURNAL'].includes(pub.type) && (
-                    <span className={`mr-2 px-1 py-0.5 rounded text-xs font-medium ${themeColors.ccfCBg} ${themeColors.ccfCText}`}> {/* Use Ccf C style for other types */}
-                        {pub.type}
+                    <span className={`px-1.5 py-0.5 rounded text-xs font-medium ${themeColors.ccfCBg ?? 'bg-gray-100'} ${themeColors.ccfCText ?? 'text-gray-600'} border ${themeColors.footerBorder ?? 'border-gray-200'}`}> {/* Adjusted styling for other types */}
+                        {pub.type.charAt(0) + pub.type.slice(1).toLowerCase()} {/* Format type e.g., 'Book' */}
                     </span>
                 )}
             </div>
@@ -80,16 +117,17 @@ function MemberPublicationItem({ pub }: { pub: PublicationInfo }) {
             {pub.keywords && (<div className={`mt-1 text-xs ${themeColors.textColorTertiary}`}><span className="font-semibold mr-1">Keywords:</span> {pub.keywords}</div>)}
 
             {/* V1 链接区域样式 */}
-            {(pub.doi_url || pdfHref || pub.slides_url || pub.video_url || pub.code_repository_url || pub.project_page_url || pub.bibtex) && (
+            {(pdfHref || pub.slides_url || pub.video_url || pub.code_repository_url || pub.project_page_url || pub.dblp_url) && ( // Removed doi_url and bibtex check, kept dblp_url if needed
                 <div className="flex flex-wrap items-center space-x-3 text-xs mt-1">
-                    {pub.doi_url && <a href={`https://doi.org/${pub.doi_url}`} target="_blank" rel="noopener noreferrer" className={`${themeColors.linkColor} hover:underline flex items-center gap-0.5`}><LinkIcon size={12}/>DOI</a>}
+                    {/* Removed DOI link */}
                     {pdfHref && pdfHref !== '#' && <a href={pdfHref} target="_blank" rel="noopener noreferrer" className={`${themeColors.primary /* V1 used primary for PDF */} hover:underline flex items-center gap-0.5`}><FileIcon size={12}/>PDF</a>}
+                    {/* Keep DBLP link if dblp_url exists */}
+                    {pub.dblp_url && <a href={pub.dblp_url} target="_blank" rel="noopener noreferrer" className={`${themeColors.linkColor} hover:underline flex items-center gap-0.5`}><LinkIcon size={12}/>DBLP</a>}
                     {/* 简化其他链接显示，可按需添加图标和样式 */}
                     {pub.slides_url && <a href={pub.slides_url} target="_blank" rel="noopener noreferrer" className={`${themeColors.linkColor} hover:underline`}>Slides</a>}
                     {pub.video_url && <a href={pub.video_url} target="_blank" rel="noopener noreferrer" className={`${themeColors.linkColor} hover:underline`}>Video</a>}
                     {pub.code_repository_url && <a href={pub.code_repository_url} target="_blank" rel="noopener noreferrer" className={`${themeColors.linkColor} hover:underline`}>Code</a>}
                     {pub.project_page_url && <a href={pub.project_page_url} target="_blank" rel="noopener noreferrer" className={`${themeColors.linkColor} hover:underline`}>Project</a>}
-                    {pub.bibtex && <span className={`${themeColors.textColorTertiary} cursor-pointer`} title={pub.bibtex}>BibTeX</span> /* 或实现复制功能 */}
                 </div>
             )}
         </li>
@@ -151,7 +189,7 @@ export default async function MemberProfilePage({ params }: MemberPageProps) {
 
                     {/* V1 Social Icons Style (at the bottom of primary info) */}
                     <div className="flex justify-center items-center space-x-4 mt-2 mb-4 flex-wrap gap-y-2">
-                         {member.github_url && <a href={member.github_url} target="_blank" rel="noopener noreferrer" title="GitHub" className={`${themeColors.textColorSecondary} hover:${themeColors.textColorPrimary} transition-colors`}><Github size={20} /></a>}
+                         {member.github_username && <a href={`https://github.com/${member.github_username}`} target="_blank" rel="noopener noreferrer" title="GitHub" className={`${themeColors.textColorSecondary} hover:${themeColors.textColorPrimary} transition-colors`}><Github size={20} /></a>}
                          {member.personal_website && <a href={member.personal_website} target="_blank" rel="noopener noreferrer" title="Website" className={`${themeColors.textColorSecondary} hover:${themeColors.textColorPrimary} transition-colors`}><ExternalLink size={20} /></a>}
                          {member.linkedin_url && <a href={member.linkedin_url} target="_blank" rel="noopener noreferrer" title="LinkedIn" className={`${themeColors.textColorSecondary} hover:${themeColors.textColorPrimary} transition-colors`}><Linkedin size={20} /></a>}
                          {member.google_scholar_id && <a href={`https://scholar.google.com/citations?user=${member.google_scholar_id}`} target="_blank" rel="noopener noreferrer" title="Google Scholar" className={`${themeColors.textColorSecondary} hover:${themeColors.textColorPrimary} transition-colors`}><GraduationCap size={20} /></a>}
@@ -242,7 +280,7 @@ export default async function MemberProfilePage({ params }: MemberPageProps) {
                                 <h2 className={`text-xl font-semibold ${themeColors.textColorPrimary} border-b ${themeColors.footerBorder} pb-2 mb-3 flex items-center gap-1.5`}><BookOpen size={18}/> 发表成果</h2>
                                 <ul className="list-none p-0 mt-2 space-y-2"> {/* V1 spacing */}
                                     {publications.map((pub) => (
-                                        <MemberPublicationItem key={pub.id ?? pub.doi_url ?? pub.title} pub={pub} />
+                                        <MemberPublicationItem key={pub.id ?? pub.title} pub={pub} />
                                     ))}
                                 </ul>
                             </section>
@@ -255,10 +293,8 @@ export default async function MemberProfilePage({ params }: MemberPageProps) {
                                 <ul className="space-y-2 list-disc pl-5 text-sm mt-3">
                                     {awards.map(award => (
                                         <li key={award.id} className={`${themeColors.textColorSecondary}`}>
-                                            {award.link_url ? <a href={award.link_url} target='_blank' rel='noopener noreferrer' className='hover:underline'>{award.title}</a> : award.title}
-                                            {award.organization ? `, ${award.organization}` : ''}
+                                            {award.link_url ? <a href={award.link_url} target='_blank' rel='noopener noreferrer' className='hover:underline'>{award.content}</a> : award.content}
                                             {award.year ? ` (${award.year})` : ''}
-                                            {award.description && <span className={`text-xs italic ${themeColors.textColorTertiary} block`}>{award.description}</span>}
                                         </li>
                                     ))}
                                 </ul>
@@ -309,20 +345,22 @@ export default async function MemberProfilePage({ params }: MemberPageProps) {
                         {presentations && presentations.length > 0 && (
                             <section>
                                 <h2 className={`text-xl font-semibold ${themeColors.textColorPrimary} border-b ${themeColors.footerBorder} pb-2 mb-3 flex items-center gap-1.5`}><PresentationIcon size={18}/> 学术报告</h2>
-                                <ul className="space-y-2 list-disc pl-5 text-sm mt-3">
+                                <ul className="space-y-3 list-none p-0 mt-3">
                                     {presentations.map(pres => (
-                                        <li key={pres.id} className={`${themeColors.textColorSecondary}`}>
-                                            "{pres.title}"
-                                            {pres.is_invited && <span className={`ml-1 text-xs font-medium ${themeColors.accentColor}`}>(Invited)</span>}
-                                            {pres.event_name ? `, ${pres.event_name}` : ''}
-                                            {pres.location ? `, ${pres.location}` : ''}
-                                            {pres.year ? ` (${pres.year})` : ''}
-                                            {pres.url && <a href={pres.url} target="_blank" rel="noopener noreferrer" className={`ml-1.5 text-xs ${themeColors.linkColor} hover:underline`}>[Slides/Video]</a>}
+                                        <li key={pres.id} className="text-sm">
+                                            <p className={`font-semibold ${themeColors.textColorPrimary}`}>{pres.title}</p>
+                                            {pres.event_name && <p className={`${themeColors.textColorSecondary}`}>{pres.event_name}</p>}
+                                            <div className={`text-xs ${themeColors.textColorTertiary} flex items-center gap-x-2 mt-0.5`}>
+                                                {pres.location && <span>{pres.location}</span>}
+                                                {pres.year && <span>({pres.year})</span>}
+                                                {pres.url && <a href={pres.url} target="_blank" rel="noopener noreferrer" className={`${themeColors.linkColor} hover:underline flex items-center gap-0.5`}><LinkIcon size={10}/> Slides/Video</a>}
+                                            </div>
+                                            {pres.is_invited && <span className={`text-xs font-medium px-1.5 py-0.5 rounded inline-block mt-1 ${themeColors.ccfBBg} ${themeColors.ccfAText}`}>Invited Talk</span>}
                                         </li>
-                                     ))}
+                                    ))}
                                 </ul>
                             </section>
-                         )}
+                        )}
 
                          {/* 软件与数据集 */}
                          {softwareAndDatasets && softwareAndDatasets.length > 0 && (
@@ -379,16 +417,15 @@ export default async function MemberProfilePage({ params }: MemberPageProps) {
                         {academicServices && academicServices.length > 0 && (
                             <section>
                                 <h2 className={`text-xl font-semibold ${themeColors.textColorPrimary} border-b ${themeColors.footerBorder} pb-2 mb-3 flex items-center gap-1.5`}><BriefcaseBusiness size={18}/> 学术服务</h2>
-                                <ul className="space-y-2 list-disc pl-5 text-sm mt-3">
+                                <ul className="space-y-1 list-disc pl-5 text-sm mt-3">
                                     {academicServices.map(service => (
                                         <li key={service.id} className={`${themeColors.textColorSecondary}`}>
-                                            {service.role}, {service.event}
-                                            {service.year ? ` (${service.year})` : ''}
+                                            {service.content}
                                         </li>
                                     ))}
                                 </ul>
                             </section>
-                         )}
+                        )}
 
                          {/* "更多关于我" */}
                         {member.more_about_me && (

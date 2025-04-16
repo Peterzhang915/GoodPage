@@ -91,6 +91,7 @@ model Member {
   github_username  String?
   linkedin_url     String?
   google_scholar_id String?
+  dblp_id          String? // Added DBLP ID field
   cv_url           String?
   display_order    Int     @default(0)
   is_active        Boolean @default(true)
@@ -310,13 +311,16 @@ model Publication {
   title                 String           // 论文标题 (必填)
   venue                 String?          // 发表地点 (会议/期刊名称) (可选)
   year                  Int              // 发表年份 (必填)
+  volume                String?          // 卷号 (可选)
+  number                String?          // 期号 (可选)
+  pages                 String?          // 页码 (可选)
+  publisher             String?          // 出版社 (可选)
   ccf_rank              String?          // CCF 等级 (可选)
-  doi_url               String?          @unique // DOI 链接 (可选, 唯一)
+  dblp_url              String?          // DBLP 链接 (可选)
   pdf_url               String?          // PDF 文件链接 (可选)
   abstract              String?          // 摘要 (可选)
   keywords              String?          // 关键词 (逗号分隔文本?) (可选)
   type                  PublicationType? @default(CONFERENCE) // 出版物类型 (使用枚举, 默认为会议)
-  bibtex                String?          // BibTeX 引用条目 (可选)
   slides_url            String?          // 相关的幻灯片链接 (可选)
   video_url             String?          // 相关的报告视频链接 (可选)
   code_repository_url   String?          // 相关的代码库链接 (可选)
