@@ -16,23 +16,22 @@ import prisma from '@/lib/prisma'; // Import Prisma Client instance
 import { themeColors } from '@/styles/theme';
 
 // Import placeholder components (we will create these next)
-import AcademicServicesSection from '@/components/lab_leader/AcademicServicesSection';
-import AwardsSection from '@/components/lab_leader/AwardsSection';
-// Import the new Sponsorships section component
-import SponsorshipsSection from '@/components/lab_leader/SponsorshipsSection';
-// Import the new Header component
-import LabLeaderHeader from '@/components/lab_leader/LabLeaderHeader';
-// Import the new Research Interests component
-import ResearchInterestsSection from '@/components/lab_leader/ResearchInterestsSection';
-// Import the new Publications component
-import PublicationsSection from '@/components/lab_leader/PublicationsSection';
+// import AcademicServicesSection from '@/components/lab_leader/AcademicServicesSection';
+// import AwardsSection from '@/components/lab_leader/AwardsSection';
+// import SponsorshipsSection from '@/components/lab_leader/SponsorshipsSection';
+// import LabLeaderHeader from '@/components/lab_leader/LabLeaderHeader';
+// import ResearchInterestsSection from '@/components/lab_leader/ResearchInterestsSection';
+// import PublicationsSection from '@/components/lab_leader/PublicationsSection';
+
+// Import the new client component that handles rendering and animation
+import LabLeaderPageContent from '@/components/lab_leader/LabLeaderPageContent';
 
 // --- 单个论文条目组件 ---
 // (保持不变，接收 PublicationInfo)
 // function PublicationItem({ pub }: { pub: PublicationInfo }) { ... } // REMOVED
 
 
-// --- 教授页面组件 (Server Component) ---
+// --- 教授页面组件 (Server Component - Primarily for data fetching) ---
 export default async function ProfessorPage() {
 
   // --- 获取出版物数据 ---
@@ -105,45 +104,48 @@ export default async function ProfessorPage() {
   // TODO: Check if professor data itself needs to be fetched dynamically
   // For now, keeping the header static
 
+  // --- Render the client component and pass data as props ---
+  return (
+    <LabLeaderPageContent
+      leaderData={professorData}
+      publications={ccfAPubs} // Pass filtered pubs or allPublications based on need
+      pubError={pubError}
+      featuredServices={featuredServices}
+      detailedServices={detailedServices}
+      featuredAwards={featuredAwards}
+      detailedAwards={detailedAwardsData} // Ensure prop name matches interface
+      featuredSponsorships={featuredSponsorships}
+      detailedSponsorships={detailedSponsorships}
+      dataError={dataError}
+    />
+  );
+
+  // --- Old JSX structure removed ---
+  /*
   return (
     <div className={`${themeColors.themePageBg ?? 'bg-gray-50'} min-h-screen`}>
-
-      {/* 顶部标题栏区域: 使用新组件和动态数据 */}
       <LabLeaderHeader leaderData={professorData} />
-
-      {/* 主要内容区域 - Reduced Padding and Spacing */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 md:py-12"> {/* Reduced py-16/20 */}
-        <div className="flex flex-col space-y-8 md:space-y-12"> {/* Increased spacing */}
-
-          {/* 研究兴趣板块: 使用新组件，并传递动态获取的数据 */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 md:py-12">
+        <div className="flex flex-col space-y-8 md:space-y-12">
           <ResearchInterestsSection interestsText={professorData?.research_interests} />
-
-          {/* 出版物板块: 使用新组件并传递数据和错误信息 */}
           <PublicationsSection publications={ccfAPubs} fetchError={pubError} />
-
-          {/* 学术服务板块: 使用新组件和动态数据 */}
           <AcademicServicesSection
               featuredServices={featuredServices}
               detailedServices={detailedServices}
-              fetchError={dataError} // Pass potential error with consistent name
+              fetchError={dataError}
           />
-
-          {/* 奖项与荣誉板块: 使用新组件和动态数据 */}
           <AwardsSection
               featuredAwards={featuredAwards}
-              detailedAwards={detailedAwardsData} // Pass the non-featured awards
-              fetchError={dataError} // Pass potential error with consistent name
+              detailedAwards={detailedAwardsData}
+              fetchError={dataError}
           />
-
-          {/* 资助与项目板块: 添加新组件 */}
           <SponsorshipsSection
-              featuredSponsorships={featuredSponsorships} // Pass featured sponsorships
-              detailedSponsorships={detailedSponsorships} // Pass detailed sponsorships
-              // fetchError={dataError} // Pass error if component handles it
+              featuredSponsorships={featuredSponsorships}
+              detailedSponsorships={detailedSponsorships}
           />
-
-        </div> {/* 内容板块容器结束 */}
-      </div> {/* 主要内容区域结束 */}
-    </div> // 页面最外层容器结束
+        </div>
+      </div>
+    </div>
   );
+  */
 }
