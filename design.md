@@ -10,17 +10,39 @@
 
 ### 2.1 访问机制
 
-*   **触发方式:** Konami Code (上上下下左右左右 B A)。在全局布局或特定组件中监听键盘事件序列。
-*   **后续流程:** 成功触发后，显示认证界面（Modal 或独立页面）。
+*   **触发方式:** Konami Code (上上下下左右左右 B A)。在全局布局 (`src/app/layout.tsx`) 中监听键盘事件序列。
+*   **导航:** 成功触发 Konami Code 后，使用客户端路由 (`router.push('/developer')`) **导航**到 `/developer` 页面。
+*   **页面保护:** `/developer` 页面本身需要在**服务器端**进行访问控制。
+    *   如果用户未通过认证（无有效 Session/Cookie），则显示登录界面。
+    *   如果用户已认证，则显示开发者工具界面。
+    *   **禁止**未授权用户通过直接输入 URL 访问开发者工具。
 
 ### 2.2 认证设计
 
 *   **初期方案:** 固定密钥认证。
-    *   在认证界面提供一个输入框。
-    *   用户输入存储在环境变量 (`DEVELOPER_ACCESS_KEY` 或类似名称) 中的预设密钥。
-    *   后端提供 API (`/api/auth/login`) 验证密钥。
-    *   认证状态通过安全的 HttpOnly Cookie 或 Session 维护。
-*   **未来扩展:** 可考虑引入用户名/密码登录或 OAuth (如 GitHub 登录)。
+    *   在 `/developer` 页面未认证时，显示**类 Linux 终端风格**的登录提示符界面。
+        *   提示符样式可为 `Password or Key: ` 或类似。
+    *   用户在此界面输入存储在环境变量 (`DEVELOPER_ACCESS_KEY` 或类似名称) 中的预设密钥。
+    *   输入时使用 `*` 隐藏，并显示**闪烁的光标**。
+    *   后端提供 API (`/api/auth/developer`) 验证密钥（使用 POST 请求）。
+    *   认证状态通过**安全的 HttpOnly Cookie 或 Session** 维护，并设置合理的有效期。
+*   **登录成功:**
+    *   **清屏效果** (移除登录界面元素)。
+    *   使用**打字机效果** (`Typewriter.tsx` 需升级支持换行和结束时光标控制) 依次打印：
+        1.  **GOODLAB ASCII Art (用户提供最终版本)**
+        2.  欢迎语 (例如 "Authentication successful. Welcome back, [username]!"，后续可支持自定义)。
+    *   提示用户按 **Enter 键**继续。
+    *   按下 Enter 后，前端状态更新，渲染开发者工具界面。
+*   **登录失败:**
+    *   在终端界面输出**红色**的错误信息，带 `[ERROR]` 标签 (例如 "[ERROR] Authentication failed. Invalid password or key.")。
+    *   在错误信息中显示剩余尝试次数，使用**像素风格红心 ❤️ (图片实现, 32x32px 优先)** 表示。
+    *   每次失败，❤️ 数量减少一个（模拟消失/碎裂）。
+    *   当仅剩 1 颗 ❤️ 时，该 ❤️ 显示**颤抖动画**。
+    *   5 次失败后，显示账户锁定信息和倒计时（锁定逻辑由后端实现）。
+*   **密钥管理:**
+    *   生成/管理：在**安全的、隔离的**内部环境进行。
+    *   轮换：固定密钥**必须**定期更新。
+*   **未来扩展:** 可考虑引入用户名/密码登录或 OAuth。
 
 ### 2.3 功能模块规划
 
@@ -34,18 +56,18 @@
     *   (已实现部分) 待处理出版物审批流程。
     *   **负责人主页展示:** 在实验室负责人的编辑界面中，提供选项（如滑动菜单、复选框）让老师选择哪些出版物要展示在自己的个人主页上，并允许按 CCF 等级排序。
 *   **照片墙管理 (Photo Gallery Management):** 上传照片、管理标签、设置特色照片。
-*   **(待定) 实验室负责人主页编辑 (Lab Leader Profile Editor):** 
-    *   **设计思路:** 提供一个集成式的、所见即所得 (WYSIWYG-like) 的编辑界面，以 `lab_leader/page.tsx` 的展示效果为蓝本。
-    *   **界面:** 大致复刻老师主页布局，允许直接在对应位置进行编辑。
+*   **(待定) 实验室负责人主页编辑 (Lab Leader Profile Editor):**
+    *   **设计思路:** 提供一个集成式的、所见即所得 (WYSIWYG-like) 的编辑界面，以 `lab_leader/page.tsx` 的展示效果为蓝本。**编辑器本身可不做响应式布局**，优先桌面端体验。
+    *   **界面:** 复刻老师主页布局，在对应位置添加编辑控件。
     *   **编辑方式:**
-        *   **文本块 (如研究兴趣、简介):** 使用富文本或 Markdown 编辑器。
-        *   **列表数据 (如服务、奖项):** 提供添加、编辑、删除按钮，并提供"直接显示/隐藏"开关来控制 `isFeatured` 状态，可能支持拖拽排序。
-        *   **个人信息 (如姓名、邮箱):** 使用文本输入框。
-    *   **目标:** 为老师提供一个完整、直观、易用的个人主页内容管理工具。
-*   **(待定) 运维/工具 (Ops/Tools):**
-    *   (已存在组件) `CodeServerManager`: 提供管理 code-server 的界面 (具体功能待定)。
-    *   (已存在组件) `KeyGenerator`: 可能用于管理 API 密钥或其他访问凭证 (具体功能待定)。
-    *   (已存在组件) `OpsManager`: 提供其他运维相关操作界面 (具体功能待定)。
+        *   **短文本 (姓名、邮箱等):** 行内编辑控件 (点击图标切换 Input/Select，带 Save/Cancel)。
+        *   **长文本/格式化文本 (简介、研究陈述等):** 优先使用 **Markdown 编辑器** (`react-md-editor` 备选)，提供基础格式化能力，并明确告知用户支持的语法。若 Markdown 不满足需求，再考虑富文本编辑器 (`TipTap`)。
+        *   **列表数据 (教育、奖项、服务等):** 使用 **Modal 表单** (`react-hook-form` 处理) 进行添加/编辑。列表项旁提供 Edit/Delete 按钮。使用**开关/复选框**控制 `isFeatured` 状态。利用数据库已有的 `display_order` 字段实现**自定义排序** (可通过 Up/Down 按钮或拖拽库 `@dnd-kit/core` 实现)。
+        *   **负责人出版物选择/排序:** 在编辑器内提供专门区域或 Modal。后端提供接口获取该负责人所有出版物。使用带复选框的列表供选择。提供排序选项 (CCF/年份)。推荐新建 `FeaturedPublication` 表 (包含 `memberId`, `publicationId`, `display_order`) 来存储选择和排序结果 (方案 B)。
+    *   **状态管理:** 推荐使用 **Zustand** 管理编辑器整体状态。
+*   **(已移除)** 运维/工具 (Ops/Tools) - *仅保留 CodeServerManager*
+    *   `CodeServerManager`: 提供 Code Server 访问代理/转发功能，增强安全性。允许用户配置，提供通用模板。*(具体实现待定)*
+    *   *KeyGenerator 和 OpsManager 从开发者页面移除，相关功能应在安全的后端或内部工具中实现。*
 
 ### 2.4 账户与角色权限 (RBAC)
 
@@ -69,32 +91,54 @@
     *   `access_codeserver_advanced`: 访问高级 Code Server (SeniorMember 及以上)
     *   `approve_content`: 批准待审核内容 (SeniorMember/Admin/Root)
     *   *(可根据需要增删权限点)*
-*   **授权实现:** 授权检查（判断用户是否有执行某操作的权限）逻辑在后端 API 中实现，推荐使用**中间件 (Middleware)** 对需要权限的路由进行保护。
+*   **授权实现:** 主要在后端 API 通过**中间件**实现。
+*   **前端配合:**
+    *   根据从后端获取的用户角色和权限信息，**动态显示/隐藏**开发者工具中的菜单项、功能卡片、按钮或编辑控件。
+    *   例如，普通 `User` 登录后只能看到有限的工具（如编辑自己信息），无法看到用户管理、新闻管理等卡片。
 
 ### 2.5 数据模型
 
 采用灵活的关系型数据库设计方案：
 
-*   **`Member` 表:** 包含成员基本信息，以及新增的 `username` (唯一) 字段。
+*   **`Member` 表:** 包含成员基本信息，以及新增的 `username` (唯一, non-nullable?) 和可能的 `featuredPublicationConfig: String?` (如果采用方案 A)。
 *   **`Role` 表:** 存储角色信息 (`id`, `name`, `description`)。
 *   **`Permission` 表:** 存储细分的权限点 (`id`, `action`, `resource`, `description`)。
 *   **`MemberRole` 关联表:** 连接 `Member` 和 `Role` (多对多关系)。
 *   **`RolePermission` 关联表:** 连接 `Role` 和 `Permission` (多对多关系)。
+*   **`(新增)` `FeaturedPublication` 表:** (如果采用方案 B) 包含 `id`, `memberId`, `publicationId`, `display_order`。
 
 ## 3. UI/UX 设计
 
-(待补充：记录关键页面的布局、交互、动画等设计决策)
+*   **开发者登录界面:**
+    *   风格：模拟 Linux 终端提示符，沿用开发者工具配色。
+    *   交互：见 2.2 认证设计中的登录成功/失败流程。
+    *   防暴力：结合后端 API 实现登录尝试次数限制和锁定（前端通过 ❤️ UI 反馈）。
+*   **小恐龙彩蛋:**
+    *   实现方式：创建一个**独立的静态页面** (例如 `/dino`)，使用 HTML/CSS 模拟视觉效果，**无需**完整游戏逻辑。
+    *   触发方式：监听单独的 Cheat Code (`6031769`)，触发后导航至 `/dino`。
+    *   无限生命模式：通过 URL 参数 (例如 `/dino?godmode=true`) 激活。
+*   **编辑器界面:**
+    *   遵循"复用展示页面，替换为编辑控件"的原则。
+    *   优先保证桌面端易用性，复杂编辑部分可不做响应式。
 
 ## 4. 技术选型
 
-(待补充：记录项目使用的主要框架、库、数据库等及其版本)
+*   **核心框架:** Next.js (App Router)
+*   **UI 库:** Tailwind CSS, shadcn/ui (推荐引入，提供基础组件), lucide-react (图标)
+*   **动画:** Framer Motion
+*   **状态管理:** Zustand (全局状态), React Context (少量共享状态), `useState`/`useReducer` (局部状态)
+*   **表单处理:** `react-hook-form`
+*   **Markdown 编辑器:** `react-md-editor` (备选)
+*   **富文本编辑器:** `TipTap` (若 Markdown 不足)
+*   **拖拽排序:** `@dnd-kit/core` (可选)
+*   **数据库 ORM:** Prisma
+*   **认证:** NextAuth.js (推荐引入，简化 Session/Cookie 管理，支持未来扩展多种认证方式) 或 手动实现基于 Cookie/Session 的认证。
+*   **API 请求:** Axios 或 `fetch` (服务器组件)
+*   **数据获取/缓存 (客户端):** React Query (TanStack Query) (推荐引入)
+*   **打字机组件 (`Typewriter.tsx`):** 需要升级以支持多行文本（换行符）和结束时光标控制。
 
 ## 5. 项目进度与状态
 
-(待补充：记录已完成和未完成的主要功能模块)
-
-*   **已完成:**
-    *   ...
-*   **进行中/未完成:**
-    *   开发者页面权限系统设计
-    *   ... 
+*   **第一阶段目标:** 实现开发者页面登录 (终端风格) 与 RBAC 权限验证 (后端 API + 前端 UI 控制)。
+*   **第二阶段目标:** 实现 Lab Leader Profile Editor。
+*   ... 
