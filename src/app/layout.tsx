@@ -5,10 +5,18 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
-import { useKonamiCode } from "@/hooks/useKonamiCode";
+import { useCheatCode } from "@/hooks/useCheatCode";
 import { useRouter } from "next/navigation";
 
 const inter = Inter({ subsets: ["latin"] });
+
+// Define Konami sequence and regex for allowed keys
+const konamiSequence = "ArrowUpArrowUpArrowDownArrowDownArrowLeftArrowRightArrowLeftArrowRightba";
+const konamiAllowedKeys = /^(ArrowUp|ArrowDown|ArrowLeft|ArrowRight|b|a)$/;
+
+// Define Dino sequence
+const dinoSequence = "6031769";
+// Default allowedKeysRegex for dinoSequence (digits only) is fine
 
 export default function RootLayout({
   children,
@@ -17,9 +25,17 @@ export default function RootLayout({
 }>) {
   const router = useRouter();
 
-  useKonamiCode(() => {
+  // Developer page trigger using useCheatCode
+  useCheatCode(konamiSequence, () => {
+    console.log("[Layout] Konami cheat code triggered. Attempting navigation to /developer...");
     router.push("/developer");
-  });
+  }, konamiAllowedKeys);
+
+  // Dino page trigger using useCheatCode
+  useCheatCode(dinoSequence, () => {
+    console.log("[Layout] Dino cheat code triggered. Attempting navigation to /dino...");
+    router.push("/dino");
+  }); // Uses default regex (digits only)
 
   return (
     <html lang="en">

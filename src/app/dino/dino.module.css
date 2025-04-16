@@ -1,0 +1,127 @@
+/* GoodPage/src/app/dino/dino.module.css */
+
+.container {
+  position: relative; /* Needed for absolute positioning of children */
+  width: 100vw;
+  height: 100vh; /* Use full viewport height */
+  background-color: #f7f7f7;
+  overflow: hidden; /* Hide anything that goes outside */
+  font-family: sans-serif;
+  color: #555;
+  /* Remove centering styles */
+}
+
+/* Remove the dedicated gameArea, use container directly */
+
+.ground {
+  position: absolute;
+  bottom: 10%; /* Position ground higher for full screen */
+  left: 0;
+  width: 200%;
+  height: 12px;
+  background-image: repeating-linear-gradient(
+    45deg,
+    #d3d3d3 0,
+    #d3d3d3 1px,
+    transparent 1px,
+    transparent 3px
+  );
+  background-size: 4px 4px;
+  animation: scrollGround 5s linear infinite; /* Slightly faster scroll */
+  z-index: 5;
+}
+
+@keyframes scrollGround {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%); /* Scroll one full pattern width */
+  }
+}
+
+.dino {
+  position: absolute;
+  bottom: calc(10% + 2px); /* Position dino just above the ground line */
+  left: 60px; /* Keep some distance from the left edge */
+  font-size: 3rem; /* Slightly larger */
+  user-select: none;
+  transform: scaleX(-1);
+  z-index: 10;
+}
+
+.obstacle {
+  position: absolute;
+  bottom: calc(10% + 2px); /* Align obstacles with ground */
+  user-select: none;
+  z-index: 9;
+  /* Apply the movement animation */
+  animation-name: moveObstacle;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  right: -100px; /* Start off-screen right, animation will move it left */
+}
+
+/* Keyframes for obstacle movement */
+@keyframes moveObstacle {
+  from {
+    /* Start completely off-screen to the right */
+    transform: translateX(0);
+  }
+  to {
+    /* Move completely off-screen to the left */
+    /* 100vw moves it across the viewport, 150px ensures it's fully off */
+    transform: translateX(calc(-100vw - 150px));
+  }
+}
+
+/* Apply different timings and styles to obstacles */
+.cactus1 {
+  font-size: 2.8rem;
+  animation-duration: 3.8s;
+  animation-delay: 0.5s;
+}
+
+.cactus2 {
+  font-size: 3.5rem; /* Larger cactus */
+  animation-duration: 4.5s;
+  animation-delay: 2.5s;
+}
+
+.pterodactyl {
+  font-size: 2.5rem;
+  bottom: calc(10% + 40px); /* Position pterodactyl higher */
+  animation-duration: 5.5s;
+  animation-delay: 1.5s;
+}
+
+.godModeText {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  font-weight: bold;
+  color: #2ecc71;
+  background-color: rgba(255, 255, 255, 0.8);
+  padding: 5px 10px;
+  border-radius: 5px;
+  font-size: 1rem;
+  z-index: 20;
+}
+
+.instructions {
+  position: absolute;
+  bottom: 20px; /* Position instructions at the bottom */
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.8rem;
+  color: #aaa;
+  text-align: center;
+  z-index: 20;
+}
+
+.instructions code {
+  background-color: #ddd;
+  padding: 1px 4px;
+  border-radius: 3px;
+  font-family: monospace;
+} 
