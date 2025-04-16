@@ -1,13 +1,15 @@
+// src/components/common/ContentSection.tsx
 "use client";
 
-import React from 'react';
-import { motion, MotionProps, Transition } from 'framer-motion';
+import React from "react";
+import { motion, MotionProps, Transition } from "framer-motion";
 
 /**
  * Type definition for the props of the ContentSection component.
  * Extends Framer Motion's MotionProps to allow passing animation properties.
  */
-type ContentSectionProps = Omit<MotionProps, 'children'> & { // Omit original children to avoid conflict
+type ContentSectionProps = Omit<MotionProps, "children"> & {
+  // Omit original children to avoid conflict
   /** The unique ID for the section element, used for navigation. */
   id: string;
   /** The title text displayed at the top of the section. */
@@ -28,8 +30,8 @@ const ContentSection: React.FC<ContentSectionProps> = ({
   id,
   title,
   children,
-  className = 'mb-16', // 默认下边距
-  titleClassName = 'text-2xl font-serif font-bold mb-6 border-b pb-2', // 默认标题样式
+  className = "mb-16", // 默认下边距
+  titleClassName = "text-2xl font-serif font-bold mb-6 border-b pb-2", // 默认标题样式
   // 解构 MotionProps，并设置默认动画
   initial = { opacity: 0, y: 20 },
   whileInView = { opacity: 1, y: 0 },
@@ -54,4 +56,4 @@ const ContentSection: React.FC<ContentSectionProps> = ({
   );
 };
 
-export default ContentSection; 
+export default ContentSection;

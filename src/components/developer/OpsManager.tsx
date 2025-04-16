@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { ArrowLeft, Wrench } from 'lucide-react';
+import React from "react";
+import { ArrowLeft, Wrench } from "lucide-react";
 
 interface OpsManagerProps {
   onClose: () => void;
@@ -31,11 +31,13 @@ const OpsManager: React.FC<OpsManagerProps> = ({ onClose }) => {
 
       {/* 内容区域 */}
       <div className="p-6 bg-gray-800 border border-gray-700 rounded-lg text-center text-gray-400">
-        <p>Tools for server maintenance and monitoring will be available here.</p>
+        <p>
+          Tools for server maintenance and monitoring will be available here.
+        </p>
         <p className="mt-2 text-sm">(Functionality under development)</p>
       </div>
     </div>
   );
 };
 
-export default OpsManager; 
+export default OpsManager;

@@ -30,6 +30,8 @@ export const themeColors = {
   navTextColor: 'text-gray-800',  // 导航文本颜色，深灰色用于可读性
   navHoverText: 'text-gray-700',  // 导航悬停文本颜色，灰色提示交互
   navHoverBorder: 'border-gray-300',  // 导航悬停边框颜色，灰色边框
+  navActiveText: 'text-slate-900',   // 新增：导航激活文本颜色 (更深的主题色)
+  navActiveBorder: 'border-slate-500', // 新增：导航激活边框颜色 (更明显的板岩灰)
   footerBorder: 'border-gray-200',  // 页脚边框颜色，浅灰色分隔线
   footerTextColor: 'text-gray-500',  // 页脚文本颜色，浅灰色用于辅助信息
   footerBackground: 'bg-gray-50',  // 页脚背景颜色，浅灰色背景

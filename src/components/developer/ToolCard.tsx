@@ -1,10 +1,10 @@
 // src/components/developer/ToolCard.tsx
-'use client';
+"use client";
 
-import React from 'react';
-import { motion } from 'framer-motion';
-import { ExternalLink, Lock } from 'lucide-react';
-import { themeColors } from '@/styles/theme'; // Import theme colors
+import React from "react";
+import { motion } from "framer-motion";
+import { ExternalLink, Lock } from "lucide-react";
+import { themeColors } from "@/styles/theme"; // Import theme colors
 
 /**
  * ToolCardProps 定义了工具卡片组件的属性。
@@ -33,53 +33,62 @@ const ToolCard: React.FC<ToolCardProps> = ({
   onButtonClick,
   disabled = false,
   externalLink,
-  delay = 0
+  delay = 0,
 }) => {
   const isDisabled = disabled && !externalLink;
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }} 
+      initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay, duration: 0.4 }} 
-      className={`${themeColors.devCardBg} p-6 rounded-lg ${themeColors.devBorder} flex flex-col justify-between shadow-lg relative ${isDisabled ? 'opacity-70' : ''}`}
+      transition={{ delay, duration: 0.4 }}
+      className={`${themeColors.devCardBg} p-6 rounded-lg ${themeColors.devBorder} flex flex-col justify-between shadow-lg relative ${isDisabled ? "opacity-70" : ""}`}
     >
       {/* {isDisabled && <div className="absolute inset-0 bg-black/30 backdrop-blur-sm rounded-lg z-10"></div>} */}
-      
-      <div className={`relative z-0 ${isDisabled ? 'filter blur-[2px] select-none pointer-events-none' : ''}`}> 
-        <h3 className={`text-xl font-semibold mb-3 ${isDisabled ? themeColors.devDisabledText : themeColors.devTitleText}`}>
-          {isDisabled ? 'Permission Required' : title}
+
+      <div
+        className={`relative z-0 ${isDisabled ? "filter blur-[2px] select-none pointer-events-none" : ""}`}
+      >
+        <h3
+          className={`text-xl font-semibold mb-3 ${isDisabled ? themeColors.devDisabledText : themeColors.devTitleText}`}
+        >
+          {isDisabled ? "Permission Required" : title}
         </h3>
-        <p className={`text-sm mb-5 ${isDisabled ? themeColors.devDescDisabledText : themeColors.devDescText}`}>
-          {isDisabled ? 'You do not have permission to access this tool.' : description}
+        <p
+          className={`text-sm mb-5 ${isDisabled ? themeColors.devDescDisabledText : themeColors.devDescText}`}
+        >
+          {isDisabled
+            ? "You do not have permission to access this tool."
+            : description}
         </p>
       </div>
-      
-      <div className="relative z-0 mt-auto"> 
-          {externalLink ? (
-            <a
-              href={externalLink}
-              target="_blank" 
-              rel="noopener noreferrer" 
-              className={`inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium ${themeColors.devButtonBg} ${themeColors.devButtonText} hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-indigo-500 transition-colors`} 
-            >
-              {icon} {buttonText} <ExternalLink size={16} className="ml-2"/>
-            </a>
-          ) : (
-            <button
-              onClick={onButtonClick} 
-              disabled={isDisabled}
-              className={`w-full inline-flex items-center justify-center px-4 py-2 border rounded-md shadow-sm text-sm font-medium transition-colors 
-              ${isDisabled 
-                ? `${themeColors.devButtonDisabledBorder} ${themeColors.devDisabledText} ${themeColors.devButtonDisabledBg} cursor-not-allowed` 
-                : `border-transparent ${themeColors.devButtonBg} ${themeColors.devButtonText} hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-indigo-500`}`
-              }
-            >
-              {isDisabled ? <Lock size={16} className="mr-2"/> : icon} 
-              {isDisabled ? 'Permission Required' : buttonText}
-            </button>
-          )}
-       </div>
+
+      <div className="relative z-0 mt-auto">
+        {externalLink ? (
+          <a
+            href={externalLink}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={`inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium ${themeColors.devButtonBg} ${themeColors.devButtonText} hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-indigo-500 transition-colors`}
+          >
+            {icon} {buttonText} <ExternalLink size={16} className="ml-2" />
+          </a>
+        ) : (
+          <button
+            onClick={onButtonClick}
+            disabled={isDisabled}
+            className={`w-full inline-flex items-center justify-center px-4 py-2 border rounded-md shadow-sm text-sm font-medium transition-colors 
+              ${
+                isDisabled
+                  ? `${themeColors.devButtonDisabledBorder} ${themeColors.devDisabledText} ${themeColors.devButtonDisabledBg} cursor-not-allowed`
+                  : `border-transparent ${themeColors.devButtonBg} ${themeColors.devButtonText} hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-indigo-500`
+              }`}
+          >
+            {isDisabled ? <Lock size={16} className="mr-2" /> : icon}
+            {isDisabled ? "Permission Required" : buttonText}
+          </button>
+        )}
+      </div>
     </motion.div>
   );
 };

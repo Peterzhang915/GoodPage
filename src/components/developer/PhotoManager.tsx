@@ -1,8 +1,8 @@
 // src/components/developer/PhotoManager.tsx
-'use client';
+"use client";
 
-import React from 'react';
-import { ArrowLeft, Image } from 'lucide-react'; // Import necessary icons
+import React from "react";
+import { ArrowLeft, Image } from "lucide-react"; // Import necessary icons
 
 // 定义 PhotoManager 组件预期的 props，主要是 onClose
 interface PhotoManagerProps {

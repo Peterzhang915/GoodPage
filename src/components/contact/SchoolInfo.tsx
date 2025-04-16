@@ -1,9 +1,9 @@
-'use client'; // Client component for motion effects
+"use client"; // Client component for motion effects
 
-import React from 'react';
-import { motion } from 'framer-motion';
-import { School, ExternalLink } from 'lucide-react';
-import { themeColors } from '@/styles/theme';
+import React from "react";
+import { motion } from "framer-motion";
+import { School, ExternalLink } from "lucide-react";
+import { themeColors } from "@/styles/theme";
 
 // 单个条目动画变体：控制从下方滑入并淡入的效果
 const itemVariants = {
@@ -11,7 +11,7 @@ const itemVariants = {
   visible: {
     opacity: 1,
     y: 0,
-    transition: { type: 'spring', stiffness: 100, damping: 12 },
+    transition: { type: "spring", stiffness: 100, damping: 12 },
   },
 };
 
@@ -37,7 +37,10 @@ const SchoolInfo: React.FC = () => {
           whileHover={{ y: -1 }}
         >
           School of Mathematics and Computer Sciences
-          <ExternalLink size={14} className="opacity-50 group-hover:opacity-100 transition-opacity"/>
+          <ExternalLink
+            size={14}
+            className="opacity-50 group-hover:opacity-100 transition-opacity"
+          />
         </motion.a>
         {/* 部门文本 */}
         <p className={`text-sm ${themeColors.textColorSecondary}`}>
@@ -52,11 +55,14 @@ const SchoolInfo: React.FC = () => {
           whileHover={{ y: -1 }}
         >
           The Nanchang University
-          <ExternalLink size={14} className="opacity-50 group-hover:opacity-100 transition-opacity"/>
+          <ExternalLink
+            size={14}
+            className="opacity-50 group-hover:opacity-100 transition-opacity"
+          />
         </motion.a>
       </div>
     </motion.div>
   );
 };
 
-export default SchoolInfo; 
+export default SchoolInfo;

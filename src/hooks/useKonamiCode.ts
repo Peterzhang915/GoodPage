@@ -6,7 +6,7 @@
       'ArrowDown', 'ArrowDown',
       'ArrowLeft', 'ArrowRight',
       'ArrowLeft', 'ArrowRight',
-      'b', 'a', 'b', 'a',
+      'b', 'a',
     ];
 
     export const useKonamiCode = (callback: () => void): void => {

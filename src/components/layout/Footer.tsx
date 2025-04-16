@@ -1,18 +1,35 @@
+// src/components/layout/Footer.tsx
 "use client"; // 将 Footer 标记为客户端组件
 
-import React, { useState, useEffect } from 'react';
-import { themeColors } from '../styles/theme';
+import React, { useState, useEffect } from "react";
+import { themeColors } from "@/styles/theme";
+import Link from "next/link";
+import { Github, Linkedin, Twitter, Mail } from "lucide-react"; // Import icons
+
+// Define types for social links (optional but good practice)
+interface SocialLink {
+  name: string;
+  url: string;
+  icon: React.ElementType; // Use React.ElementType for component types
+}
+
+// Get current year dynamically
+const currentYear = new Date().getFullYear();
 
 // 将 getOrdinalSuffix 移到 Footer 内部
 function getOrdinalSuffix(n: number): string {
   if (n % 100 >= 11 && n % 100 <= 13) {
-    return 'th';
+    return "th";
   }
   switch (n % 10) {
-    case 1: return 'st';
-    case 2: return 'nd';
-    case 3: return 'rd';
-    default: return 'th';
+    case 1:
+      return "st";
+    case 2:
+      return "nd";
+    case 3:
+      return "rd";
+    default:
+      return "th";
   }
 }
 
@@ -32,28 +49,34 @@ const Footer: React.FC = () => {
   // Effect to check for developer mode class on mount and update
   useEffect(() => {
     // Initial check
-    setIsDeveloperMode(document.body.classList.contains('developer-mode-active'));
-    
+    setIsDeveloperMode(
+      document.body.classList.contains("developer-mode-active"),
+    );
+
     // Optional: Use MutationObserver to detect class changes if needed
     // This is more robust if the class might be added/removed while footer is mounted
     const observer = new MutationObserver((mutationsList) => {
-      for(let mutation of mutationsList) {
-        if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
-           setIsDeveloperMode(document.body.classList.contains('developer-mode-active'));
+      for (let mutation of mutationsList) {
+        if (
+          mutation.type === "attributes" &&
+          mutation.attributeName === "class"
+        ) {
+          setIsDeveloperMode(
+            document.body.classList.contains("developer-mode-active"),
+          );
         }
       }
     });
     observer.observe(document.body, { attributes: true });
 
     return () => observer.disconnect(); // Cleanup observer
-
   }, []);
 
   useEffect(() => {
     const fetchVisitCounts = async () => {
       try {
         // GET 请求获取两个计数值
-        const response = await fetch('/api/visit');
+        const response = await fetch("/api/visit");
         if (!response.ok) {
           throw new Error(`API request failed with status ${response.status}`);
         }
@@ -62,39 +85,39 @@ const Footer: React.FC = () => {
         setDeveloperVisits(data.developer ?? 0);
       } catch (error) {
         console.error("Failed to fetch visit counts:", error);
-        setTotalVisits(0); 
+        setTotalVisits(0);
         setDeveloperVisits(0);
       }
     };
     fetchVisitCounts();
-  }, []); 
+  }, []);
 
   // 根据 isDeveloperMode 渲染不同内容
   const renderContent = () => {
     if (isDeveloperMode) {
       if (developerVisits === null || totalVisits === null) {
-         return 'Loading dev stats...';
+        return "Loading dev stats...";
       }
       return `Developer Access: ${developerVisits} | Total Visits: ${totalVisits}`;
     } else {
       if (totalVisits === null) {
-        return 'Loading visitor count...';
+        return "Loading visitor count...";
       }
       if (totalVisits === 0) {
-          return 'Welcome!';
+        return "Welcome!";
       }
       return `You are the ${totalVisits}${getOrdinalSuffix(totalVisits)} visitor`;
     }
   };
 
   return (
-    <footer className={` ${themeColors.backgroundLight} pt-8 pb-8 text-center ${themeColors.footerTextColor} text-sm w-full`}>
+    <footer
+      className={` ${themeColors.backgroundLight} pt-8 pb-8 text-center ${themeColors.footerTextColor} text-sm w-full`}
+    >
       <p>@COPYRIGHT NCU GOOD LAB All rights reserved.</p>
-      <p className="mt-2">
-        {renderContent()}
-      </p>
+      <p className="mt-2">{renderContent()}</p>
     </footer>
   );
 };
 
-export default Footer; 
+export default Footer;

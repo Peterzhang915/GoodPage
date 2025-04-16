@@ -21,14 +21,14 @@ import MoreAboutMeSection from '@/components/members/sections/MoreAboutMeSection
 import SuperviseesSection from '@/components/members/sections/SuperviseesSection'; 
 import MemberSidebar from '@/components/members/MemberSidebar'; 
 
-// --- Props 类型定义 --- 
+// --- Props 类型定义 ---
 interface MemberPageProps {
     params: {
         memberId: string;
     }
 }
 
-// --- 主页面组件 (Server Component) --- 
+// --- 主页面组件 (Server Component) ---
 export default async function MemberProfilePage({ params }: MemberPageProps) {
     const { memberId } = params;
     let memberProfileData: MemberProfileData | null = null;

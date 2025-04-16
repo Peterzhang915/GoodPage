@@ -1,18 +1,23 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { motion } from 'framer-motion';
-import type { Member, AcademicService, Award, Sponsorship } from '@prisma/client';
-import type { PublicationInfo } from '@/lib/types';
-import { themeColors } from '@/styles/theme';
+import React from "react";
+import { motion } from "framer-motion";
+import type {
+  Member,
+  AcademicService,
+  Award,
+  Sponsorship,
+} from "@prisma/client";
+import type { PublicationInfo } from "@/lib/types";
+import { themeColors } from "@/styles/theme";
 
 // Import Section Components
-import LabLeaderHeader from '@/components/lab_leader/LabLeaderHeader';
-import ResearchInterestsSection from '@/components/lab_leader/ResearchInterestsSection';
-import PublicationsSection from '@/components/lab_leader/PublicationsSection';
-import AcademicServicesSection from '@/components/lab_leader/AcademicServicesSection';
-import AwardsSection from '@/components/lab_leader/AwardsSection';
-import SponsorshipsSection from '@/components/lab_leader/SponsorshipsSection';
+import LabLeaderHeader from "@/components/lab_leader/LabLeaderHeader";
+import ResearchInterestsSection from "@/components/lab_leader/ResearchInterestsSection";
+import PublicationsSection from "@/components/lab_leader/PublicationsSection";
+import AcademicServicesSection from "@/components/lab_leader/AcademicServicesSection";
+import AwardsSection from "@/components/lab_leader/AwardsSection";
+import SponsorshipsSection from "@/components/lab_leader/SponsorshipsSection";
 
 // Define Props Interface to receive data from the parent Server Component
 interface LabLeaderPageContentProps {
@@ -35,7 +40,7 @@ const containerVariants = {
     opacity: 1,
     transition: {
       staggerChildren: 0.15, // Adjust stagger time as needed
-      delayChildren: 0.1,  // Initial delay before first child animates
+      delayChildren: 0.1, // Initial delay before first child animates
     },
   },
 };
@@ -45,7 +50,7 @@ const itemVariants = {
   visible: {
     opacity: 1,
     y: 0,
-    transition: { type: 'spring', stiffness: 90, damping: 15 }, // Adjust physics
+    transition: { type: "spring", stiffness: 90, damping: 15 }, // Adjust physics
   },
 };
 
@@ -63,7 +68,7 @@ const LabLeaderPageContent: React.FC<LabLeaderPageContentProps> = ({
 }) => {
   return (
     // Root element for the content, applying theme background
-    <div className={`${themeColors.themePageBg ?? 'bg-gray-50'} min-h-screen`}>
+    <div className={`${themeColors.themePageBg ?? "bg-gray-50"} min-h-screen`}>
       {/* Header Section - Not typically part of staggered animation, rendered directly */}
       <LabLeaderHeader leaderData={leaderData} />
 
@@ -78,11 +83,16 @@ const LabLeaderPageContent: React.FC<LabLeaderPageContentProps> = ({
         <div className="flex flex-col space-y-8 md:space-y-12">
           {/* Render each section wrapped in motion.div for item animation */}
           <motion.div variants={itemVariants}>
-            <ResearchInterestsSection interestsText={leaderData?.research_interests} />
+            <ResearchInterestsSection
+              interestsText={leaderData?.research_interests}
+            />
           </motion.div>
 
           <motion.div variants={itemVariants}>
-            <PublicationsSection publications={publications} fetchError={pubError} />
+            <PublicationsSection
+              publications={publications}
+              fetchError={pubError}
+            />
           </motion.div>
 
           <motion.div variants={itemVariants}>
@@ -114,4 +124,4 @@ const LabLeaderPageContent: React.FC<LabLeaderPageContentProps> = ({
   );
 };
 
-export default LabLeaderPageContent; 
+export default LabLeaderPageContent;

@@ -2,7 +2,7 @@
 
 import React from 'react';
 // import Navbar from '@/components/Navbar'; // 确认路径和导入正确
-import PhotoGallery from '@/components/PhotoGallery'; // 确认路径和导入正确
+import PhotoGallery from '@/components/gallery/PhotoGallery'; // 确认路径和导入正确
 import { themeColors } from '@/styles/theme';
 
 export default function GalleryPage() {

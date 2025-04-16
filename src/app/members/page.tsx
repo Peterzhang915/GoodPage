@@ -3,7 +3,7 @@ import React from 'react';
 // 修改: 导入新的数据获取函数和类型
 import { getAllMembersGrouped } from '@/lib/members'; // 从 members.ts 导入
 import type { MemberForCard } from '@/lib/types';     // 从 types.ts 导入
-import { MemberList } from '@/components/MemberList';  // 导入新的客户端组件
+import { MemberList } from '@/components/members/MemberList';  // 导入新的客户端组件
 import { themeColors } from '@/styles/theme';
 import { AlertTriangle } from 'lucide-react';         // 用于错误显示
 

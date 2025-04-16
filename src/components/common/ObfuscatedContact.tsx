@@ -1,18 +1,22 @@
-'use client'; // Mark as a Client Component
+"use client"; // Mark as a Client Component
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 
 type ObfuscatedContactProps = {
   value: string;
-  type: 'email' | 'phone';
+  type: "email" | "phone";
 };
 
-const ObfuscatedContact: React.FC<ObfuscatedContactProps> = ({ value, type }) => {
-  const [displayText, setDisplayText] = useState<string>('');
+const ObfuscatedContact: React.FC<ObfuscatedContactProps> = ({
+  value,
+  type,
+}) => {
+  const [displayText, setDisplayText] = useState<string>("");
   const [isMounted, setIsMounted] = useState<boolean>(false);
 
   // Placeholder based on type
-  const placeholder = type === 'email' ? '[email protected]' : '[hidden phone number]';
+  const placeholder =
+    type === "email" ? "[email protected]" : "[hidden phone number]";
 
   useEffect(() => {
     // Set mounted flag to true after component mounts
@@ -29,7 +33,7 @@ const ObfuscatedContact: React.FC<ObfuscatedContactProps> = ({ value, type }) =>
     // Re-run if value changes (though unlikely in this context) or when mounted state changes
   }, [value, isMounted, placeholder]);
 
-  if (type === 'email') {
+  if (type === "email") {
     // Render mailto link only when the actual email is displayed
     return isMounted ? (
       <a href={`mailto:${displayText}`} className="hover:underline">
@@ -44,4 +48,4 @@ const ObfuscatedContact: React.FC<ObfuscatedContactProps> = ({ value, type }) =>
   return <span>{displayText}</span>;
 };
 
-export default ObfuscatedContact; 
+export default ObfuscatedContact;

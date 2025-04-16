@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { MapPin } from 'lucide-react';
-import { themeColors } from '@/styles/theme';
+import React, { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { MapPin } from "lucide-react";
+import { themeColors } from "@/styles/theme";
 
 // 单个条目动画变体：控制从下方滑入并淡入的效果
 const itemVariants = {
@@ -11,7 +11,7 @@ const itemVariants = {
   visible: {
     opacity: 1,
     y: 0,
-    transition: { type: 'spring', stiffness: 100, damping: 12 },
+    transition: { type: "spring", stiffness: 100, damping: 12 },
   },
 };
 
@@ -41,8 +41,13 @@ const AddressInfo: React.FC = () => {
             hover: {
               y: [0, -3, 0], // 上下跳动效果
               color: themeColors.ccfAText, // 变色
-              transition: { duration: 0.5, ease: "easeInOut", repeat: Infinity, repeatDelay: 0.1 } // 无限循环动画
-            }
+              transition: {
+                duration: 0.5,
+                ease: "easeInOut",
+                repeat: Infinity,
+                repeatDelay: 0.1,
+              }, // 无限循环动画
+            },
           }}
           animate={isAddressHovered ? "hover" : "normal"} // 根据悬停状态应用不同动画
           className="mt-1 flex-shrink-0 transition-colors duration-200 ease-in-out group-hover:text-[${themeColors.ccfAText}]"
@@ -74,4 +79,4 @@ const AddressInfo: React.FC = () => {
   );
 };
 
-export default AddressInfo; 
+export default AddressInfo;

@@ -1,6 +1,6 @@
 import React from 'react';
 import HeroSection from '@/components/home/HeroSection';
-import ContentSection from '@/components/ContentSection';
+import ContentSection from '@/components/common/ContentSection';
 import { themeColors } from '@/styles/theme';
 import { AlertTriangle, Loader } from 'lucide-react'; // 引入图标用于状态反馈
 import StudentInterestsSection from '@/components/home/StudentInterestsSection';

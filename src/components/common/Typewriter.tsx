@@ -1,29 +1,35 @@
-// src/components/Typewriter.tsx
-'use client';
+// src/components/common/Typewriter.tsx
+"use client";
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from "react";
 
 interface TypewriterProps {
   text: string;
-  speed?: number; // 每个字符的毫秒数
+  speed?: number; // Milliseconds per character
+  loop?: boolean;
+  delay?: number; // Initial delay in milliseconds
+  cursor?: boolean;
   className?: string;
-  onComplete?: () => void; // 打字完成时的可选回调函数
+  onComplete?: () => void; // Callback when typing completes (or loops)
 }
 
 const Typewriter: React.FC<TypewriterProps> = ({
   text,
-  speed = 50, // 默认速度：50ms/字符
-  className = '',
+  speed = 50,
+  loop = false,
+  delay = 0,
+  cursor = true,
+  className = "",
   onComplete,
 }) => {
-  const [displayText, setDisplayText] = useState('');
+  const [displayText, setDisplayText] = useState("");
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showCursor, setShowCursor] = useState(true);
   const containerRef = useRef<HTMLSpanElement>(null);
 
   useEffect(() => {
     // 当 text prop 改变时重置状态
-    setDisplayText('');
+    setDisplayText("");
     setCurrentIndex(0);
   }, [text]);
 
@@ -59,12 +65,13 @@ const Typewriter: React.FC<TypewriterProps> = ({
     }
   }, [currentIndex, text.length]); // 打字完成或开始时重新运行
 
-
   return (
     <span ref={containerRef} className={className}>
       {displayText}
       {/* 光标现在由 useEffect 精确控制显示/隐藏 */}
-      {showCursor && <span className="inline-block w-2 h-4 bg-current animate-blink"></span>}
+      {showCursor && (
+        <span className="inline-block w-2 h-4 bg-current animate-blink"></span>
+      )}
     </span>
   );
 };
