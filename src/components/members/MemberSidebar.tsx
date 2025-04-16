@@ -3,7 +3,8 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { MemberProfileImage } from '@/components/MemberProfileImage';
 import {
-    Github, ExternalLink, Linkedin, Mail, GraduationCap, BookCopy, FileText as FileIcon, Building, Clock, UserCheck
+    Github, ExternalLink, Linkedin, Mail, GraduationCap, BookCopy, FileText as FileIcon, Building, Clock, UserCheck,
+    Home
 } from 'lucide-react';
 import { themeColors } from '@/styles/theme';
 import type { Member, MemberStatus } from '@/lib/prisma'; // Import necessary types
@@ -50,7 +51,7 @@ const MemberSidebar: React.FC<MemberSidebarProps> = ({ member, displayStatus }) 
       {/* Social Icons */}
       <div className="flex justify-center items-center space-x-4 mt-2 mb-4 flex-wrap gap-y-2">
         {member.github_username && <a href={`https://github.com/${member.github_username}`} target="_blank" rel="noopener noreferrer" title="GitHub" className={`${themeColors.textColorSecondary} hover:${themeColors.textColorPrimary} transition-colors`}><Github size={20} /></a>}
-        {member.personal_website && <a href={member.personal_website} target="_blank" rel="noopener noreferrer" title="Website" className={`${themeColors.textColorSecondary} hover:${themeColors.textColorPrimary} transition-colors`}><ExternalLink size={20} /></a>}
+        {member.personal_website && <a href={member.personal_website} target="_blank" rel="noopener noreferrer" title="Website" className={`${themeColors.textColorSecondary} hover:${themeColors.textColorPrimary} transition-colors`}><Home size={20} /></a>}
         {member.linkedin_url && <a href={member.linkedin_url} target="_blank" rel="noopener noreferrer" title="LinkedIn" className={`${themeColors.textColorSecondary} hover:${themeColors.textColorPrimary} transition-colors`}><Linkedin size={20} /></a>}
         {member.google_scholar_id && <a href={`https://scholar.google.com/citations?user=${member.google_scholar_id}`} target="_blank" rel="noopener noreferrer" title="Google Scholar" className={`${themeColors.textColorSecondary} hover:${themeColors.textColorPrimary} transition-colors`}><GraduationCap size={20} /></a>}
         {member.dblp_id && <a href={`https://dblp.org/pid/${member.dblp_id}.html`} target="_blank" rel="noopener noreferrer" title="DBLP" className={`${themeColors.textColorSecondary} hover:${themeColors.textColorPrimary} transition-colors`}><BookCopy size={20} /></a>}

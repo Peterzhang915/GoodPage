@@ -1,6 +1,9 @@
-import React from 'react';
+'use client';
+
+import React, { useState } from 'react';
 import Link from 'next/link';
-import { BookOpen, Link as LinkIcon, FileText as FileIcon, Calendar, Users, Lightbulb } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { BookOpen, Link as LinkIcon, FileText as FileIcon, Calendar, Users, Lightbulb, ChevronDown, ChevronUp } from 'lucide-react';
 import { themeColors } from '@/styles/theme';
 import type { PublicationInfo } from '@/lib/types';
 
@@ -9,18 +12,30 @@ type PublicationsSectionProps = {
   publications: PublicationInfo[] | null | undefined;
 };
 
-// --- 单个论文条目组件 (移到 Section 内部) ---
-// 【注意】需要重新导入 highlightedPaperTitles 或作为 prop 传入
-// 暂时移除高亮逻辑以简化，后续可添加
+// 【恢复】定义需要高亮的论文标题集合 (小写)
+const highlightedPaperTitles = new Set([
+    "deep learning-based weather prediction: a survey",
+    "exploring power-performance tradeoffs in database systems",
+    "power attack: an increasing threat to data centers.",
+    "blending on-demand and spot instances to lower costs for in-memory storage",
+    "cadre: carbon-aware data replication for geo-diverse services",
+    "pet: reducing database energy cost via query optimization",
+    "{user-guided} device driver synthesis", // 注意特殊字符
+    "when fpga meets cloud: a first look at performance"
+]);
+
+const INITIAL_VISIBLE_COUNT = 5; // Define how many items to show initially
+
+// --- 单个论文条目组件 (保持不变) ---
 function MemberPublicationItem({ pub }: { pub: PublicationInfo }) {
     const pdfHref = pub.pdf_url
         ? pub.pdf_url.startsWith('http') ? pub.pdf_url : `/pdfs/${pub.pdf_url}`
         : undefined;
     const itemKey = pub.id ?? pub.title;
-    // const isHighlighted = pub.title && highlightedPaperTitles.has(pub.title.toLowerCase()); // 暂时移除
+    const isHighlighted = pub.title && highlightedPaperTitles.has(pub.title.toLowerCase());
 
     return (
-        <li className={`mb-4 pb-4 border-b ${themeColors.footerBorder} last:border-b-0`}>
+        <>
             <h4 className={`text-md font-semibold ${themeColors.textColorPrimary} mb-1`}>{pub.title}</h4>
             {pub.displayAuthors && pub.displayAuthors.length > 0 && (
                 <div className={`text-xs ${themeColors.textColorSecondary} mb-1 flex flex-wrap items-center gap-x-1.5 gap-y-1`}>
@@ -40,14 +55,20 @@ function MemberPublicationItem({ pub }: { pub: PublicationInfo }) {
                     ))}
                 </div>
             )}
+            {/* Venue Line */}
+            {pub.venue && (
+                <div className={`text-xs ${themeColors.textColorTertiary} flex items-center mb-1`}> {/* Add margin-bottom */}
+                    <i>{pub.venue}</i>
+                </div>
+            )}
+            {/* Tags Line */}
             <div className={`text-xs ${themeColors.textColorTertiary} flex flex-wrap items-center gap-x-2 gap-y-1`}>
-                {pub.venue && <span className="flex items-center"><i>{pub.venue}</i></span>}
                 {pub.year && <span className="flex items-center"><Calendar className={`w-4 h-4 mr-1 flex-shrink-0`} /> {pub.year}</span>}
-                {/* {isHighlighted && ( // 暂时移除
+                {isHighlighted && (
                   <span className={`px-2 py-0.5 rounded-md text-xs font-medium tracking-wide ${themeColors.highlightText ?? 'text-amber-900'} ${themeColors.highlightBg ?? 'bg-amber-100'} border border-amber-200`}>
                     🔥 Highly Cited
                   </span>
-                )} */} 
+                )}
                 {pub.ccf_rank && pub.ccf_rank !== 'N/A' && (
                     <span className={`px-2 py-0.5 rounded-md text-xs font-medium tracking-wide ${
                         pub.ccf_rank === 'A' ? `${themeColors.ccfAText ?? 'text-blue-900'} ${themeColors.ccfABg ?? 'bg-blue-200'} border border-blue-300` :
@@ -81,29 +102,107 @@ function MemberPublicationItem({ pub }: { pub: PublicationInfo }) {
                     {pub.project_page_url && <a href={pub.project_page_url} target="_blank" rel="noopener noreferrer" className={`${themeColors.linkColor} hover:underline`}>Project</a>}
                 </div>
             )}
-        </li>
+        </>
     );
 }
 
 // --- 主 Section 组件 ---
 const PublicationsSection: React.FC<PublicationsSectionProps> = ({ publications }) => {
-  // Only render if there are publications
+  const [isExpanded, setIsExpanded] = useState(false);
+
   if (!publications || publications.length === 0) {
     return null;
   }
 
+  const getRankScore = (rank: string | null | undefined): number => {
+    if (!rank || rank === 'N/A') return 4;
+    if (rank === 'A') return 1;
+    if (rank === 'B') return 2;
+    if (rank === 'C') return 3;
+    return 4;
+  };
+
+  const sortedPublications = [...publications]
+    .sort((a, b) => {
+      const rankScoreA = getRankScore(a.ccf_rank);
+      const rankScoreB = getRankScore(b.ccf_rank);
+      if (rankScoreA !== rankScoreB) {
+        return rankScoreA - rankScoreB;
+      }
+      return 0;
+    });
+
+  const displayPublications = isExpanded
+    ? sortedPublications
+    : sortedPublications.slice(0, INITIAL_VISIBLE_COUNT);
+
+  const totalPublications = sortedPublications.length;
+  const remainingCount = totalPublications - INITIAL_VISIBLE_COUNT;
+
+  // Animation variants for list items
+  const itemVariants = {
+    hidden: { opacity: 0, height: 0, marginBottom: 0, paddingBottom: 0, borderBottomWidth: 0 },
+    visible: { 
+      opacity: 1, 
+      height: 'auto', // Let content determine height
+      marginBottom: '1rem', // Corresponds to mb-4
+      paddingBottom: '1rem', // Corresponds to pb-4
+      borderBottomWidth: '1px', // Corresponds to border-b
+      transition: { type: 'tween', duration: 0.3 } 
+    },
+    exit: { 
+      opacity: 0, 
+      height: 0, 
+      marginBottom: 0, 
+      paddingBottom: 0, 
+      borderBottomWidth: 0,
+      transition: { type: 'tween', duration: 0.2 } 
+    }
+  };
+
   return (
     <section>
       <h2 className={`text-xl font-semibold ${themeColors.textColorPrimary} border-b ${themeColors.footerBorder} pb-2 mb-3 flex items-center gap-1.5`}>
-        <BookOpen size={18}/> 发表成果
+        <BookOpen size={18}/> Published Works
       </h2>
-      <ul className="list-none p-0 mt-2 space-y-2"> {/* V1 spacing */}
-        {publications.map((pub) => (
-          <MemberPublicationItem key={pub.id ?? pub.title} pub={pub} />
-        ))}
+      <ul className="list-none p-0 mt-2 space-y-0">
+        <AnimatePresence initial={false}>
+          {displayPublications.map((pub, index) => (
+            <motion.li
+              key={pub.id ?? pub.title}
+              className={`border-b ${themeColors.footerBorder} overflow-hidden`}
+              variants={itemVariants}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              layout
+              style={{ borderBottomWidth: index === displayPublications.length - 1 ? 0 : '1px'}}
+            >
+              <MemberPublicationItem pub={pub} />
+            </motion.li>
+          ))}
+        </AnimatePresence>
       </ul>
+      {totalPublications > INITIAL_VISIBLE_COUNT && (
+        <div className="mt-4 text-center">
+          <button
+            onClick={() => setIsExpanded(!isExpanded)}
+            className={`text-sm ${themeColors.linkColor} hover:underline focus:outline-none flex items-center justify-center mx-auto gap-1`}
+          >
+            {isExpanded ? (
+              <>
+                <ChevronUp size={16} /> Show Less
+              </>
+            ) : (
+              <>
+                <ChevronDown size={16} /> Show More ({remainingCount} more)
+              </>
+            )}
+          </button>
+        </div>
+      )}
     </section>
   );
 };
 
-export default PublicationsSection; 
+export default PublicationsSection;
