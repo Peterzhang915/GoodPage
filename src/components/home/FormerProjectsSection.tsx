@@ -2,6 +2,16 @@ import React from 'react';
 import ContentSection from '@/components/ContentSection';
 import { themeColors } from '@/styles/theme';
 
+/**
+ * 实验室历史研究项目展示组件
+ * 
+ * 展示实验室已完成或过渡性质的研究方向，但仍具有学术价值：
+ * 1. 海洋数据库与时空特性 - 专注于建设高效处理海洋大数据的数据库系统
+ * 2. 多目标系统优化 - 从多维度（性能、吞吐量、能耗、碳排放等）优化数据服务
+ * 
+ * 采用纯文本描述形式展示，使用与主项目相同的风格保持视觉一致性，
+ * 布局上采用响应式设计，确保在不同设备上都有良好的可读性。
+ */
 const FormerProjectsSection = () => {
   return (
     <ContentSection id="former-projects" title="Former Projects">

@@ -2,6 +2,21 @@ import React from 'react';
 import ContentSection from '@/components/ContentSection';
 import { themeColors } from '@/styles/theme';
 
+/**
+ * 学生招募信息展示组件
+ * 
+ * 目的：
+ * - 向有兴趣加入实验室的潜在学生展示技能要求和期望
+ * - 提供明确的学术方向指引，突出AI和大数据系统领域
+ * - 区分本科生和研究生的不同要求标准
+ * 
+ * 内容结构：
+ * - 引言说明：概述基本要求和技能期望
+ * - 核心技能列表：编程、数据管理、硬件经验、模拟器和机器学习等五个方向
+ * - 联系方式引导：鼓励感兴趣的学生通过邮件取得联系
+ * 
+ * 该组件使用响应式设计，确保在不同设备上保持良好的可读性和视觉层次。
+ */
 const StudentInterestsSection = () => {
   return (
     <ContentSection id="interests" title="Students with Interests">

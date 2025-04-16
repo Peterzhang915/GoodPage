@@ -3,6 +3,17 @@ import ContentSection from '@/components/ContentSection';
 import { themeColors } from '@/styles/theme';
 import Image from 'next/image';
 
+/**
+ * 实验室主要研究项目展示区组件
+ * 
+ * 负责展示当前实验室的三个核心研究方向及其研究成果：
+ * 1. 开源LLM模型优化 - 聚焦大型语言模型的运行时优化和性能提升
+ * 2. 数据库优化与正确性 - 关注新硬件下的数据库设计和正确性验证
+ * 3. 弹性一致性系统 - 扩展Raft协议到实际应用场景
+ * 
+ * 每个项目区域采用左侧文本描述、右侧图表展示的布局方式，
+ * 在移动设备上自动切换为垂直堆叠布局。
+ */
 const MainProjectsSection = () => {
   return (
     <ContentSection id="main-projects" title="Main Focus Projects">
@@ -68,7 +79,7 @@ const MainProjectsSection = () => {
                 We are trying to extend the original raft into the practical scenarios. That is providing scalable and cheap distributed services within the Raft protocol. The main contribution of this research is to extending the scope of a strong consensus algorithm into a very unreliable platform and make it work statistically in practice.
               </p>
               <p className={`text-sm md:text-base leading-relaxed ${themeColors.textColorSecondary}`}>
-                Here we promote our eRaft. eRaft is a high-performance C++ Raft library. This project is mainly developed by graduates from our GOOD lab. The Raft algorithm shall be accredited to Dr. Diego Ongaro. At present, our project has been included in the official distribution. We hope to explore the possibility of optimizing the existing algorithms on the basis of realizing a stable practical Raft library. If you are interested, please join us. Anyone interested may refer project. {/* 考虑稍后在此处添加链接 */}
+                Here we promote our eRaft. eRaft is a high-performance C++ Raft library. This project is mainly developed by graduates from our GOOD lab. The Raft algorithm shall be accredited to Dr. Diego Ongaro. At present, our project has been included in the official distribution. We hope to explore the possibility of optimizing the existing algorithms on the basis of realizing a stable practical Raft library. If you are interested, please join us. Anyone interested may refer project.
               </p>
             </div>
             <div className="md:w-1/5 mt-4 md:mt-0">

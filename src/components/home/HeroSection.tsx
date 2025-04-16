@@ -5,67 +5,69 @@ import { motion } from 'framer-motion'; // Import motion
 // import { themeColors } from '@/styles/theme'; // 如果需要主题颜色，取消注释
 
 /**
- * Framer Motion variants for the container element.
- * Controls the overall opacity and staggering of children animations.
- */
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.15, // Stagger delay between children
-      delayChildren: 0.1   // Optional delay before starting the first child
-    }
-  }
-};
-
-/**
- * Framer Motion variants for individual items within the HeroSection.
- * Controls opacity and vertical slide-in animation.
- */
-const itemVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { 
-      duration: 0.6, 
-      ease: 'easeOut' 
-    }
-  }
-};
-
-/**
- * HeroSection Component
+ * 实验室主页顶部横幅组件
  * 
- * Displays the main introductory banner at the top of the homepage.
- * Includes the lab's full name, its name in Chinese, a short motto,
- * and uses Framer Motion for entrance animations.
+ * 作为网站的视觉焦点，展示实验室的核心身份信息：
+ * - 完整英文名称："Generic Operational and Optimal Data Lab"
+ * - 中文名称："泛在数据分析与优化实验室"
+ * - 简短宣言："Good Data Inspired AI Infinite System and Beyond"
  * 
- * This component is specifically styled and hardcoded for the homepage.
- * It uses a gradient background with a subtle grid pattern.
+ * 视觉特性：
+ * - 采用深色渐变背景与微妙网格纹理，增强科技感和专业性
+ * - 使用Framer Motion实现元素的交错进入动画，增加页面活力
+ * - 包含微妙的悬停效果，提高用户互动体验
+ * 
+ * 技术实现：
+ * - 客户端组件，允许使用交互功能和动画效果
+ * - 完全响应式设计，适配从移动设备到桌面屏幕的各种尺寸
+ * - 元素进入使用错开的透明度和位移动画，提供平滑转场
  */
 const HeroSection: React.FC = () => {
-  return (
-    // 最外层容器: 相对定位，全宽，响应式垂直内边距，隐藏溢出
-    <div className="relative w-full py-20 sm:py-32 md:py-40 overflow-hidden"> {/* 调整了 sm/md 的 padding */}
+  // Framer Motion容器动画配置：控制整体透明度和子元素动画错开展示
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.15, // 子元素动画之间的延迟
+        delayChildren: 0.1     // 第一个子元素开始前的延迟
+      }
+    }
+  };
 
-      {/* 背景渐变层: 绝对定位铺满父容器 */}
+  // 单个元素的动画配置：控制透明度和垂直滑入效果
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { 
+        duration: 0.6, 
+        ease: 'easeOut' 
+      }
+    }
+  };
+
+  return (
+    // 最外层容器：相对定位，全宽，响应式垂直内边距，隐藏溢出
+    <div className="relative w-full py-20 sm:py-32 md:py-40 overflow-hidden">
+
+      {/* 背景渐变层 */}
       <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-700 opacity-95"></div>
 
-      {/* 背景网格装饰层: 绝对定位，低透明度 */}
+      {/* 背景网格装饰层 */}
       <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-5"></div>
 
-      {/* 内容容器: 相对定位，限制最大宽度并居中，响应式内边距 */}
+      {/* 内容容器 */}
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        {/* Animated container for staggering */} 
+        {/* 动画容器 */} 
         <motion.div 
           className="text-center group transition-transform duration-700 ease-out hover:scale-[1.02] sm:hover:scale-100"
           variants={containerVariants}
           initial="hidden"
-          animate="visible" // Trigger animation on load
+          animate="visible"
         >
-          {/* Animated Main Title */}
+          {/* 英文标题 */}
           <motion.h1 
             variants={itemVariants} 
             className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-serif font-bold tracking-tight text-slate-100 mb-4 sm:mb-6"
@@ -73,7 +75,7 @@ const HeroSection: React.FC = () => {
             Generic Operational and Optimal Data Lab
           </motion.h1>
 
-          {/* Animated Subtitle */}
+          {/* 中文标题 */}
           <motion.h2 
             variants={itemVariants}
             className="text-xl sm:text-2xl lg:text-3xl xl:text-4xl font-serif leading-snug sm:leading-normal text-slate-200 mb-6 sm:mb-8"
@@ -81,13 +83,13 @@ const HeroSection: React.FC = () => {
             泛在数据分析与优化实验室
           </motion.h2>
 
-          {/* Animated Divider */}
+          {/* 分隔线 */}
           <motion.div
             variants={itemVariants}
             className="h-1 bg-slate-400 mx-auto mb-6 sm:mb-8 rounded-full w-[50px] sm:w-[80px] transition-[width] duration-400 ease-in-out sm:group-hover:w-[160px]"
           />
 
-          {/* Animated Description */}
+          {/* 简短介绍 */}
           <motion.p 
             variants={itemVariants}
             className="text-sm sm:text-base lg:text-lg text-slate-300 max-w-3xl mx-auto"
