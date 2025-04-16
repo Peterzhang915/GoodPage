@@ -6,18 +6,16 @@ import Image from 'next/image';
 /**
  * 实验室主要研究项目展示区组件
  * 
- * 负责展示当前实验室的三个核心研究方向及其研究成果：
- * 1. 开源LLM模型优化 - 聚焦大型语言模型的运行时优化和性能提升
- * 2. 数据库优化与正确性 - 关注新硬件下的数据库设计和正确性验证
- * 3. 弹性一致性系统 - 扩展Raft协议到实际应用场景
- * 
- * 每个项目区域采用左侧文本描述、右侧图表展示的布局方式，
- * 在移动设备上自动切换为垂直堆叠布局。
+ * 负责展示当前实验室的三个核心研究方向及其研究成果
  */
 const MainProjectsSection = () => {
   return (
     <ContentSection id="main-projects" title="Main Focus Projects">
       <div className="space-y-8 md:space-y-10">
+        {/**
+         * 开源LLM模型优化项目
+         * 聚焦大型语言模型的运行时优化和性能提升
+         */}
         <div>
           <h3 className={`text-lg md:text-xl font-semibold mb-3 ${themeColors.textColorPrimary}`}>Open Sourced LLM Model Optimization</h3>
           <div className="md:flex md:gap-3 md:items-start">
@@ -26,6 +24,7 @@ const MainProjectsSection = () => {
                 We are interested in optimizing the runtime of any open-sourced language models, Large or Small. We believe the memory wall and energy issue still exists, as well as the scalability, in the modern open sourced AI models. The two approach to make the model better are (1) a deduplicated, and well-coded underlying memory management; (2) a better scheduling to ensure the balancing between the LM nodes. Meanwhile, it is worthwhile to explore the means of building such systems in a small scale, on the edge, as well as protected. This raises our interests on how data driven approach applies to such system optimization design.
               </p>
             </div>
+            {/* 项目图片展示区 */}
             <div className="md:w-1/5 mt-4 md:mt-0">
               <div className="bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden shadow-sm">
                 <Image 
@@ -43,6 +42,10 @@ const MainProjectsSection = () => {
           </div>
         </div>
 
+        {/**
+         * 数据库优化与正确性项目
+         * 关注新硬件下的数据库设计和正确性验证
+         */}
         <div>
           <h3 className={`text-lg md:text-xl font-semibold mb-3 ${themeColors.textColorPrimary}`}>Database Optimization and Correctness</h3>
           <div className="md:flex md:gap-3 md:items-start">
@@ -54,6 +57,7 @@ const MainProjectsSection = () => {
                 Making a correct database is hard. No one can guarantee that a database is correct all the time since it selects different execution paths even for the same query. We would like to further explore how we can guarantee the correctness of a database building, processing, and outputing. Furthermore, we would like to know that what we do is correct as well. For this, we introduce database test with fuzzors. Based on a fuzzy algebra, we can produce mutant samples of testing and verification for novel systems as well as the AI platform.
               </p>
             </div>
+            {/* 项目图片展示区 */}
             <div className="md:w-1/5 mt-4 md:mt-0">
               <div className="bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden shadow-sm">
                 <Image 
@@ -71,6 +75,10 @@ const MainProjectsSection = () => {
           </div>
         </div>
 
+        {/**
+         * 弹性一致性系统项目
+         * 扩展Raft协议到实际应用场景
+         */}
         <div>
           <h3 className={`text-lg md:text-xl font-semibold mb-3 ${themeColors.textColorPrimary}`}>An Elastic Consistency System</h3>
           <div className="md:flex md:gap-3 md:items-start">
@@ -82,6 +90,7 @@ const MainProjectsSection = () => {
                 Here we promote our eRaft. eRaft is a high-performance C++ Raft library. This project is mainly developed by graduates from our GOOD lab. The Raft algorithm shall be accredited to Dr. Diego Ongaro. At present, our project has been included in the official distribution. We hope to explore the possibility of optimizing the existing algorithms on the basis of realizing a stable practical Raft library. If you are interested, please join us. Anyone interested may refer project.
               </p>
             </div>
+            {/* 项目图片展示区 */}
             <div className="md:w-1/5 mt-4 md:mt-0">
               <div className="bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden shadow-sm">
                 <Image 
@@ -102,5 +111,14 @@ const MainProjectsSection = () => {
     </ContentSection>
   );
 };
+
+/**
+ * 模块化设计说明：
+ * - 该组件是主页内容模块群的核心部分，展示实验室的主要研究重点
+ * - 与FormerProjectsSection组件形成研究领域的完整展示体系
+ * - 复用ContentSection作为容器组件，保持页面各板块的视觉一致性
+ * - 图片展示使用Next.js的Image组件进行优化，确保加载性能
+ * - 可独立部署和测试，不依赖全局状态或特定API调用
+ */
 
 export default MainProjectsSection;

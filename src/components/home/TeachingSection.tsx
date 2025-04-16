@@ -16,10 +16,18 @@ import { themeColors } from '@/styles/theme';
  * - 显示每门课程的开设学期信息（如Fall 2024, Spring 2021等）
  * 
  * 该组件采用无序列表形式展示，保持视觉简洁，同时通过响应式设计确保在各种屏幕尺寸上的可读性。
+ * 
+ * 模块化设计：
+ * - 作为主页内容的功能性板块，展示实验室的教学能力
+ * - 使用共享的ContentSection容器组件，保持页面整体风格一致
+ * - 可独立维护更新，添加新开设的课程而不影响其他组件
+ * - 与StudentInterestsSection形成互补，共同构成教学与招生信息体系
+ * - 遵循项目的颜色主题系统，确保视觉一致性
  */
 const TeachingSection = () => {
   return (
     <ContentSection id="teaching" title="Teaching">
+      {/* 课程列表 - 按时间倒序排列 */}
       <ul className={`list-disc pl-5 sm:pl-6 space-y-3 text-sm md:text-base ${themeColors.textColorSecondary}`}>
         <li>Introduction to Artificial Intelligence (Fall 2024, Fall 2023, Fall 2022, Spring 2021, 2020)</li>
         <li>Discrete Mathematics (Fall 2024, Fall 2023, Fall 2022, Spring 2021, 2020)</li>
