@@ -2,9 +2,8 @@
 
 // 定义数据源 (datasource): 指定数据库连接方式
 datasource db {
-  provider = "sqlite" // 使用 SQLite 数据库
-  url      = env("DATABASE_URL") // 数据库连接 URL，从环境变量 DATABASE_URL 读取
-                                // 例如 "file:./data/lab.db" 或 "file:../data/lab.db" (路径相对于 prisma 目录)
+  provider = "sqlite" // Corrected: Set provider back to sqlite
+  url      = env("DATABASE_URL") // Example for SQLite: "file:./dev.db"
 }
 
 // 定义 Prisma 客户端生成器 (generator)
@@ -49,46 +48,57 @@ enum ArtefactType {
   DATASET  // 数据集
 }
 
+// 奖项等级枚举
+enum AwardLevel {
+  GOLD
+  SILVER
+  BRONZE
+  OTHER // Default or unspecified
+}
+
 // --- 数据模型定义 (Data Model Definitions) ---
 
 // 成员模型 (代表实验室的每一个人)
 model Member {
   // --- 核心身份信息 ---
-  id               String  @id @unique // 成员的唯一标识符 (例如学号、工号或自定义ID)，作为主键且必须唯一
-  name_en          String            // 成员的英文名称 (必填)
-  name_zh          String?           // 成员的中文名称 (可选)
+  id               String  @id @default(cuid())
+  name_en          String // Added _en suffix for clarity
+  name_zh          String?
   status           MemberStatus      // 成员当前的状态 (使用 MemberStatus 枚举，必填)
   enrollment_year  Int?              // 入学或入职的年份 (可选，对于校友可能是毕业年份)
+  graduation_year  Int?              // 毕业年份 (可选)
 
   // --- 职位与学术信息 ---
-  title_zh         String?           // 中文头衔 (例如 "教授", "副研究员", "工程师") (可选)
-  title_en         String?           // 英文头衔 (例如 "Professor", "Research Fellow") (可选)
+  title_zh         String?
+  title_en         String? // Added _en suffix
   major            String?           // 专业领域 (例如 "Computer Science", "Software Engineering") (可选)
   research_group   String?           // 所属的内部科研小组或主要研究方向 (例如 "AI Systems Group", "Database Group") (可选，简单文本)
-  research_interests String?         // 具体的研究兴趣 (建议使用逗号分隔的文本，或未来重构为关联表) (可选)
+  research_interests String?
   skills           String?           // 掌握的技能 (同上，可以是逗号分隔文本) (可选)
 
   // --- 详细与个性化信息 ---
-  bio_zh           String?           // 中文个人简介 (可以是较长文本) (可选)
-  bio_en           String?           // 英文个人简介 (同上) (可选)
-  more_about_me    String?           // “更多关于我”部分，可以放更个性化、非正式的介绍 (支持 Markdown 格式?) (可选)
+  bio_zh           String?
+  bio_en           String?
+  more_about_me    String?           // "更多关于我"部分，可以放更个性化、非正式的介绍 (支持 Markdown 格式?) (可选)
   interests_hobbies String?          // 非学术方面的兴趣爱好 (可选)
-  avatar_url       String?           // 个人头像图片的 URL (可选)
-  office_location  String?           // 办公室地点/门牌号 (可选)
+  avatar_url       String?
+  office_location  String? // Added field
   office_hours     String?           // 新增: 办公时间 (例如 "周一 10:00-12:00 或邮件预约") (可选)
   pronouns         String?           // 个人代词 (例如 "she/her", "he/him", "they/them") (可选)
+  position         String? // General position if needed
+  phone_number     String? // Added field
+  personal_website String?
+  github_username  String?
+  linkedin_url     String?
+  google_scholar_id String?
+  cv_url           String?
+  display_order    Int     @default(0)
+  is_active        Boolean @default(true)
+  role_name        String? // For RBAC
+  username         String? @unique // For RBAC login
 
   // --- 联系与链接 ---
-  email            String? @unique   // 电子邮箱 (可选，但如果提供则必须是唯一的)
-  phone_number     String?           // 电话号码 (可选)
-  personal_website String?           // 个人主页或博客的 URL (可选)
-  cv_url           String?           // 个人简历 (CV) 的下载链接 (可选)
-  github_url       String?           // GitHub 主页链接 (可选)
-  linkedin_url     String?           // LinkedIn 主页链接 (可选)
-  google_scholar_id String?          // Google Scholar 的用户 ID (可选)
-  dblp_id          String?           // DBLP 的作者 ID 或个人主页 URL (可选)
-  semantic_scholar_id String?        // Semantic Scholar 的作者 ID (可选)
-  orcid_id         String?           // ORCID ID (可选)
+  email            String? @unique
   favorite_emojis   String?           // 网站的 favicon 图标的 URL (可选)
 
   // --- 状态与时间信息 ---
@@ -116,6 +126,11 @@ model Member {
   patents              Patent[]            // 获得的专利列表
   academicServices     AcademicService[]   // 参与的学术服务列表
   newsMentions         News[]              // 提及该成员的新闻列表
+  sponsorships         Sponsorship[]       // Add relation to Sponsorship
+
+  @@index([display_order])
+  @@index([is_active])
+  @@index([role_name])
 }
 
 // 教育经历模型 (Education Table)
@@ -138,17 +153,20 @@ model Education {
 // 奖项荣誉模型 (Award Table)
 model Award {
   id            Int      @id @default(autoincrement()) // 自增 ID 主键
-  member        Member   @relation(fields: [member_id], references: [id], onDelete: Cascade) // 关联到 Member
-  member_id     String   // 外键
-  title         String   // 奖项/荣誉名称 (必填)
-  organization  String?  // 颁发组织 (可选)
-  year          Int?     // 获奖年份 (可选)
-  award_type    String?  // 奖项类型 (例如 "奖学金", "最佳论文", "竞赛奖") (可选)
-  description   String?  // 额外描述 (可选)
-  link_url      String?  // 相关证明或新闻链接 (可选)
+  member_id     String   // Relation to Member
+  content       String   // Store the full description text
+  year          Int?     // Attempt to extract the last year for sorting/filtering
+  level         AwardLevel  @default(OTHER) // Visual level indicator
+  link_url      String?  // Optional link
   display_order Int      @default(0) // 显示顺序
+  isFeatured    Boolean  @default(false) // Manually controlled highlight
+
+  // Relation
+  member        Member   @relation(fields: [member_id], references: [id], onDelete: Cascade)
 
   @@index([member_id]) // 成员 ID 索引
+  @@index([year])
+  @@index([display_order])
 }
 
 // 项目模型 (Project Table)
@@ -256,15 +274,17 @@ model Patent {
 
 // 学术服务模型 (AcademicService Table)
 model AcademicService {
-  id            Int      @id @default(autoincrement()) // 自增 ID 主键
-  member        Member   @relation(fields: [member_id], references: [id], onDelete: Cascade) // 关联到 Member
-  member_id     String   // 外键
-  role          String   // 担任的角色 (例如 "PC Member", "Reviewer", "Session Chair", "Guest Editor", "期刊编委/Editorial Board Member") (必填)
-  event         String   // 服务的会议/期刊/组织 (例如 "ICSE 2024", "IEEE TSE", "NSFC Grant Review Panel") (必填)
-  year          Int?     // 服务发生的年份 (可选)
-  display_order Int      @default(0) // 显示顺序
+  id              Int      @id @default(autoincrement()) // 自增 ID 主键
+  member_id       String   // Relation to Member
+  content         String   @default("") // Add default value to allow migration on existing data
+  display_order   Int      @default(0)
+  isFeatured      Boolean  @default(false) // Manually controlled highlight
+
+  // Relation
+  member          Member   @relation(fields: [member_id], references: [id], onDelete: Cascade)
 
   @@index([member_id]) // 成员 ID 索引
+  @@index([display_order])
 }
 
 // 新闻/动态模型 (News Table)
@@ -377,4 +397,21 @@ model LabPhotoTag {
 
   @@id([photo_id, tag_id])
   @@index([tag_id])
+}
+
+// 赞助模型 (Sponsorship Table)
+model Sponsorship { // Includes Grants & Funding
+  id            Int     @id @default(autoincrement())
+  member_id     String  // Relation to Member
+  content       String  // Store the full description text
+  period        String? // Year or period string for isFeatured check
+  link_url      String? // Optional link
+  display_order Int     @default(0)
+  isFeatured    Boolean @default(false) // Manually controlled highlight
+
+  // Relation
+  member Member @relation(fields: [member_id], references: [id], onDelete: Cascade)
+
+  @@index([member_id])
+  @@index([display_order])
 }

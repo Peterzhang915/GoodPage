@@ -1,4 +1,4 @@
-import { PrismaClient, MemberStatus, PublicationType, Prisma } from '@prisma/client';
+import { PrismaClient, MemberStatus, PublicationType, Prisma, AwardLevel } from '@prisma/client';
 import fs from 'fs';
 import path from 'path';
 import { parse } from 'csv-parse/sync';
@@ -85,17 +85,24 @@ async function main() {
                  continue;
             }
 
+            // Special handling for ZichenXu's research interests if needed during CSV processing
+            let researchInterests = record.research_interests || null;
+            if (memberId === 'ZichenXu') {
+              researchInterests = 'My research interests are primarily in the area of computing system design in the development of providing sustainable data services in any system. A common thread in my research is in understanding and rebuilding the traditional computing systems to meet the new design goals, such as sustainability, and constraints, like resource limitation, reliability, and scalability. Broadly speaking, I am a system researcher with a focus on (the design and implementation of) generic optimal and operational data-oriented (GOOD) computing systems.';
+            }
+
             const dataToUpsert: Prisma.MemberUncheckedCreateInput = {
                 id: memberId,
                 name_en: record.name_en || '',
                 status: memberStatus,
                 name_zh: record.name_zh || null,
                 enrollment_year: parseIntSafe(record.enrollment_year),
+                graduation_year: parseIntSafe(record.graduation_year),
                 title_zh: record.title_zh || null,
                 title_en: record.title_en || null,
                 major: record.major || null,
                 research_group: record.research_group || null,
-                research_interests: record.research_interests || null,
+                research_interests: researchInterests,
                 skills: record.skills || null,
                 bio_zh: record.bio_zh || null,
                 bio_en: record.bio_en || null,
@@ -105,17 +112,19 @@ async function main() {
                 office_location: record.office_location || null,
                 office_hours: record.office_hours || null,
                 pronouns: record.pronouns || null,
+                position: record.position || null,
                 email: record.email || null,
                 phone_number: record.phone_number || null,
                 personal_website: record.personal_website || null,
                 cv_url: record.cv_url || null,
-                github_url: record.github_url || null,
+                github_username: record.github_username || null,
                 linkedin_url: record.linkedin_url || null,
                 google_scholar_id: record.google_scholar_id || null,
-                dblp_id: record.dblp_id || null,
-                semantic_scholar_id: record.semantic_scholar_id || null,
-                orcid_id: record.orcid_id || null,
                 favorite_emojis: record.favorite_emojis || null,
+                display_order: parseIntSafe(record.display_order) ?? 0,
+                is_active: parseBoolSafe(record.is_active, true),
+                role_name: record.role_name || null,
+                username: record.username || null,
                 start_date: parseDateSafe(record.start_date),
                 graduation_details: record.graduation_details || null,
                 recruiting_status: record.recruiting_status || null,
@@ -154,185 +163,215 @@ async function main() {
     if (!masterStudent) console.warn("警告: 未能在数据库中找到 KeXu");
 
 
-    // --- 2. 添加教育经历 (Idempotent via deleteMany + createMany) ---
-    if (professor && undergraduate && masterStudent) {
-        console.log("正在清空并重新填充 Education 表...");
-        await prisma.education.deleteMany({ where: { member_id: { in: [professor.id, undergraduate.id, masterStudent.id] } } });
-        await prisma.education.createMany({
-             data: [
-                 { member_id: professor.id, degree: 'Ph.D.', field: 'Computer Science', school: 'The Ohio State University', end_year: 2015, display_order: 1 },
-                 { member_id: professor.id, degree: 'M.S.', field: 'Computer Science', school: 'University of South Florida', end_year: 2011, display_order: 2 },
-                 { member_id: professor.id, degree: 'B.Eng.', field: 'Computer Science', school: 'Beijing University of Posts and Telecommunications', end_year: 2007, display_order: 3 },
-                 { member_id: undergraduate.id, degree: 'B.Eng. (Expected)', field: 'Computer Science', school: 'Nanchang University', start_year: 2022, display_order: 1 },
-                 { member_id: masterStudent.id, degree: 'M.Eng. (Expected)', field: 'Computer Science and Technology', school: 'Nanchang University', start_year: 2022, display_order: 1 },
-                 { member_id: masterStudent.id, degree: 'B.Eng.', field: 'Computer Science', school: 'Some University', end_year: 2022, display_order: 2 },
-             ],
-         });
-        console.log(`添加了教育经历测试数据`);
-    } else {
-        console.warn("跳过添加教育经历，因为一个或多个关键成员未找到。");
+    // --- 2. 添加教育经历 (Keep or remove based on your needs) ---
+    if (professor /* && other needed members */) {
+        console.log("正在清空并重新填充 Education 表 for relevant members...");
+        // await prisma.education.deleteMany({ where: { member_id: { in: [professor.id, ...] } } });
+        // await prisma.education.createMany({ data: [...] });
+        console.log(`Skipping Education seeding for now.`); // Temporarily skip if unsure
     }
 
-
-    // --- 3. 添加奖项荣誉 (Idempotent via deleteMany + createMany) ---
-    if (professor && undergraduate && masterStudent) {
-         console.log("正在清空并重新填充 Award 表...");
-         await prisma.award.deleteMany({ where: { member_id: { in: [professor.id, undergraduate.id, masterStudent.id] } } });
-         await prisma.award.createMany({
-             data: [
-                 { member_id: professor.id, title: 'Jiangxi Provincial Thousand Young Talents', year: 2018, organization: 'Jiangxi Province', display_order: 1 },
-                 { member_id: professor.id, title: 'Best Paper Award', year: 2010, organization: 'Florida Emerging Paradigms', display_order: 2 },
-                 { member_id: undergraduate.id, title: 'Nanchang University Scholarship', year: 2023 },
-                 { member_id: masterStudent.id, title: 'Excellent Student Cadre', year: 2021, organization: 'Some University'},
-             ],
-         });
-        console.log(`添加了奖项荣誉测试数据`);
-    } else {
-         console.warn("跳过添加奖项荣誉，因为一个或多个关键成员未找到。");
-     }
-
-    // --- 4. 添加项目和成员 (恢复为 deleteMany + create) ---
-    console.log("正在清空并重新填充 Project 表及关系...");
-    await prisma.project.deleteMany({ where: { title: { in: [ // 删除特定的种子项目
-        'GOOD-DB: Next-Gen Database System Optimization',
-        'AI System Efficiency and Sustainability'
-    ]}}});
-    // 注意：上面的 deleteMany 只删除了项目本身，关联的 ProjectMember 会因级联删除(如果设置了)或保持不变。
-    // 为确保关系也被清除，最好也删除 ProjectMember (如果需要绝对干净的状态)
-    // await prisma.projectMember.deleteMany({ where: { projectId: { in: [/* 获取旧项目ID列表 */] } }});
-    // 这里简化处理，假设 Project 删除即可
-
-    const project1Data: Prisma.ProjectCreateInput = {
-        title: 'GOOD-DB: Next-Gen Database System Optimization',
-        description: 'Researching and developing novel optimization techniques for database systems on modern hardware.',
-        status: 'Ongoing',
-        start_year: 2021,
-        url: 'http://good.ncu.edu.cn/projects/good-db',
-        is_featured: true,
-        members: {
-            create: [
-                { member_id: 'ZichenXu', role: 'PI' },
-                { member_id: 'KeXu', role: 'Participant' },
-            ],
-        },
-    };
-    const project1 = await prisma.project.create({ data: project1Data });
-    console.log(`创建了项目: ${project1.title}`);
-
-    const project2Data: Prisma.ProjectCreateInput = {
-        title: 'AI System Efficiency and Sustainability',
-        description: 'Optimizing AI model training and inference for better performance and lower energy consumption.',
-        status: 'Ongoing',
-        start_year: 2022,
-        members: {
-            create: [
-                { member_id: 'ZichenXu', role: 'PI'},
-                { member_id: 'WeihanYi', role: 'Undergraduate Researcher'},
-            ]
-        }
-    };
-    const project2 = await prisma.project.create({ data: project2Data });
-    console.log(`创建了项目: ${project2.title}`);
-
-
-    // --- 5. 添加出版物和作者关系 (使用 upsert 和修正后的 update 块) ---
-    console.log("正在创建/更新 Publication 表及关系...");
-    const pub1DOI = '10.1234/jds.2024.001';
-    const pub1Data: Prisma.PublicationCreateInput = {
-        title: 'A Survey on Modern Database Optimization Techniques',
-        venue: 'Journal of Database Systems (JDS)',
-        year: 2024,
-        ccf_rank: 'A',
-        type: PublicationType.JOURNAL,
-        doi_url: pub1DOI,
-        pdf_url: '/pdfs/survey_db_opt.pdf',
-        abstract: 'This paper surveys recent advances in database optimization...',
-        authors: {
-            create: [
-                { member_id: 'ZichenXu', author_order: 1, is_corresponding_author: true },
-                { member_id: 'KeXu', author_order: 2 },
-            ],
-        },
-    };
-    await prisma.publication.upsert({
-        where: { doi_url: pub1DOI }, // 使用 unique doi_url
-        update: {
-            title: pub1Data.title,
-            venue: pub1Data.venue,
-            year: pub1Data.year,
-            ccf_rank: pub1Data.ccf_rank,
-            type: pub1Data.type,
-            pdf_url: pub1Data.pdf_url,
-            abstract: pub1Data.abstract,
-            authors: {
-                deleteMany: {},
-                // 安全访问: 使用可选链 ?. 和空值合并 ??
-                create: pub1Data.authors?.create ?? [],
-            }
-        },
-        create: pub1Data,
-    });
-    console.log(`创建/更新了出版物: ${pub1Data.title}`);
-
-    const pub2DOI = '10.5678/icais.2023.015';
-    const pub2Data: Prisma.PublicationCreateInput = {
-        title: 'Efficient Scheduling for Distributed AI Training',
-        venue: 'International Conference on AI Systems (ICAIS)',
-        year: 2023,
-        ccf_rank: 'B',
-        type: PublicationType.CONFERENCE,
-        doi_url: pub2DOI,
-        pdf_url: 'https://arxiv.org/abs/2305.xxxx',
-        authors: {
-            create: [
-                { member_id: 'ZichenXu', author_order: 1},
-                { member_id: 'WeihanYi', author_order: 2},
-                { member_id: 'KeXu', author_order: 3},
-            ]
-        }
-    };
-    await prisma.publication.upsert({
-        where: { doi_url: pub2DOI }, // 使用 unique doi_url
-        update: {
-             title: pub2Data.title,
-             venue: pub2Data.venue,
-             year: pub2Data.year,
-             ccf_rank: pub2Data.ccf_rank,
-             type: pub2Data.type,
-             pdf_url: pub2Data.pdf_url,
-             authors: {
-                deleteMany: {},
-                 // 安全访问: 使用可选链 ?. 和空值合并 ??
-                create: pub2Data.authors?.create ?? [],
-            }
-        },
-        create: pub2Data,
-    });
-    console.log(`创建/更新了出版物: ${pub2Data.title}`);
-
-
-    // --- 6. 添加教学经历 (Idempotent via deleteMany + createMany) ---
-    if (professor && masterStudent) {
-         console.log("正在清空并重新填充 Teaching 表...");
-         await prisma.teaching.deleteMany({ where: { member_id: { in: [professor.id, masterStudent.id] } } });
-         await prisma.teaching.createMany({
-            data: [
-                { member_id: professor.id, course_title: 'Introduction to Artificial Intelligence', semester: 'Fall 2024', role: 'Instructor' },
-                { member_id: professor.id, course_title: 'Graduate Course Introduction to Combinatorics', semester: 'Fall 2024', role: 'Instructor' },
-                { member_id: masterStudent.id, course_title: 'Data Structures', semester: 'Spring 2023', role: 'TA', university: 'Nanchang University'},
-            ],
-        });
-        console.log(`添加了教学经历测试数据`);
-    } else {
-        console.warn("跳过添加教学经历，因为一个或多个关键成员未找到。");
-    }
-
-    // --- 7. 添加学术服务 (Idempotent via deleteMany + createMany) ---
+    // --- 3. 新增: 填充 ZichenXu 的 服务/奖项/赞助 (Using the new models/data) ---
     if (professor) {
-         console.log("正在清空并重新填充 AcademicService 表...");
+        const memberId = professor.id;
+        console.log(`Seeding new data for member: ${memberId}...`);
+
+        // --- Data Parsing (Using full lists provided by user) ---
+        const academicServicesRaw = [
+          'Artifact Chair, APPT 2025',
+          'Local Chair, SiftDB 2025',
+          'PC, SenSys 2024',
+          'Publicity Chair, CCFSys 2024',
+          'Organization Committee, CCF Computility 2024',
+          'Organization Committee, CCF Chips 2024',
+          'Program Chair, GreenCom 2022', // Kept one instance
+          'Guest Associate Editor, SI in IEEE Transactions on Sustainable Computing',
+          'Local Chair/PC, CCFsys 2022',
+          'PC, CCFsys 2020, CCFChips, 2021',
+          '教育部学位中心，评审专家，2020-2025',
+          'PC, SoCC, 2022',
+          'PC, SSDBM, 2022',
+          'PC, NDBC, 2021, 2022',
+          'PC, ICPADS, 2021, 2022',
+          'Track Chair, IEEE BigData, 2021',
+          'Publicity Chair, SSDBM, 2021',
+          'PC, HPCChina, 2021',
+          'PC, ACM SIGCSE 2020, 2021',
+          'Publicity Chair, ICAC (Now ACSOS) 2019, 2020, 2021',
+          'PC, ICAC (Now ACSOS) 2015, 2017, 2019, 2020, 2021',
+          'Chair, Workshop on Cloud-edge Computing Enabling Novel Computing Architecture, colocated with CTC China 2020',
+          'Workshop Chair, ACA 2020',
+          'PC, ACM TUR-C 2020',
+          'PC, HPBD&IS 2020',
+          'PC, NAS 2019',
+          'Publicity Chair, IWQoS 2016',
+          'Session Chair, INFOCOM 2016',
+          'Session Chair, ICDCS 2015',
+          'PC, ICDCS 2013, 2020'
+        ];
+        const awardsAndSponsorshipsRaw = [
+          'First Awardee, Provincial Technology Advanced Award, Government of JiangXi, 2024',
+          'Co-PI, National R/D Key Project, Ministry of Science and Technology, 2023 - 2025',
+          'PI, Provincial R/D Key Project, Department of Technology JiangXi, 2022 - 2024',
+          'Principal Investigator, Cambodian Funding, 2021',
+          'Co-PI, National R/D Key Project, Ministry of Science and Technology, 2019 - 2022',
+          'Principal Investigator, Education Major Grant, Department of Education JiangXi, 2019 - 2021',
+          'Co-PI, National KHF Key Project, Ministry of Science and Technology, 2018 - 2020',
+          'The 1st selected Jiangxi Provincial Thousand Young Talents, 2018',
+          'PI, NSFC Youth Grant, NSFC, 2018 - 2020',
+          'PI, Tencent Rhino Bird Grant, Tencent, 2017 - 2018',
+          'Principal Investigator, AWS Research Education Grant, Amazon, 2015 - 2017', // Kept one instance
+          'PI, Microsoft Azure Research Grant, Microsoft, 2017 - 2018',
+          'Finalist in Edward F. Hayes Graduate Research Forum, OSU, February 2015',
+          'Student Travel Grant, USENIX Association, June 2013',
+          'Principal Investigator, USF Student Challenge Grant, USF, 2010 - 2011',
+          'Best Paper Award, Florida Emerging Paradigms conference, April 2010',
+          'Student Travel Grant, SIGMOD, June 2010',
+          'Conference Presentation Grant, USF, March 2010',
+          'Best Research Poster Award, USF, October 2009',
+          'Best Undergraduate Thesis, Beijing University of Posts and Telecommunications, July 2007',
+          'Finalist in Windows Embedded Student Challenge (WESC), Microsoft, May 2006',
+          'Honored Graduate, BUPT, 2007 (Top 8%)'
+        ];
+
+        // Define checkIsFeatured function BEFORE its first use
+        const checkIsFeatured = (yearOrPeriod: number | string | undefined | null): boolean => {
+          if (!yearOrPeriod) return false;
+          const currentYear = new Date().getFullYear();
+          const checkYear = (y: number) => y >= currentYear - 3; // Last 3 years + current year
+
+          if (typeof yearOrPeriod === 'number') {
+            return checkYear(yearOrPeriod);
+          } else if (typeof yearOrPeriod === 'string') {
+            const match = yearOrPeriod.match(/\b(\d{4})\b/g); // Find all years
+            if (match) {
+              const lastYear = parseInt(match[match.length - 1], 10);
+              return checkYear(lastYear);
+            }
+          }
+          return false;
+        };
+
+        // Now use checkIsFeatured
+        const academicServicesData: Prisma.AcademicServiceCreateManyInput[] = academicServicesRaw.map((content, index) => {
+             const yearMatch = content.match(/\b\d{4}\b/g);
+             const period = yearMatch ? yearMatch.join(', ') : null;
+             return {
+               member_id: memberId,
+               content: content,
+               display_order: index,
+               isFeatured: checkIsFeatured(period), // Now this should work
+             };
+        });
+
+        const awardsData: Prisma.AwardCreateManyInput[] = [];
+        const sponsorshipsData: Prisma.SponsorshipCreateManyInput[] = [];
+
+        let awardOrder = 0;
+        let sponsorshipOrder = 0;
+
+        awardsAndSponsorshipsRaw.forEach(item => {
+          const lowerCaseItem = item.toLowerCase();
+
+          // Try to extract the last year or period for isFeatured check
+          let year: number | undefined = undefined;
+          let period: string | undefined = undefined;
+
+          const periodMatch = item.match(/\b(\d{4}\s*-\s*\d{4})\b\s*$/); // YYYY-YYYY at the end
+          const yearMatch = item.match(/\(?\b(\d{4})\b\)?\s*$/); // YYYY at the end, optional parentheses
+
+          if (periodMatch) {
+            period = periodMatch[1];
+          } else if (yearMatch) {
+            year = parseInt(yearMatch[1], 10);
+          }
+
+          // Differentiate based on keywords - Simplified: just assign to Award or Sponsorship
+          if (lowerCaseItem.includes('grant') || lowerCaseItem.includes('funding') || lowerCaseItem.includes('project') || lowerCaseItem.includes(' pi,') || lowerCaseItem.includes('co-pi,')) {
+            // Sponsorship/Grant/Project
+            sponsorshipsData.push({
+              member_id: memberId,
+              content: item, // Store the full original string
+              period: period ?? (year?.toString()), // Use period if found, else year string
+              link_url: null, // Add logic later if needed
+              display_order: sponsorshipOrder++,
+              isFeatured: checkIsFeatured(period ?? year),
+            });
+          } else {
+            // Award/Honor
+            let level: AwardLevel = AwardLevel.OTHER;
+            if (lowerCaseItem.includes('best paper') || lowerCaseItem.includes('best poster') || lowerCaseItem.includes('best thesis')) level = AwardLevel.GOLD;
+            else if (lowerCaseItem.includes('thousand talents') || lowerCaseItem.includes('provincial technology advanced') || lowerCaseItem.includes('excellent')) level = AwardLevel.SILVER;
+            else if (lowerCaseItem.includes('finalist') || lowerCaseItem.includes('honored graduate') || lowerCaseItem.includes('nomination')) level = AwardLevel.BRONZE;
+
+            awardsData.push({
+              member_id: memberId,
+              content: item, // Store the full original string
+              year: year, // Use extracted year (if any)
+              level: level,
+              link_url: null, // Add logic later if needed
+              display_order: awardOrder++,
+              isFeatured: checkIsFeatured(year),
+            });
+          }
+        });
+
+        // Clear existing related data for the member
+        console.log(`Deleting existing data for ${memberId}...`);
+        await prisma.academicService.deleteMany({ where: { member_id: memberId } });
+        await prisma.award.deleteMany({ where: { member_id: memberId } });
+        await prisma.sponsorship.deleteMany({ where: { member_id: memberId } });
+        console.log(`Existing data deleted.`);
+
+        // Create new data using the parsed arrays
+        console.log(`Creating ${academicServicesData.length} Academic Service records...`);
+        await prisma.academicService.createMany({
+            data: academicServicesData,
+            // skipDuplicates: true, // Temporarily comment out
+        });
+
+        console.log(`Creating ${awardsData.length} Award records...`);
+        await prisma.award.createMany({
+            data: awardsData,
+            // skipDuplicates: true, // Temporarily comment out
+        });
+
+        console.log(`Creating ${sponsorshipsData.length} Sponsorship records...`);
+        await prisma.sponsorship.createMany({
+            data: sponsorshipsData,
+            // skipDuplicates: true, // Temporarily comment out
+        });
+
+        console.log(`Seeding finished for member: ${memberId}.`);
+
+    } else {
+        console.warn("Professor (ZichenXu) not found, skipping Service/Award/Sponsorship seeding.");
+    }
+
+    // --- 4. 添加项目和成员 (Keep or remove/comment out based on needs) ---
+    // console.log("正在清空并重新填充 Project 表及关系...");
+    // await prisma.project.deleteMany({ where: { ... } });
+    // ... (project creation logic) ...
+    console.log("Skipping Project seeding for now.");
+
+    // --- 5. 添加出版物和作者关系 (Keep or remove/comment out based on needs) ---
+    // console.log("正在创建/更新 Publication 表及关系...");
+    // ... (publication upsert logic) ...
+    console.log("Skipping Publication seeding for now.");
+
+    // --- 6. 添加教学经历 (Keep or remove/comment out based on needs) ---
+    // console.log("正在清空并重新填充 Teaching 表...");
+    // ... (teaching creation logic) ...
+    console.log("Skipping Teaching seeding for now.");
+
+    // --- 7. 添加学术服务 (!!! REMOVE / COMMENT OUT THIS OLD SECTION !!!) ---
+    /*
+    if (professor) {
+         console.log("正在清空并重新填充 AcademicService 表..."); // This is the OLD section
          await prisma.academicService.deleteMany({ where: { member_id: professor.id } });
          await prisma.academicService.createMany({
             data: [
+                // THIS USES THE OLD SCHEMA (role, event, year as number)
                 { member_id: professor.id, role: 'PC Member', event: 'Some Conference 2025', year: 2025},
                 { member_id: professor.id, role: 'Reviewer', event: 'Some Journal', year: 2024},
             ],
@@ -341,10 +380,12 @@ async function main() {
     } else {
         console.warn("跳过添加学术服务，因为教授未找到。");
     }
+    */
+    console.log("Removed/Commented out old AcademicService test data section.")
 
 
     // --- 其他表 ---
-    console.log(`跳过填充 Presentations, Software/Datasets, Patents, News 表 (无测试数据)`);
+    console.log(`跳过填充其他表 (无测试数据)`);
 
 }
 
