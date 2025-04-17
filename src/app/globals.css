@@ -30,6 +30,27 @@ body {
   .text-balance {
     text-wrap: balance;
   }
+
+  /* Tremble animation (for last heart) */
+  @keyframes tremble {
+    0%, 100% { transform: translateX(0); }
+    10%, 30%, 50%, 70%, 90% { transform: translateX(-1px); }
+    20%, 40%, 60%, 80% { transform: translateX(1px); }
+  }
+  .animate-tremble {
+    animation: tremble 0.5s ease-in-out infinite;
+  }
+
+  /* Flash animation (for disappearing heart) */
+  @keyframes flash {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+  }
+  .animate-flash {
+    /* Run the flash animation quickly a few times */
+    /* Adjust count (5) and duration (0.15s) as needed */
+    animation: flash 0.15s step-end 5; 
+  }
 }
 
 /* --- Component Styles --- */

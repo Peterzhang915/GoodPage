@@ -35,6 +35,8 @@ export const themeColors = {
   footerBorder: 'border-gray-200',  // 页脚边框颜色，浅灰色分隔线
   footerTextColor: 'text-gray-500',  // 页脚文本颜色，浅灰色用于辅助信息
   footerBackground: 'bg-gray-50',  // 页脚背景颜色，浅灰色背景
+  errorText: 'text-red-500',       // 新增：错误信息文本颜色
+  warningText: 'text-orange-500',  // 新增：警告信息文本颜色 (例如锁定状态)
 
   // --- 主题颜色 (来自 globals.css) ---
   themePageBg: 'bg-gray-50',             // 主站整体页面背景色
