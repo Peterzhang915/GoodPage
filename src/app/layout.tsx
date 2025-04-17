@@ -21,7 +21,6 @@ const konamiAllowedKeys = /^(ArrowUp|ArrowDown|ArrowLeft|ArrowRight|b|a)$/i;
 // Component to handle Navbar animation logic
 const AnimatedNavbar: React.FC = () => {
   const pathname = usePathname();
-  // Use the context to determine visibility
   const { isDeveloperToolsUIVisible } = useDeveloperMode(); 
   const isDeveloperPath = pathname.startsWith("/developer");
 
@@ -33,13 +32,18 @@ const AnimatedNavbar: React.FC = () => {
   const targetVariant = 
     isDeveloperPath && !isDeveloperToolsUIVisible ? "hidden" : "visible";
 
+  // Store the initial variant determined on first render
+  const initialVariant = React.useRef(targetVariant);
+
   return (
     <motion.div
-      initial={false} 
+      // Set initial based on the very first calculation
+      initial={initialVariant.current} 
       animate={targetVariant}
       variants={variants}
-      transition={{ type: "tween", duration: 0.3 }}
-      className="fixed top-0 left-0 right-0 z-50" // Keep Navbar fixed and on top
+      // Increase duration
+      transition={{ type: "tween", duration: 0.5 }} 
+      className="fixed top-0 left-0 right-0 z-50"
     >
       <Navbar />
     </motion.div>
