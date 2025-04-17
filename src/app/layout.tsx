@@ -5,13 +5,18 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
-import { useKonamiCode } from "@/hooks/useKonamiCode";
+import { useCheatCode } from "@/hooks/useCheatCode";
 import { useRouter, usePathname } from "next/navigation";
 import React from "react";
 import { DeveloperModeProvider, useDeveloperMode } from "@/contexts/DeveloperModeContext";
 import { motion } from "framer-motion";
 
 const inter = Inter({ subsets: ["latin"] });
+
+// Define the Konami sequence string
+const konamiSequence = "ArrowUpArrowUpArrowDownArrowDownArrowLeftArrowRightArrowLeftArrowRightba";
+// Define the regex for allowed keys (Arrows and B, A - case insensitive)
+const konamiAllowedKeys = /^(ArrowUp|ArrowDown|ArrowLeft|ArrowRight|b|a)$/i;
 
 // Component to handle Navbar animation logic
 const AnimatedNavbar: React.FC = () => {
@@ -49,11 +54,11 @@ export default function RootLayout({
   const router = useRouter();
   const pathname = usePathname(); // Keep pathname for footer logic
 
-  // Developer page trigger using useCheatCode
+  // Use the correct hook with the Konami sequence and allowed keys regex
   useCheatCode(konamiSequence, () => {
-    console.log("[Layout] Konami cheat code triggered. Attempting navigation to /developer...");
+    console.log("[Layout] Konami code triggered. Attempting navigation to /developer...");
     router.push("/developer");
-  });
+  }, konamiAllowedKeys); // Pass the regex here
 
   const isDeveloperPath = pathname.startsWith("/developer"); // Keep for footer logic
 
