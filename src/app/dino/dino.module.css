@@ -1,24 +1,21 @@
 /* GoodPage/src/app/dino/dino.module.css */
 
 .container {
-  position: relative; /* Needed for absolute positioning of children */
-  width: 100vw;
-  height: 100vh; /* Use full viewport height */
+  position: relative; 
+  width: 100%; /* Fill parent (main element) */
+  height: 100%; /* Fill parent (main element) */
   background-color: #f7f7f7;
-  overflow: hidden; /* Hide anything that goes outside */
+  overflow: hidden; /* Hide internal overflow */
   font-family: sans-serif;
   color: #555;
-  /* Remove centering styles */
 }
-
-/* Remove the dedicated gameArea, use container directly */
 
 .ground {
   position: absolute;
-  bottom: 10%; /* Position ground higher for full screen */
+  bottom: 30%; 
   left: 0;
   width: 200%;
-  height: 12px;
+  height: 14px; 
   background-image: repeating-linear-gradient(
     45deg,
     #d3d3d3 0,
@@ -27,72 +24,80 @@
     transparent 3px
   );
   background-size: 4px 4px;
-  animation: scrollGround 5s linear infinite; /* Slightly faster scroll */
+  animation: scrollGround 5s linear infinite;
   z-index: 5;
 }
 
 @keyframes scrollGround {
-  from {
-    transform: translateX(0);
-  }
-  to {
-    transform: translateX(-50%); /* Scroll one full pattern width */
-  }
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
 }
 
 .dino {
   position: absolute;
-  bottom: calc(10% + 2px); /* Position dino just above the ground line */
-  left: 60px; /* Keep some distance from the left edge */
-  font-size: 3rem; /* Slightly larger */
+  bottom: 30%; 
+  left: 80px;
+  font-size: 10rem;
   user-select: none;
-  transform: scaleX(-1);
+  transform: scaleX(-1) translateY(15px); /* Final position adjustment */
   z-index: 10;
+}
+
+/* Define the jump animation (single peak, custom bezier) */
+@keyframes jump {
+  0% {
+    transform: translateY(15px) scaleX(-1);
+  }
+  50% { /* Single peak frame */
+    transform: translateY(calc(-200px + 15px)) scaleX(-1);
+  }
+  100% {
+    transform: translateY(15px) scaleX(-1);
+  }
+}
+
+/* Apply the jump animation */
+.dino.jumping {
+  animation-name: jump;
+  animation-duration: 0.9s; 
+  animation-timing-function: cubic-bezier(0.3, 0.8, 0.7, 0.9); 
 }
 
 .obstacle {
   position: absolute;
-  bottom: calc(10% + 2px); /* Align obstacles with ground */
+  bottom: calc(30% + 2px);
   user-select: none;
   z-index: 9;
-  /* Apply the movement animation */
   animation-name: moveObstacle;
   animation-timing-function: linear;
   animation-iteration-count: infinite;
-  right: -100px; /* Start off-screen right, animation will move it left */
+  right: -200px; 
 }
 
-/* Keyframes for obstacle movement */
 @keyframes moveObstacle {
-  from {
-    /* Start completely off-screen to the right */
-    transform: translateX(0);
-  }
-  to {
-    /* Move completely off-screen to the left */
-    /* 100vw moves it across the viewport, 150px ensures it's fully off */
-    transform: translateX(calc(-100vw - 150px));
-  }
+  from { transform: translateX(0); }
+  to { transform: translateX(calc(-100vw - 150px)); }
 }
 
-/* Apply different timings and styles to obstacles */
 .cactus1 {
-  font-size: 2.8rem;
-  animation-duration: 3.8s;
-  animation-delay: 0.5s;
+  font-size: 4.8rem;
+  bottom: calc(30% + 2px);
+  animation-duration: 4.0s; 
+  animation-delay: 1s; 
 }
 
 .cactus2 {
-  font-size: 3.5rem; /* Larger cactus */
-  animation-duration: 4.5s;
-  animation-delay: 2.5s;
+  font-size: 5.5rem;
+  bottom: calc(30% + 2px);
+  animation-duration: 4.0s; 
+  animation-delay: 3s; 
 }
 
 .pterodactyl {
-  font-size: 2.5rem;
-  bottom: calc(10% + 40px); /* Position pterodactyl higher */
-  animation-duration: 5.5s;
-  animation-delay: 1.5s;
+  font-size: 4.5rem;
+  bottom: calc(30% + 250px); 
+  animation-duration: 5.0s; 
+  animation-delay: 2s;
 }
 
 .godModeText {
@@ -108,9 +113,36 @@
   z-index: 20;
 }
 
+.gameOverMessage {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  z-index: 100;
+  color: #555;
+}
+
+.gameOverMessage h1 {
+  font-size: 4rem;
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+}
+
+.gameOverMessage p {
+  font-size: 1.5rem;
+}
+
+/* Pause animations when game is over (applied via class on container) */
+.gameOver .ground,
+.gameOver .dino,
+.gameOver .obstacle {
+  animation-play-state: paused !important;
+}
+
 .instructions {
   position: absolute;
-  bottom: 20px; /* Position instructions at the bottom */
+  bottom: 20px; 
   left: 50%;
   transform: translateX(-50%);
   font-size: 0.8rem;

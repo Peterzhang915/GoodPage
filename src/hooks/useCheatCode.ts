@@ -15,7 +15,7 @@ export function useCheatCode(
   allowedKeysRegex: RegExp = /^\d$/ // Default: only digits 0-9
 ) {
   const inputSequenceRef = useRef<string>("");
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const handleKeyDown = useCallback(
     (event: KeyboardEvent) => {
@@ -46,8 +46,7 @@ export function useCheatCode(
       } else {
         // Reset sequence if a non-allowed key is pressed
         inputSequenceRef.current = ""; 
-        console.log("[useCheatCode] Non-allowed key pressed. Sequence reset."); // Add log for reset
-        // Clear any pending reset timeout as we are resetting now
+        console.log("[useCheatCode] Non-allowed key pressed. Sequence reset.");
         if (timeoutRef.current) {
           clearTimeout(timeoutRef.current);
           timeoutRef.current = null;
