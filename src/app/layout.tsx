@@ -49,7 +49,9 @@ export default function RootLayout({
   const router = useRouter();
   const pathname = usePathname(); // Keep pathname for footer logic
 
-  useKonamiCode(() => {
+  // Developer page trigger using useCheatCode
+  useCheatCode(konamiSequence, () => {
+    console.log("[Layout] Konami cheat code triggered. Attempting navigation to /developer...");
     router.push("/developer");
   });
 
