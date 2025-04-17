@@ -67,8 +67,8 @@ export default function RootLayout({
           {/* Replace AnimatedNavbar with Navbar */}
           {!isDinoPage && <Navbar />}
           {/* Adjust main class based ONLY on dino page */}
-          {/* Keep existing pt-16 sm:pt-20 EXCEPT when on dino page */}
-          <main className={`flex-grow ${isDinoPage ? 'dino-main-grow' : 'pt-16 sm:pt-20'}`}> 
+          {/* Remove conditional padding-top, sticky nav handles spacing */}
+          <main className={`flex-grow ${isDinoPage ? 'dino-main-grow' : ''}`}> 
             {children}
           </main>
           {/* Conditional Footer - Hide if on dino OR developer path */}
