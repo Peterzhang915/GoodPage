@@ -17,7 +17,7 @@ const inter = Inter({ subsets: ["latin"] });
 const konamiSequence = "ArrowUpArrowUpArrowDownArrowDownArrowLeftArrowRightArrowLeftArrowRightba";
 // Define the regex for allowed keys (Arrows and B, A - case insensitive)
 const konamiAllowedKeys = /^(ArrowUp|ArrowDown|ArrowLeft|ArrowRight|b|a)$/i;
-// Define ONLY the dino sequence here
+// Define the Dino sequence
 const dinoSequence = "6031769";
 
 export default function RootLayout({
@@ -27,52 +27,92 @@ export default function RootLayout({
 }>) {
   const router = useRouter();
   const pathname = usePathname();
-
-  // Determine if we are on the dino page
   const isDinoPage = pathname === '/dino';
+
+  // Removed isDinoPage check
   const isDeveloperPath = pathname.startsWith("/developer");
 
-  // Cheat code triggers
+  // Keep Konami trigger IF useCheatCode is still used
   useCheatCode(konamiSequence, () => {
     console.log("[Layout] Konami cheat code triggered. Navigating to /developer...");
     router.push("/developer");
   }, konamiAllowedKeys);
 
+  // Add Dino trigger
   useCheatCode(dinoSequence, () => {
     console.log("[Layout] Dino cheat code triggered. Navigating to /dino...");
     router.push("/dino");
   }); // Uses default regex (digits only)
 
-  // Use useEffect to manage ONLY the dino-active body class
+  // Keep useEffect for developer mode class, removed dino one
+  useEffect(() => {
+    const bodyClassList = document.body.classList;
+    if (isDeveloperPath) {
+      bodyClassList.add("developer-mode-active");
+    } else {
+      bodyClassList.remove("developer-mode-active");
+    }
+    return () => {
+      bodyClassList.remove("developer-mode-active");
+    };
+  }, [isDeveloperPath]);
+
+  // --- Add useEffect to manage dino-active on BODY for BOTH layout paths --- 
+  // This needs to run regardless of which layout is rendered initially
   useEffect(() => {
     const bodyClassList = document.body.classList;
     if (isDinoPage) {
-      bodyClassList.add("dino-active");
+        bodyClassList.add("dino-active");
+        // Remove potential conflicts from default layout
+        bodyClassList.remove("developer-mode-active"); 
     } else {
-      bodyClassList.remove("dino-active");
+        bodyClassList.remove("dino-active");
+        // Re-apply developer mode if necessary (handled by the other useEffect)
     }
-    // Cleanup on unmount or path change
+    // Cleanup remains simple for dino-active
     return () => {
-      bodyClassList.remove("dino-active");
+        bodyClassList.remove("dino-active");
     };
-  }, [isDinoPage]); // Depend only on isDinoPage
+}, [isDinoPage]);
+
+  // Keep the existing useEffect for developer-mode-active for the default layout
+  useEffect(() => {
+    const bodyClassList = document.body.classList;
+    if (!isDinoPage && isDeveloperPath) { // Only apply if NOT dino page
+      bodyClassList.add("developer-mode-active");
+    } else if (!isDinoPage) { // Remove only if NOT dino page
+      bodyClassList.remove("developer-mode-active");
+    }
+    // Cleanup only removes developer class
+    return () => {
+      bodyClassList.remove("developer-mode-active");
+    };
+  }, [isDinoPage, isDeveloperPath]); // Need isDinoPage here too
+
+  if (isDinoPage) {
+    return (
+      <html lang="en">
+        {/* We'll add the class via useEffect below */}
+        <body className={`${inter.className} dino-page-isolated-body`}>
+          {children} 
+        </body>
+      </html>
+    );
+  }
 
   return (
     <html lang="en">
-      {/* Keep existing body classes, useEffect handles dino-active */}
-      {/* The bg color logic based on isDeveloperPath should remain */}
+      {/* Restore default body class */}
       <body className={`${inter.className} flex flex-col min-h-screen ${isDeveloperPath ? "bg-gray-900" : "bg-gray-50"}`}>
-        {/* Keep existing Provider */}
         <DeveloperModeProvider>
-          {/* Replace AnimatedNavbar with Navbar */}
-          {!isDinoPage && <Navbar />}
-          {/* Adjust main class based ONLY on dino page */}
-          {/* Remove conditional padding-top, sticky nav handles spacing */}
-          <main className={`flex-grow ${isDinoPage ? 'dino-main-grow' : ''}`}> 
+          {/* Always render Navbar */} 
+          <Navbar />
+          {/* Apply user's fix: Remove top padding from main in default layout */}
+          <main className={`flex-grow`}> 
             {children}
           </main>
-          {/* Conditional Footer - Hide if on dino OR developer path */}
-          {!isDinoPage && !isDeveloperPath && <Footer />} 
+          {/* Conditional Footer based only on developer path */}
+          {!isDeveloperPath && <Footer />} 
         </DeveloperModeProvider>
       </body>
     </html>

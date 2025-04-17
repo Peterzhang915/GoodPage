@@ -117,3 +117,18 @@ body.developer-mode-active nav a[class*="text-xl"] {
 body.developer-mode-active footer[class*="pt-8"] {
   @apply bg-gray-900 border-t border-gray-700 text-gray-400; /* 暗色背景, 添加边框, 调整文本颜色 */
 }
+
+/* Removed styles specific to Dino page */
+/* 
+body.dino-active {
+  overflow: hidden !important; 
+}
+main.dino-main-grow {
+  flex-grow: 1;
+  display: flex; 
+  padding-top: 0 !important; 
+}
+main.dino-main-grow > div {
+  flex-grow: 1; 
+}
+*/

@@ -1,13 +1,16 @@
 /* GoodPage/src/app/dino/dino.module.css */
 
 .container {
-  position: relative; 
-  width: 100%; /* Fill parent (main element) */
-  height: 100%; /* Fill parent (main element) */
+  position: fixed; /* Use fixed positioning to cover viewport */
+  top: 0;
+  left: 0;
+  width: 100vw; /* Full viewport width */
+  height: 100vh; /* Full viewport height */
   background-color: #f7f7f7;
   overflow: hidden; /* Hide internal overflow */
   font-family: sans-serif;
   color: #555;
+  /* Remove border and padding from placeholder */
 }
 
 .ground {
@@ -43,7 +46,7 @@
   z-index: 10;
 }
 
-/* Define the jump animation (single peak, custom bezier) */
+/* Keep jump animation definitions */
 @keyframes jump {
   0% {
     transform: translateY(15px) scaleX(-1);
@@ -56,13 +59,13 @@
   }
 }
 
-/* Apply the jump animation */
 .dino.jumping {
   animation-name: jump;
   animation-duration: 0.9s; 
   animation-timing-function: cubic-bezier(0.3, 0.8, 0.7, 0.9); 
 }
 
+/* Keep obstacle base style and movement animation */
 .obstacle {
   position: absolute;
   bottom: calc(30% + 2px);
@@ -79,6 +82,7 @@
   to { transform: translateX(calc(-100vw - 150px)); }
 }
 
+/* Keep obstacle specific styles (size, animation timing) */
 .cactus1 {
   font-size: 4.8rem;
   bottom: calc(30% + 2px);
@@ -100,46 +104,32 @@
   animation-delay: 2s;
 }
 
-.godModeText {
+/* Rename or reuse godModeText for the indicator */
+.godModeIndicator /* or .godModeText */ {
   position: absolute;
   top: 20px;
   left: 20px;
-  font-weight: bold;
-  color: #2ecc71;
-  background-color: rgba(255, 255, 255, 0.8);
-  padding: 5px 10px;
-  border-radius: 5px;
-  font-size: 1rem;
+  font-weight: normal; /* Remove bold if desired */
+  color: #e74c3c; /* Red color for heart? */
+  background-color: #f7f7f7; /* Match container background */
+  padding: 8px 15px; /* Slightly larger padding */
+  border-radius: 10px; /* Slightly larger radius */
+  font-size: 2rem; /* Increase base font size */
   z-index: 20;
+  display: flex; /* Use flex to align items */
+  align-items: center; 
+  gap: 0.3em; /* Space between heart and infinity */
+  user-select: none; /* Add this line to prevent selection */
 }
 
-.gameOverMessage {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  text-align: center;
-  z-index: 100;
-  color: #555;
+/* Style for the infinity symbol */
+.infinitySymbol {
+  font-size: 2.2rem; /* Increase infinity symbol size */
+  line-height: 1; /* Adjust line height for vertical alignment */
+  color: #555; /* Different color? */
 }
 
-.gameOverMessage h1 {
-  font-size: 4rem;
-  font-weight: bold;
-  margin-bottom: 0.5rem;
-}
-
-.gameOverMessage p {
-  font-size: 1.5rem;
-}
-
-/* Pause animations when game is over (applied via class on container) */
-.gameOver .ground,
-.gameOver .dino,
-.gameOver .obstacle {
-  animation-play-state: paused !important;
-}
-
+/* Keep instructions styles */
 .instructions {
   position: absolute;
   bottom: 20px; 
@@ -156,4 +146,33 @@
   padding: 1px 4px;
   border-radius: 3px;
   font-family: monospace;
+}
+
+/* Add flashing animation */
+@keyframes flash {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; } /* Make it partially transparent */
+}
+
+/* Apply flashing animation when invulnerable */
+.dino.flashing {
+  animation: flash 0.15s step-end infinite; /* Fast flashing */
+  /* Use step-end for distinct on/off states */
+}
+
+/* Animation for the god mode indicator when hit */
+@keyframes indicatorHitAnimation {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(0.85); /* Slightly shrink */
+    opacity: 0.7; /* Slightly fade */
+  }
+}
+
+/* Apply the hit animation */
+.godModeIndicator.indicatorHit {
+  animation: indicatorHitAnimation 0.3s ease-in-out;
 } 
