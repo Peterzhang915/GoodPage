@@ -191,3 +191,36 @@
 .godModeIndicator.indicatorHit {
   animation: indicatorHitAnimation 0.3s ease-in-out;
 }
+
+.canvasContainer {
+  /* Make container fill the entire viewport */
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw; 
+  height: 100vh; 
+  
+  /* Align canvas to the top */
+  display: flex;
+  justify-content: center;
+  align-items: flex-start; /* Align canvas to the top */
+  
+  /* Remove padding used for partial screen offset */
+  /* padding-top: 50px; */ 
+  
+  overflow: hidden; /* Hide potential scrollbars if canvas slightly overflows */
+  background-color: #f7f7f7; /* Match page background or set desired game background */
+  z-index: 100; /* Ensure it's above other page content if necessary */
+}
+
+/* Styles for the canvas itself */
+.runnerCanvas {
+  /* Dimensions will be set via JavaScript */
+  background-color: #f7f7f7;
+  /* Optional: Add a subtle border if needed */
+  /* border: 1px solid #eee; */
+}
+
+/* Remove or comment out old, unused styles if they exist */
+/* .game, .score, .dino, .jump, .cactus, .block, .container, .ground, etc. */
+/* ... (ensure old conflicting styles are removed or commented out) ... */
