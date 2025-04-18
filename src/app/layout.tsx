@@ -1,5 +1,6 @@
 "use client";
 
+import React from 'react';
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
@@ -10,15 +11,50 @@ import { useCheatCode } from "@/hooks/useCheatCode";
 import { useRouter, usePathname } from "next/navigation";
 import { useEffect } from "react";
 import { AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
+import { useDeveloperMode } from "@/contexts/DeveloperModeContext";
 
 const inter = Inter({ subsets: ["latin"] });
 
 // Define the Konami sequence string
-const konamiSequence = "ArrowUpArrowUpArrowDownArrowDownArrowLeftArrowRightArrowLeftArrowRightba";
+const konamiSequence =
+  "ArrowUpArrowUpArrowDownArrowDownArrowLeftArrowRightArrowLeftArrowRightba";
 // Define the regex for allowed keys (Arrows and B, A - case insensitive)
 const konamiAllowedKeys = /^(ArrowUp|ArrowDown|ArrowLeft|ArrowRight|b|a)$/i;
 // Define the Dino sequence
 const dinoSequence = "6031769";
+
+// Component to handle Navbar animation logic
+const AnimatedNavbar: React.FC = () => {
+  const pathname = usePathname();
+  const { isDeveloperToolsUIVisible } = useDeveloperMode(); 
+  const isDeveloperPath = pathname.startsWith("/developer");
+
+  const variants = {
+    hidden: { y: "-100%", opacity: 0 },
+    visible: { y: "0%", opacity: 1 },
+  };
+
+  const targetVariant = 
+    isDeveloperPath && !isDeveloperToolsUIVisible ? "hidden" : "visible";
+
+  // Store the initial variant determined on first render
+  const initialVariant = React.useRef(targetVariant);
+
+  return (
+    <motion.div
+      // Set initial based on the very first calculation
+      initial={initialVariant.current} 
+      animate={targetVariant}
+      variants={variants}
+      // Increase duration
+      transition={{ type: "tween", duration: 0.5 }} 
+      className="fixed top-0 left-0 right-0 z-50"
+    >
+      <Navbar />
+    </motion.div>
+  );
+};
 
 export default function RootLayout({
   children,
@@ -27,16 +63,22 @@ export default function RootLayout({
 }>) {
   const router = useRouter();
   const pathname = usePathname();
-  const isDinoPage = pathname === '/dino';
+  const isDinoPage = pathname === "/dino";
 
   // Removed isDinoPage check
   const isDeveloperPath = pathname.startsWith("/developer");
 
   // Keep Konami trigger IF useCheatCode is still used
-  useCheatCode(konamiSequence, () => {
-    console.log("[Layout] Konami cheat code triggered. Navigating to /developer...");
-    router.push("/developer");
-  }, konamiAllowedKeys);
+  useCheatCode(
+    konamiSequence,
+    () => {
+      console.log(
+        "[Layout] Konami cheat code triggered. Navigating to /developer...",
+      );
+      router.push("/developer");
+    },
+    konamiAllowedKeys,
+  );
 
   // Add Dino trigger
   useCheatCode(dinoSequence, () => {
@@ -57,30 +99,32 @@ export default function RootLayout({
     };
   }, [isDeveloperPath]);
 
-  // --- Add useEffect to manage dino-active on BODY for BOTH layout paths --- 
+  // --- Add useEffect to manage dino-active on BODY for BOTH layout paths ---
   // This needs to run regardless of which layout is rendered initially
   useEffect(() => {
     const bodyClassList = document.body.classList;
     if (isDinoPage) {
-        bodyClassList.add("dino-active");
-        // Remove potential conflicts from default layout
-        bodyClassList.remove("developer-mode-active"); 
+      bodyClassList.add("dino-active");
+      // Remove potential conflicts from default layout
+      bodyClassList.remove("developer-mode-active");
     } else {
-        bodyClassList.remove("dino-active");
-        // Re-apply developer mode if necessary (handled by the other useEffect)
+      bodyClassList.remove("dino-active");
+      // Re-apply developer mode if necessary (handled by the other useEffect)
     }
     // Cleanup remains simple for dino-active
     return () => {
-        bodyClassList.remove("dino-active");
+      bodyClassList.remove("dino-active");
     };
-}, [isDinoPage]);
+  }, [isDinoPage]);
 
   // Keep the existing useEffect for developer-mode-active for the default layout
   useEffect(() => {
     const bodyClassList = document.body.classList;
-    if (!isDinoPage && isDeveloperPath) { // Only apply if NOT dino page
+    if (!isDinoPage && isDeveloperPath) {
+      // Only apply if NOT dino page
       bodyClassList.add("developer-mode-active");
-    } else if (!isDinoPage) { // Remove only if NOT dino page
+    } else if (!isDinoPage) {
+      // Remove only if NOT dino page
       bodyClassList.remove("developer-mode-active");
     }
     // Cleanup only removes developer class
@@ -94,7 +138,7 @@ export default function RootLayout({
       <html lang="en">
         {/* We'll add the class via useEffect below */}
         <body className={`${inter.className} dino-page-isolated-body`}>
-          {children} 
+          {children}
         </body>
       </html>
     );
@@ -103,16 +147,16 @@ export default function RootLayout({
   return (
     <html lang="en">
       {/* Restore default body class */}
-      <body className={`${inter.className} flex flex-col min-h-screen ${isDeveloperPath ? "bg-gray-900" : "bg-gray-50"}`}>
+      <body
+        className={`${inter.className} flex flex-col min-h-screen ${isDeveloperPath ? "bg-gray-900" : "bg-gray-50"}`}
+      >
         <DeveloperModeProvider>
-          {/* Always render Navbar */} 
+          {/* Always render Navbar */}
           <Navbar />
-          {/* Apply user's fix: Remove top padding from main in default layout */}
-          <main className={`flex-grow`}> 
-            {children}
-          </main>
-          {/* Conditional Footer based only on developer path */}
-          {!isDeveloperPath && <Footer />} 
+          {/* Add pt-0 to main for navbar height */}
+          <main className={`flex-grow pt-0`}>{children}</main>
+          {/* Footer logic remains */}
+          {!isDeveloperPath && <Footer />}
         </DeveloperModeProvider>
       </body>
     </html>

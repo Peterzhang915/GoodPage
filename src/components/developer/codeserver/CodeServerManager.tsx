@@ -1,4 +1,3 @@
-// src/components/developer/CodeServerManager.tsx
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
@@ -253,74 +252,73 @@ const CodeServerManager: React.FC<CodeServerManagerProps> = ({ onClose }) => {
                     name="name"
                     value={editFormData.name}
                     onChange={handleEditFormChange}
-                    className="flex-grow p-1 border rounded-md shadow-sm bg-gray-600 border-gray-500 text-gray-100 focus:ring-indigo-500 focus:border-indigo-500 text-sm"
+                    className="flex-grow p-1.5 border rounded bg-gray-600 border-gray-500 text-gray-100 text-sm"
+                    placeholder="Server Name"
                   />
                   <input
                     type="text"
                     name="url"
                     value={editFormData.url}
                     onChange={handleEditFormChange}
-                    className="flex-grow p-1 border rounded-md shadow-sm bg-gray-600 border-gray-500 text-gray-100 focus:ring-indigo-500 focus:border-indigo-500 text-xs"
+                    className="flex-grow p-1.5 border rounded bg-gray-600 border-gray-500 text-gray-100 text-sm"
+                    placeholder="Server URL"
                   />
                   {/* 编辑错误显示 */}
                   {editError && (
-                    <p
-                      className="text-xs text-red-400 absolute bottom-[-18px] left-0 w-full truncate"
-                      title={editError}
-                    >
+                    <p className="text-xs text-red-400 absolute bottom-[-18px] left-1">
                       {editError}
                     </p>
                   )}
                 </div>
               ) : (
-                // 查看模式：显示文本和链接
-                <div className="overflow-hidden">
-                  <p className="text-base font-medium text-gray-100 truncate">
+                // 显示模式：显示名称和链接
+                <>
+                  <span
+                    className="font-medium text-gray-100 truncate"
+                    title={server.name}
+                  >
                     {server.name}
-                  </p>
+                  </span>
                   <a
                     href={server.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-xs text-indigo-400 hover:text-indigo-300 truncate block"
+                    className="text-xs text-blue-400 hover:text-blue-300 hover:underline truncate"
                     title={server.url}
-                    onClick={(e) => {
-                      if (editingServerId) e.preventDefault();
-                    }} // 编辑时阻止跳转
                   >
                     {server.url}
                   </a>
-                </div>
+                </>
               )}
             </div>
 
-            {/* 右侧：根据是否编辑显示不同按钮 */}
-            <div className="flex items-center gap-2 flex-shrink-0">
+            {/* 右侧：操作按钮 */}
+            <div className="flex-shrink-0 flex items-center space-x-2">
               {editingServerId === server.id ? (
-                // 编辑模式按钮：Save, Cancel
+                // 编辑模式下的按钮：保存和取消
                 <>
                   <button
                     onClick={handleSaveEdit}
-                    className="p-1 text-green-400 hover:text-green-300 transition-colors"
+                    className="p-1.5 rounded text-green-400 hover:bg-gray-600"
                     title="Save Changes"
                   >
                     <Save size={16} />
                   </button>
                   <button
                     onClick={handleCancelEdit}
-                    className="p-1 text-gray-400 hover:text-white transition-colors"
+                    className="p-1.5 rounded text-gray-400 hover:bg-gray-600"
                     title="Cancel Edit"
                   >
                     <XCircle size={16} />
                   </button>
                 </>
               ) : (
-                // 查看模式按钮：Edit, Delete
+                // 显示模式下的按钮：编辑和删除
                 <>
                   <button
                     onClick={() => handleStartEdit(server)}
                     disabled={!!editingServerId} // 正在编辑其他项时禁用
-                    className="p-1 text-gray-400 hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="p-1.5 rounded text-indigo-400 hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
                     title="Edit Server"
                   >
                     <Edit size={16} />
@@ -328,7 +326,7 @@ const CodeServerManager: React.FC<CodeServerManagerProps> = ({ onClose }) => {
                   <button
                     onClick={() => handleDeleteServer(server.id)}
                     disabled={!!editingServerId} // 正在编辑其他项时禁用
-                    className="p-1 text-red-400 hover:text-red-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="p-1.5 rounded text-red-400 hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
                     title="Delete Server"
                   >
                     <Trash2 size={16} />

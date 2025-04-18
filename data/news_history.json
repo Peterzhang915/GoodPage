@@ -2,9 +2,7 @@
   {
     "timestamp": "2025-04-14T14:17:55.256Z",
     "title": "4.12",
-    "news": [
-      "We update the homepage of GoodLAB."
-    ]
+    "news": ["We update the homepage of GoodLAB."]
   },
   {
     "timestamp": "2025-04-12T07:23:41.728Z",
@@ -71,8 +69,6 @@
   },
   {
     "timestamp": "2025-04-12T04:18:14.761Z",
-    "news": [
-      "111"
-    ]
+    "news": ["111"]
   }
 ]

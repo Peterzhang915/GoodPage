@@ -14,25 +14,30 @@ import { themeColors } from "@/styles/theme";
 import PendingPublicationEditor from "./PendingPublicationEditor"; // Import the editor
 
 // Interface for publications fetched from the pending API
-// (Might include relations like authors if the API provides them)
+// Ensure this interface correctly extends the Prisma Publication type
+// which should already include raw_authors: string | null
 interface PendingPublication extends Publication {
+  // The 'authors' relation is optional and depends on the API query
   authors?: { id: string; name_en: string; name_zh: string | null }[];
+  // Explicitly add raw_authors to the interface
+  raw_authors: string | null;
 }
 
 // Helper to display authors concisely
 const formatAuthors = (
-  authors: PendingPublication["authors"],
-  rawAuthors: string | null,
+  authorsRelation: PendingPublication["authors"], // Explicitly name the relation parameter
+  rawAuthorsField: string | null, // Explicitly name the raw string field parameter
 ) => {
-  if (authors && authors.length > 0) {
-    return authors.map((a) => a.name_en).join(", ");
+  // Prioritize the structured relation if available
+  if (authorsRelation && authorsRelation.length > 0) {
+    return authorsRelation.map((a) => a.name_en).join(", ");
   }
-  if (rawAuthors) {
-    // Basic parsing for display, might not be perfect
-    return (
-      rawAuthors.split(/ and /i).slice(0, 3).join(", ") +
-      (rawAuthors.split(/ and /i).length > 3 ? "..." : "")
-    );
+  // Fallback to the raw string field
+  if (rawAuthorsField) {
+    // Basic parsing for display
+    const authorsList = rawAuthorsField.split(/ and /i);
+    const displayAuthors = authorsList.slice(0, 3).join(", ");
+    return authorsList.length > 3 ? `${displayAuthors}...` : displayAuthors;
   }
   return "N/A";
 };
@@ -112,8 +117,8 @@ const PendingPublicationsPage: React.FC = () => {
         const errData = await response.json();
         throw new Error(errData.error || `HTTP Error: ${response.status}`);
       }
-      // Remove from list on success
-      setPendingPublications((prev) => prev.filter((pub) => pub.id !== id));
+      // Remove from list on success - Use toString() for comparison
+      setPendingPublications((prev) => prev.filter((pub) => pub.id.toString() !== id));
       setShowSuccessMessage("Publication deleted successfully.");
       // Auto-hide success message after a few seconds
       setTimeout(() => setShowSuccessMessage(null), 3000);
@@ -132,9 +137,9 @@ const PendingPublicationsPage: React.FC = () => {
     updatedPublication: Publication,
   ): Promise<void> => {
     console.log("Saved and approved:", updatedPublication);
-    // Remove the approved publication from the pending list
+    // Remove the approved publication from the pending list - Use toString()
     setPendingPublications((prev) =>
-      prev.filter((pub) => pub.id !== updatedPublication.id),
+      prev.filter((pub) => pub.id.toString() !== updatedPublication.id.toString()),
     );
     setEditingPublicationId(null); // Close the editor
     setShowSuccessMessage("Publication approved and saved successfully!");
@@ -252,6 +257,12 @@ const PendingPublicationsPage: React.FC = () => {
                 </th>
                 <th
                   scope="col"
+                  className={`px-4 py-3 text-left text-xs font-medium ${themeColors.devHeaderText} uppercase tracking-wider`}
+                >
+                  Added
+                </th>
+                <th
+                  scope="col"
                   className={`px-4 py-3 text-center text-xs font-medium ${themeColors.devHeaderText} uppercase tracking-wider`}
                 >
                   Actions
@@ -259,60 +270,56 @@ const PendingPublicationsPage: React.FC = () => {
               </tr>
             </thead>
             <tbody
-              className={`${themeColors.devCardBg} divide-y divide-gray-700`}
+              className={`divide-y ${themeColors.devBorder} ${themeColors.devDescText}`}
             >
-              {pendingPublications.map((pub) => (
-                <tr
-                  key={pub.id}
-                  className={`${themeColors.devRowHover} transition-colors`}
-                >
-                  <td
-                    className={`px-4 py-3 text-sm font-medium ${themeColors.devDescText} max-w-xs truncate`}
-                    title={pub.title}
-                  >
-                    {pub.title}
+              {pendingPublications.map((pub: PendingPublication) => (
+                <tr key={pub.id} className={`${themeColors.devRowHover}`}>
+                  <td className="px-4 py-3 text-sm font-medium text-gray-100">
+                    {pub.title || "N/A"}
                   </td>
-                  <td
-                    className={`px-4 py-3 text-sm ${themeColors.devDescText} max-w-xs truncate`}
-                    title={pub.raw_authors || ""}
-                  >
+                  <td className="px-4 py-3 text-sm text-gray-400">
+                    {/* Pass the correct fields to formatAuthors */}
                     {formatAuthors(pub.authors, pub.raw_authors)}
                   </td>
-                  <td
-                    className={`px-4 py-3 text-sm ${themeColors.devDescText}`}
-                  >
-                    {pub.venue || "-"}
+                  <td className="px-4 py-3 text-sm text-gray-400">
+                    {pub.venue || "N/A"}
                   </td>
-                  <td
-                    className={`px-4 py-3 text-sm ${themeColors.devDescText}`}
-                  >
-                    {pub.year || "-"}
+                  <td className="px-4 py-3 text-sm text-gray-400">
+                    {/* Ensure comparison is valid, year is number | null */}
+                    {pub.year?.toString() || "N/A"}
                   </td>
-                  <td className={`px-4 py-3 text-center text-sm font-medium`}>
-                    <div className="flex justify-center items-center space-x-2">
-                      {/* Edit/Approve Button (opens editor) */}
-                      <button
-                        onClick={() => handleEditOrApprove(pub.id)}
-                        className={`p-1.5 rounded ${themeColors.devDescText} hover:bg-indigo-600 hover:text-white transition-colors`}
-                        title="Edit & Approve"
-                        disabled={deletingId === pub.id}
-                      >
-                        <Edit size={16} />
-                      </button>
-                      {/* Delete Button */}
-                      <button
-                        onClick={() => handleDelete(pub.id)}
-                        className={`p-1.5 rounded ${themeColors.devDescText} hover:bg-red-600 hover:text-white transition-colors ${deletingId === pub.id ? "opacity-50 cursor-not-allowed" : ""}`}
-                        title="Delete"
-                        disabled={deletingId === pub.id}
-                      >
-                        {deletingId === pub.id ? (
-                          <Loader2 size={16} className="animate-spin" />
-                        ) : (
-                          <Trash2 size={16} />
-                        )}
-                      </button>
-                    </div>
+                  <td className="px-4 py-3 text-sm text-gray-400">
+                    {pub.createdAt
+                      ? new Date(pub.createdAt).toLocaleDateString()
+                      : "N/A"}
+                  </td>
+                  <td className="px-4 py-3 text-center text-sm space-x-2 whitespace-nowrap">
+                    <button
+                      // Pass id as string
+                      onClick={() => handleEditOrApprove(pub.id.toString())}
+                      // Compare id as string
+                      disabled={deletingId === pub.id.toString()}
+                      className="inline-flex items-center px-2.5 py-1 border border-blue-600 rounded text-xs font-medium text-blue-400 hover:bg-blue-900/50 transition-colors disabled:opacity-50"
+                      title="Edit or Approve"
+                    >
+                      <Check size={14} className="mr-1" /> Approve / Edit
+                    </button>
+                    <button
+                      // Pass id as string
+                      onClick={() => handleDelete(pub.id.toString())}
+                      // Compare id as string
+                      disabled={deletingId === pub.id.toString()}
+                      className={`inline-flex items-center px-2.5 py-1 border border-red-600 rounded text-xs font-medium text-red-400 hover:bg-red-900/50 transition-colors disabled:opacity-50 ${deletingId === pub.id.toString() ? "animate-pulse" : ""}`}
+                      title="Delete Pending Entry"
+                    >
+                      {/* Compare id as string */}
+                      {deletingId === pub.id.toString() ? (
+                        <Loader2 size={14} className="mr-1 animate-spin" />
+                      ) : (
+                        <Trash2 size={14} className="mr-1" />
+                      )}
+                      Delete
+                    </button>
                   </td>
                 </tr>
               ))}
@@ -321,17 +328,14 @@ const PendingPublicationsPage: React.FC = () => {
         </div>
       )}
 
-      {/* Modal container for the editor */}
+      {/* Editor Modal/Section */}
       {editingPublicationId && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="w-full max-w-3xl max-h-[90vh] overflow-y-auto bg-gray-800 rounded-lg shadow-xl border border-gray-700">
-            <PendingPublicationEditor
-              publicationId={editingPublicationId}
-              onSave={handleSaveSuccess}
-              onCancel={handleCancelEdit}
-            />
-          </div>
-        </div>
+        <PendingPublicationEditor
+          publicationId={editingPublicationId}
+          onSaveSuccess={handleSaveSuccess}
+          onCancel={handleCancelEdit}
+          // You might need to pass fetchPendingPublications or similar if the editor needs to refresh the list itself
+        />
       )}
     </div>
   );

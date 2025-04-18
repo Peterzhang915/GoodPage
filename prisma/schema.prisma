@@ -99,6 +99,7 @@ model Member {
   is_active        Boolean @default(true)
   role_name        String? // For RBAC
   username         String? @unique // For RBAC login
+  password_hash    String? 
 
   // --- 联系与链接 ---
   email            String? @unique

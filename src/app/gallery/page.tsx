@@ -1,9 +1,9 @@
 "use client"; // 需要因为 PhotoGallery 使用了 framer-motion
 
-import React from 'react';
+import React from "react";
 // import Navbar from '@/components/Navbar'; // 确认路径和导入正确
-import PhotoGallery from '@/components/gallery/PhotoGallery'; // 确认路径和导入正确
-import { themeColors } from '@/styles/theme';
+import PhotoGallery from "@/components/gallery/PhotoGallery"; // 确认路径和导入正确
+import { themeColors } from "@/styles/theme";
 
 export default function GalleryPage() {
   return (
@@ -11,7 +11,9 @@ export default function GalleryPage() {
       {/* <Navbar /> 移除 Navbar 渲染 */}
       <main className="flex-grow container mx-auto px-4 py-8 md:py-12">
         {/* 页面主标题 */}
-        <h1 className={`text-3xl md:text-4xl font-serif font-bold mb-8 border-b select-none pb-3 ${themeColors.textColorPrimary}`}>
+        <h1
+          className={`text-3xl md:text-4xl font-serif font-bold mb-8 border-b select-none pb-3 ${themeColors.textColorPrimary}`}
+        >
           Lab Photo Gallery
         </h1>
 
@@ -23,4 +25,4 @@ export default function GalleryPage() {
       {/* 暂时不添加 Footer */}
     </div>
   );
-} 
+}

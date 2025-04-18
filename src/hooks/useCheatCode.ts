@@ -12,7 +12,7 @@ import { useEffect, useRef, useCallback } from "react";
 export function useCheatCode(
   targetSequence: string,
   callback: () => void,
-  allowedKeysRegex: RegExp = /^\d$/ // Default: only digits 0-9
+  allowedKeysRegex: RegExp = /^\d$/, // Default: only digits 0-9
 ) {
   const inputSequenceRef = useRef<string>("");
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -29,23 +29,31 @@ export function useCheatCode(
 
       if (allowedKeysRegex.test(key)) {
         inputSequenceRef.current += key;
-        console.log(`[useCheatCode] Current sequence: ${inputSequenceRef.current}`);
+        console.log(
+          `[useCheatCode] Current sequence: ${inputSequenceRef.current}`,
+        );
 
         if (inputSequenceRef.current.endsWith(targetSequence)) {
-          console.log(`[useCheatCode] Target sequence matched: ${targetSequence}`);
+          console.log(
+            `[useCheatCode] Target sequence matched: ${targetSequence}`,
+          );
           callback();
           inputSequenceRef.current = ""; // Reset after success
-        } else if (inputSequenceRef.current.length > targetSequence.length * 2) {
-          inputSequenceRef.current = inputSequenceRef.current.slice(-targetSequence.length * 2);
+        } else if (
+          inputSequenceRef.current.length >
+          targetSequence.length * 2
+        ) {
+          inputSequenceRef.current = inputSequenceRef.current.slice(
+            -targetSequence.length * 2,
+          );
         }
 
         timeoutRef.current = setTimeout(() => {
           inputSequenceRef.current = "";
         }, 1500); // Reset after 1.5s inactivity
-
       } else {
         // Reset sequence if a non-allowed key is pressed
-        inputSequenceRef.current = ""; 
+        inputSequenceRef.current = "";
         console.log("[useCheatCode] Non-allowed key pressed. Sequence reset.");
         if (timeoutRef.current) {
           clearTimeout(timeoutRef.current);
@@ -53,7 +61,7 @@ export function useCheatCode(
         }
       }
     },
-    [targetSequence, callback, allowedKeysRegex]
+    [targetSequence, callback, allowedKeysRegex],
   );
 
   useEffect(() => {
@@ -65,4 +73,4 @@ export function useCheatCode(
       }
     };
   }, [handleKeyDown]);
-} 
+}

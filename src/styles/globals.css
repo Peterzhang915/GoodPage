@@ -1,0 +1,35 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ... other potential global styles ... */
+
+/* --- Add Blinking Caret --- */
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+/* Apply blinking animation to focused inputs */
+input:focus {
+  /* Change caret color to match input text color (green) */
+  caret-color: #4ade80; /* Match text-green-400 */
+  animation: blink 1s step-end infinite;
+}
+/* --- End Blinking Caret --- */
+
+/* Style for react-masonry-css */
+.my-masonry-grid {
+  /* ... masonry styles ... */
+}
+.my-masonry-grid_column {
+  /* ... masonry styles ... */
+}
+.my-masonry-grid_column > div { 
+  /* ... masonry styles ... */
+}
+
+/* Add other global styles or overrides here */
+body.developer-mode-active {
+  /* ... body style ... */
+} 

@@ -1,1 +1,1 @@
-declare module '@orcid/bibtex-parse-js';
+declare module "@orcid/bibtex-parse-js";

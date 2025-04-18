@@ -15,10 +15,10 @@
 
 .ground {
   position: absolute;
-  bottom: 30%; 
+  bottom: 30%;
   left: 0;
   width: 200%;
-  height: 14px; 
+  height: 14px;
   background-image: repeating-linear-gradient(
     45deg,
     #d3d3d3 0,
@@ -32,13 +32,17 @@
 }
 
 @keyframes scrollGround {
-  from { transform: translateX(0); }
-  to { transform: translateX(-50%); }
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
 }
 
 .dino {
   position: absolute;
-  bottom: 30%; 
+  bottom: 30%;
   left: 80px;
   font-size: 10rem;
   user-select: none;
@@ -51,7 +55,8 @@
   0% {
     transform: translateY(15px) scaleX(-1);
   }
-  50% { /* Single peak frame */
+  50% {
+    /* Single peak frame */
     transform: translateY(calc(-200px + 15px)) scaleX(-1);
   }
   100% {
@@ -61,8 +66,8 @@
 
 .dino.jumping {
   animation-name: jump;
-  animation-duration: 0.9s; 
-  animation-timing-function: cubic-bezier(0.3, 0.8, 0.7, 0.9); 
+  animation-duration: 0.9s;
+  animation-timing-function: cubic-bezier(0.3, 0.8, 0.7, 0.9);
 }
 
 /* Keep obstacle base style and movement animation */
@@ -74,33 +79,37 @@
   animation-name: moveObstacle;
   animation-timing-function: linear;
   animation-iteration-count: infinite;
-  right: -200px; 
+  right: -200px;
 }
 
 @keyframes moveObstacle {
-  from { transform: translateX(0); }
-  to { transform: translateX(calc(-100vw - 150px)); }
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(calc(-100vw - 150px));
+  }
 }
 
 /* Keep obstacle specific styles (size, animation timing) */
 .cactus1 {
   font-size: 4.8rem;
   bottom: calc(30% + 2px);
-  animation-duration: 4.0s; 
-  animation-delay: 1s; 
+  animation-duration: 4s;
+  animation-delay: 1s;
 }
 
 .cactus2 {
   font-size: 5.5rem;
   bottom: calc(30% + 2px);
-  animation-duration: 4.0s; 
-  animation-delay: 3s; 
+  animation-duration: 4s;
+  animation-delay: 3s;
 }
 
 .pterodactyl {
   font-size: 4.5rem;
-  bottom: calc(30% + 250px); 
-  animation-duration: 5.0s; 
+  bottom: calc(30% + 250px);
+  animation-duration: 5s;
   animation-delay: 2s;
 }
 
@@ -117,7 +126,7 @@
   font-size: 2rem; /* Increase base font size */
   z-index: 20;
   display: flex; /* Use flex to align items */
-  align-items: center; 
+  align-items: center;
   gap: 0.3em; /* Space between heart and infinity */
   user-select: none; /* Add this line to prevent selection */
 }
@@ -132,7 +141,7 @@
 /* Keep instructions styles */
 .instructions {
   position: absolute;
-  bottom: 20px; 
+  bottom: 20px;
   left: 50%;
   transform: translateX(-50%);
   font-size: 0.8rem;
@@ -150,8 +159,13 @@
 
 /* Add flashing animation */
 @keyframes flash {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.3; } /* Make it partially transparent */
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.3;
+  } /* Make it partially transparent */
 }
 
 /* Apply flashing animation when invulnerable */
@@ -162,7 +176,8 @@
 
 /* Animation for the god mode indicator when hit */
 @keyframes indicatorHitAnimation {
-  0%, 100% {
+  0%,
+  100% {
     transform: scale(1);
     opacity: 1;
   }
@@ -175,4 +190,4 @@
 /* Apply the hit animation */
 .godModeIndicator.indicatorHit {
   animation: indicatorHitAnimation 0.3s ease-in-out;
-} 
+}

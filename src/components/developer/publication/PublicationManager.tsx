@@ -1,9 +1,8 @@
-// src/components/developer/PublicationManager.tsx
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
 import { themeColors } from "@/styles/theme";
-import BibtexUploader from "./BibtexUploader";
+// import BibtexUploader from "./BibtexUploader"; // Note: This import will break after BibtexUploader is deleted. Needs to be removed or refactored later.
 import {
   Loader2,
   Inbox,
@@ -144,7 +143,8 @@ const PublicationManager: React.FC<PublicationManagerProps> = ({ onClose }) => {
     <div>
       <div className="space-y-8">
         {/* Section 1: BibTeX Upload - Pass the callback */}
-        <BibtexUploader onUploadComplete={fetchPendingPublications} />
+        {/* <BibtexUploader onUploadComplete={fetchPendingPublications} /> */}
+        {/* Commented out as BibtexUploader is deleted */}
 
         {/* Section 2: Pending Review List */}
         <div
@@ -248,54 +248,63 @@ const PublicationManager: React.FC<PublicationManagerProps> = ({ onClose }) => {
                     {/* Bottom section: Venue, Year, Added Date, Actions */}
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-xs">
                       <div
-                        className={`flex items-center gap-1 ${themeColors.devDescText}`}
+                        className={`flex items-center gap-3 ${themeColors.devMutedText}`}
                       >
-                        <Calendar size={12} className="flex-shrink-0" />
-                        <span>
-                          {pub.venue || "No Venue"}{" "}
-                          {pub.year ? `(${pub.year})` : ""}
-                        </span>
-                        <span className="text-gray-500 ml-1">
-                          {" "}
-                          | Added: {pub.createdAt.toLocaleDateString()}
+                        {pub.venue && (
+                          <span
+                            className="flex items-center gap-1"
+                            title="Venue"
+                          >
+                            <Inbox size={12} />
+                            {pub.venue}
+                          </span>
+                        )}
+                        {pub.year && (
+                          <span
+                            className="flex items-center gap-1"
+                            title="Year"
+                          >
+                            <Calendar size={12} />
+                            {pub.year}
+                          </span>
+                        )}
+                        <span
+                          className="flex items-center gap-1"
+                          title={`Added on ${pub.createdAt.toLocaleString()}`}
+                        >
+                          Added: {pub.createdAt.toLocaleDateString()}
                         </span>
                       </div>
-                      <div className="flex items-center gap-2 flex-shrink-0 self-end sm:self-center">
+                      {/* Action Buttons */}
+                      <div className="flex items-center gap-2 flex-shrink-0">
                         <button
                           onClick={() => handleApprove(pub.id)}
-                          title="Approve"
                           disabled={actionStates[pub.id]}
-                          className={`p-1.5 rounded hover:bg-green-700 ${themeColors.devButtonText} ${themeColors.devButtonBg === "bg-indigo-600" ? "bg-green-600" : themeColors.devButtonBg} transition-colors disabled:opacity-50 disabled:cursor-not-allowed`}
+                          className="inline-flex items-center px-2 py-1 border border-green-600 rounded text-xs font-medium text-green-400 hover:bg-green-900/50 transition-colors disabled:opacity-50"
+                          title="Approve this publication"
                         >
-                          {actionStates[pub.id] ? (
-                            <Loader2 size={16} className="animate-spin" />
-                          ) : (
-                            <Check size={16} />
-                          )}
+                          <Check size={12} className="mr-1" /> Approve
                         </button>
                         <button
                           onClick={() => handleEdit(pub.id)}
-                          title="Edit Details"
                           disabled={actionStates[pub.id]}
-                          className={`p-1.5 rounded hover:bg-yellow-700 bg-yellow-600 ${themeColors.devButtonText} transition-colors disabled:opacity-50 disabled:cursor-not-allowed`}
+                          className="inline-flex items-center px-2 py-1 border border-blue-600 rounded text-xs font-medium text-blue-400 hover:bg-blue-900/50 transition-colors disabled:opacity-50"
+                          title="Edit before approving"
                         >
-                          {actionStates[pub.id] ? (
-                            <Loader2 size={16} className="animate-spin" />
-                          ) : (
-                            <Edit3 size={16} />
-                          )}
+                          <Edit3 size={12} className="mr-1" /> Edit
                         </button>
                         <button
                           onClick={() => handleReject(pub.id)}
-                          title="Reject"
                           disabled={actionStates[pub.id]}
-                          className={`p-1.5 rounded hover:bg-red-700 bg-red-600 ${themeColors.devButtonText} transition-colors disabled:opacity-50 disabled:cursor-not-allowed`}
+                          className={`inline-flex items-center px-2 py-1 border border-red-600 rounded text-xs font-medium text-red-400 hover:bg-red-900/50 transition-colors disabled:opacity-50 ${actionStates[pub.id] ? "animate-pulse" : ""}`}
+                          title="Reject and delete this entry"
                         >
                           {actionStates[pub.id] ? (
-                            <Loader2 size={16} className="animate-spin" />
+                            <Loader2 size={12} className="mr-1 animate-spin" />
                           ) : (
-                            <Trash2 size={16} />
+                            <Trash2 size={12} className="mr-1" />
                           )}
+                          Reject
                         </button>
                       </div>
                     </div>
@@ -304,23 +313,7 @@ const PublicationManager: React.FC<PublicationManagerProps> = ({ onClose }) => {
               </ul>
             )}
         </div>
-
-        {/* Section 3: Edit Existing Publications */}
-        <div
-          className={`p-6 rounded-lg border ${themeColors.devBorder} ${themeColors.devCardBg} shadow-md`}
-        >
-          <h4
-            className={`text-lg font-semibold mb-4 ${themeColors.devTitleText}`}
-          >
-            Edit Existing Publications
-          </h4>
-          <p className={`${themeColors.devDescText}`}>
-            List/Editor for approved publications will appear here.
-          </p>
-          {/* TODO: Fetch and display approved publications, allow editing/deleting */}
-        </div>
       </div>
-      {/* TODO: Add Modal for PendingPublicationEditor */}
     </div>
   );
 };

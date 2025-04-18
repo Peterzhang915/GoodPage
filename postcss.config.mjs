@@ -2,7 +2,7 @@
 /** @type {import('postcss-load-config').Config} */
 const config = {
   plugins: {
-    '@tailwindcss/postcss': {},
+    "@tailwindcss/postcss": {},
     autoprefixer: {},
     // 其他 PostCSS 插件...
   },

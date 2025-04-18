@@ -1,13 +1,13 @@
 // src/app/contact/page.tsx
-'use client';
+"use client";
 
-import React from 'react';
-import { motion } from 'framer-motion';
-import { themeColors } from '@/styles/theme';
+import React from "react";
+import { motion } from "framer-motion";
+import { themeColors } from "@/styles/theme";
 
-import SchoolInfo from '@/components/contact/SchoolInfo';
-import AddressInfo from '@/components/contact/AddressInfo';
-import ContactMethods from '@/components/contact/ContactMethods';
+import SchoolInfo from "@/components/contact/SchoolInfo";
+import AddressInfo from "@/components/contact/AddressInfo";
+import ContactMethods from "@/components/contact/ContactMethods";
 
 // 容器动画变体：控制整体淡入效果以及子元素的交错入场动画
 const containerVariants = {
@@ -41,7 +41,9 @@ const ContactPage: React.FC = () => {
       >
         {/* 实验室名称 */}
         <motion.div className="mb-8">
-          <h3 className={`text-2xl font-semibold mb-2 ${themeColors.textColorPrimary}`}>
+          <h3
+            className={`text-2xl font-semibold mb-2 ${themeColors.textColorPrimary}`}
+          >
             Generic Operational and Optimal Data Lab
           </h3>
           <p className="text-xl text-gray-600">泛在数据分析与优化实验室</p>
@@ -51,7 +53,6 @@ const ContactPage: React.FC = () => {
         <SchoolInfo />
         <AddressInfo />
         <ContactMethods />
-
       </motion.div>
     </div>
   );

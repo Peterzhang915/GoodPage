@@ -34,7 +34,7 @@ const LabLeaderHeader: React.FC<LabLeaderHeaderProps> = ({ leaderData }) => {
 
   return (
     <div
-      className={`${themeColors.primaryBg ?? "bg-slate-800"} ${themeColors.textGrayWhite ?? "text-gray-100"} py-10 md:py-12 lg:py-16`}
+      className={`${themeColors.themeHeaderBg ?? "bg-slate-800"} ${themeColors.themeLightText ?? "text-gray-100"} py-10 md:py-12 lg:py-16`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col md:flex-row items-center md:items-start justify-between gap-6 md:gap-10">
@@ -55,7 +55,7 @@ const LabLeaderHeader: React.FC<LabLeaderHeaderProps> = ({ leaderData }) => {
             </p>
             {/* Contact info: Use <p> for block display */}
             <div
-              className={`space-y-1 text-sm sm:text-base ${themeColors.textGrayWhite ?? "text-gray-100"}`}
+              className={`space-y-1 text-sm sm:text-base ${themeColors.themeLightText ?? "text-gray-100"}`}
             >
               {/* Use ObfuscatedContact for email */}
               {email && (

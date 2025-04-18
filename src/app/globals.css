@@ -21,7 +21,21 @@ html {
 }
 
 body {
-  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  font-family:
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    "Helvetica Neue",
+    Arial,
+    "Noto Sans",
+    sans-serif,
+    "Apple Color Emoji",
+    "Segoe UI Emoji",
+    "Segoe UI Symbol",
+    "Noto Color Emoji";
   @apply antialiased;
 }
 
@@ -33,9 +47,23 @@ body {
 
   /* Tremble animation (for last heart) */
   @keyframes tremble {
-    0%, 100% { transform: translateX(0); }
-    10%, 30%, 50%, 70%, 90% { transform: translateX(-1px); }
-    20%, 40%, 60%, 80% { transform: translateX(1px); }
+    0%,
+    100% {
+      transform: translateX(0);
+    }
+    10%,
+    30%,
+    50%,
+    70%,
+    90% {
+      transform: translateX(-1px);
+    }
+    20%,
+    40%,
+    60%,
+    80% {
+      transform: translateX(1px);
+    }
   }
   .animate-tremble {
     animation: tremble 0.5s ease-in-out infinite;
@@ -43,13 +71,18 @@ body {
 
   /* Flash animation (for disappearing heart) */
   @keyframes flash {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0; }
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0;
+    }
   }
   .animate-flash {
     /* Run the flash animation quickly a few times */
     /* Adjust count (5) and duration (0.15s) as needed */
-    animation: flash 0.15s step-end 5; 
+    animation: flash 0.15s step-end 5;
   }
 }
 
@@ -65,14 +98,20 @@ body {
   padding-left: 1rem; /* 列间距 */
   background-clip: padding-box;
 }
-.my-masonry-grid_column > div { /* 列内元素 */
+.my-masonry-grid_column > div {
+  /* 列内元素 */
   margin-bottom: 1rem; /* 垂直间距 */
 }
 
 /* Typewriter Blinking Cursor */
 @keyframes blink {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
 }
 .animate-blink {
   animation: blink 1s step-end infinite;
@@ -86,17 +125,36 @@ body {
 /* --- Theme Helper Classes --- */
 
 /* 主站主题辅助类 */
-.bg-theme-page { background-color: var(--color-theme-page); }
-.bg-theme-header { background-color: var(--color-theme-header); }
-.bg-theme-header-light { background-color: var(--color-theme-header-light); }
-.text-theme-light { color: var(--color-theme-light); }
-.text-theme-primary { color: var(--color-theme-primary); }
-.text-theme-secondary { color: var(--color-theme-secondary); }
-.text-theme-muted { color: var(--color-theme-muted); }
-.border-theme-dark { border-color: var(--color-theme-dark); }
-.border-theme-primary { border-color: var(--color-theme-primary); }
-.border-theme { border-color: var(--color-theme); }
-
+.bg-theme-page {
+  background-color: var(--color-theme-page);
+}
+.bg-theme-header {
+  background-color: var(--color-theme-header);
+}
+.bg-theme-header-light {
+  background-color: var(--color-theme-header-light);
+}
+.text-theme-light {
+  color: var(--color-theme-light);
+}
+.text-theme-primary {
+  color: var(--color-theme-primary);
+}
+.text-theme-secondary {
+  color: var(--color-theme-secondary);
+}
+.text-theme-muted {
+  color: var(--color-theme-muted);
+}
+.border-theme-dark {
+  border-color: var(--color-theme-dark);
+}
+.border-theme-primary {
+  border-color: var(--color-theme-primary);
+}
+.border-theme {
+  border-color: var(--color-theme);
+}
 
 body.developer-mode-active {
   @apply bg-gray-900; /* 设置开发者模式下的主背景色 */
