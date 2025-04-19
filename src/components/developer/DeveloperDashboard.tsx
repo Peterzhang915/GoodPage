@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback } from "react";
+import React, { useCallback, useState } from "react";
 import { motion } from "framer-motion";
 import {
   Lock,
@@ -18,26 +18,27 @@ import {
   Users,
 } from "lucide-react";
 import { themeColors } from "@/styles/theme";
-import ToolCard from "./ToolCard"; // Assuming ToolCard is in the same directory
+import ToolCard from "./ToolCard";
 import NewsEditor from "./news/NewsEditor";
 import CodeServerManager from "./codeserver/CodeServerManager";
 import PublicationManager from "./publication/PublicationManager";
 import PhotoManager from "./photo/PhotoManager";
+// Assuming MemberManager is correctly located here for now
+// (You might want to move it to ./members/MemberManager later for consistency)
 import MemberManager from "./user/MemberManager";
-import UserManager from "./user/UserManager"; // Keeping this for now, maybe for specific user account actions?
+import UserManager from "./user/UserManager";
 import { useAuthStore } from "@/store/authStore";
-// Import other tool components as needed
 
 // Define the structure for a tool configuration object
 interface ToolConfig {
   id: string;
   title: string;
   description: string;
-  icon: React.ElementType; // Use ElementType for Lucide icons
+  icon: React.ElementType;
   requiredPermission?: string;
-  component?: React.FC<{ onClose: () => void }>; // Component expects onClose prop
+  component?: React.ComponentType<any>;
   externalLink?: string;
-  buttonText: string; // Explicitly define button text
+  buttonText: string;
 }
 
 // Configuration array for available tools
@@ -57,16 +58,16 @@ const availableTools: ToolConfig[] = [
     description: "Review pending, manually manage publication entries.",
     icon: BookUp,
     requiredPermission: "manage_publications",
-    component: PublicationManager, // Assuming PublicationManager is the main entry
+    component: PublicationManager,
     buttonText: "Manage Publications",
   },
   {
     id: "member",
     title: "Manage Members",
-    description: "Add, edit, or remove lab member information.",
+    description: "View and manage lab member information.", // Updated description
     icon: Users,
     requiredPermission: "manage_members",
-    component: MemberManager, // Use MemberManager as the component
+    component: MemberManager, // The component rendered is the list manager
     buttonText: "Manage Members",
   },
   {
@@ -83,7 +84,7 @@ const availableTools: ToolConfig[] = [
     title: "Manage Code Servers",
     description: "View, add, or remove Code Server instances.",
     icon: Server,
-    requiredPermission: "manage_codeservers", // Make sure this permission exists
+    requiredPermission: "manage_codeservers",
     component: CodeServerManager,
     buttonText: "Manage Servers",
   },
@@ -92,8 +93,8 @@ const availableTools: ToolConfig[] = [
     title: "Database Management",
     description: "Open Prisma Studio to directly manage the database.",
     icon: Database,
-    externalLink: "http://localhost:5555", // Assuming Prisma Studio runs on 5555
-    requiredPermission: "manage_settings", // Example: Only allow if user can manage settings (like Root/Admin)
+    externalLink: "http://localhost:5555",
+    requiredPermission: "manage_settings",
     buttonText: "Open Prisma Studio",
   },
   {
@@ -102,8 +103,8 @@ const availableTools: ToolConfig[] = [
     description: "View application and server logs.",
     icon: LogIcon,
     requiredPermission: "view_logs",
-    // component: SystemLogViewer, // TODO: Implement this component later
-    buttonText: "View Logs (TBD)", // Indicate feature is not ready
+    // component: SystemLogViewer, // TODO
+    buttonText: "View Logs (TBD)",
   },
 ];
 
@@ -116,7 +117,8 @@ const DeveloperDashboard: React.FC<DeveloperDashboardProps> = ({
 }) => {
   const { permissions, isFullAccess } = useAuthStore();
 
-  const [activeTool, setActiveTool] = React.useState<string | null>(null);
+  const [activeTool, setActiveTool] = useState<string | null>(null);
+  // --- REMOVED editingMemberId state ---
 
   // Handler to select a tool
   const handleToolSelect = (toolId: string) => {
@@ -128,10 +130,13 @@ const DeveloperDashboard: React.FC<DeveloperDashboardProps> = ({
     setActiveTool(null);
   };
 
+  // --- REMOVED handleEditMemberRequest ---
+  // --- REMOVED handleCloseMemberEditor ---
+
   // Helper to check permissions
   const hasPermission = useCallback(
     (perm?: string) => {
-      if (!perm) return true; // If no permission is required, allow access
+      if (!perm) return true;
       return isFullAccess || (permissions || []).includes(perm);
     },
     [permissions, isFullAccess],
@@ -146,6 +151,34 @@ const DeveloperDashboard: React.FC<DeveloperDashboardProps> = ({
   const visibleTools = availableTools.filter((tool) =>
     hasPermission(tool.requiredPermission),
   );
+
+  // --- Render Active Tool Logic (Simplified) ---
+  const renderActiveTool = () => {
+    if (!currentToolConfig) return null;
+
+    // Render the component specified in the tool config
+    if (currentToolConfig.component) {
+      const ToolComponent = currentToolConfig.component;
+      // Pass onClose handler to the tool component
+      return <ToolComponent onClose={handleGoBack} />;
+    }
+
+    // Handle cases where the tool might not have a component (e.g., logs TBD)
+    if (activeTool !== "db") { // Exclude Prisma Studio link case
+        return (
+            <div>
+                <h3 className={`text-lg font-semibold mb-4 ${themeColors.devTitleText ?? "text-green-400"}`}>
+                    Tool Not Implemented
+                </h3>
+                <p className={`${themeColors.devDescText ?? "text-gray-300"}`}>
+                    The tool '{currentToolConfig.title}' is not yet available.
+                </p>
+            </div>
+        );
+    }
+
+    return null; // Should not be reached for valid tools with components or 'db'
+  };
 
   return (
     <div className="container mx-auto px-4 py-12 font-mono">
@@ -196,50 +229,37 @@ const DeveloperDashboard: React.FC<DeveloperDashboardProps> = ({
               buttonText={tool.buttonText}
               icon={<tool.icon size={16} className="mr-2" />}
               onButtonClick={
-                tool.component ? () => handleToolSelect(tool.id) : undefined
+                // Only attach handler if there's a component OR an external link (though external links are handled inside ToolCard now)
+                (tool.component || tool.externalLink) ? () => handleToolSelect(tool.id) : undefined
               }
               externalLink={tool.externalLink}
-              disabled={!tool.component && !tool.externalLink} // Disable if no component and no link
-              delay={0.1 + index * 0.05} // Stagger animation
+              disabled={!tool.component && !tool.externalLink}
+              delay={0.1 + index * 0.05}
             />
           ))}
         </motion.div>
       ) : (
         // --- Active Tool View ---
         <motion.div
-          key={activeTool} // Ensure animation remounts when tool changes
+          // --- Use only activeTool for key ---
+          key={activeTool}
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -30 }}
           transition={{ duration: 0.3, ease: "easeInOut" }}
           className={`p-4 sm:p-6 rounded-lg border ${themeColors.devBorder ?? "border-gray-700"} ${themeColors.devCardBg ?? "bg-gray-800"} shadow-md`}
         >
-          <button
-            onClick={handleGoBack} // Use the internal handler
-            className={`mb-4 sm:mb-6 inline-flex items-center px-3 py-1.5 sm:px-4 sm:py-2 border border-gray-600 rounded-md shadow-sm text-xs sm:text-sm font-medium ${themeColors.devDescText ?? "text-gray-300"} hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 focus:ring-indigo-500 transition-colors`}
-          >
-            <ArrowLeft size={16} className="mr-1 sm:mr-2" /> Back to Tools
-          </button>
+          {/* --- Always render Back button in active view --- */}
+           <button
+             onClick={handleGoBack}
+             className={`mb-4 sm:mb-6 inline-flex items-center px-3 py-1.5 sm:px-4 sm:py-2 border border-gray-600 rounded-md shadow-sm text-xs sm:text-sm font-medium ${themeColors.devDescText ?? "text-gray-300"} hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 focus:ring-indigo-500 transition-colors`}
+           >
+             <ArrowLeft size={16} className="mr-1 sm:mr-2" /> Back to Tools
+           </button>
 
-          {/* Render the active tool component dynamically */}
-          {currentToolConfig?.component && (
-            <currentToolConfig.component onClose={handleGoBack} />
-          )}
-          {/* Handle cases where the tool might not have a component (e.g., logs TBD) or is invalid */}
-          {!currentToolConfig?.component && activeTool !== "db" && (
-            <div>
-              <h3
-                className={`text-lg font-semibold mb-4 ${themeColors.devTitleText ?? "text-green-400"}`}
-              >
-                Tool Not Available
-              </h3>
-              <p className={`${themeColors.devDescText ?? "text-gray-300"}`}>
-                The selected tool '{currentToolConfig?.title || activeTool}' is
-                currently under development or does not have an associated
-                interface.
-              </p>
-            </div>
-          )}
+          {/* Render the active tool using the simplified logic */}
+          {renderActiveTool()}
+
         </motion.div>
       )}
     </div>

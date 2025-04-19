@@ -1,12 +1,11 @@
 // src/lib/members.ts
 import prisma from "@/lib/prisma"; // 导入 Prisma Client 单例实例
 // 导入 Enum 和 Prisma 命名空间 (确保是从 @/lib/prisma 或 @prisma/client 正确导入值)
-import { MemberStatus, Prisma } from "@/lib/prisma";
+import { MemberStatus, Prisma, Education } from "@/lib/prisma";
 // 导入基础模型类型 (通常已由 prisma.ts 重新导出)
 import type {
   Member,
   Publication,
-  Education,
   Award,
   Project,
   ProjectMember,
@@ -17,7 +16,6 @@ import type {
   AcademicService,
   News,
 } from "@/lib/prisma";
-import { calculateMemberGradeStatus } from "@/lib/utils"; // 从新位置导入工具函数
 // 导入在新文件中定义的复合类型
 import type {
   MemberForCard,
@@ -26,6 +24,56 @@ import type {
   DisplayAuthor,
 } from "@/lib/types";
 // 注意：不再需要 memberProfileIncludeArgs 和其他 Payload 类型，因为我们简化了查询
+
+/**
+ * Calculates a display-friendly status string for a member based on their status and enrollment year.
+ * Example: "21 Grade Ph.D. Student", "Professor", "Alumni".
+ * @param member - A member object containing at least status, enrollment_year, and title_zh.
+ * @returns A display string or null.
+ */
+export function calculateMemberGradeStatus(
+  member: Pick<Member, "status" | "enrollment_year" | "title_zh">
+): string {
+  const currentYear = new Date().getFullYear();
+  const yearSuffix = member.enrollment_year ? String(member.enrollment_year).slice(-2) : null;
+
+  switch (member.status) {
+    case MemberStatus.PROFESSOR:
+      return member.title_zh || "Professor";
+    case MemberStatus.POSTDOC:
+      return "Postdoc";
+    case MemberStatus.PHD_STUDENT:
+      return yearSuffix ? `${yearSuffix} Grade Ph.D. Student` : "Ph.D. Student";
+    case MemberStatus.MASTER_STUDENT:
+      return yearSuffix ? `${yearSuffix} Grade Master Student` : "Master Student";
+    case MemberStatus.UNDERGRADUATE:
+       if (member.enrollment_year) {
+         const grade = currentYear - member.enrollment_year + 1;
+         if (grade >= 1 && grade <= 4) {
+           return `${yearSuffix} Grade Undergraduate (Year ${grade})`;
+         } else {
+           return `${yearSuffix} Grade Undergraduate`; // Graduated or special case
+         }
+       } else {
+           return "Undergraduate";
+       }
+    case MemberStatus.VISITING_SCHOLAR:
+      return "Visiting Scholar";
+    case MemberStatus.RESEARCH_STAFF:
+      return "Research Staff";
+    case MemberStatus.ALUMNI:
+      return "Alumni";
+    case MemberStatus.OTHER:
+    default:
+      // Ensure a non-null string is always returned
+      const statusString = member.status 
+          ? member.status.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
+          : "Member"; // Default if status is somehow null/undefined
+      return statusString || "Unknown Status"; // Final fallback
+  }
+}
+
+type EducationFormData = Partial<Omit<Education, 'id' | 'member_id' | 'member'>>;
 
 // --- 数据获取函数 ---
 
@@ -357,5 +405,180 @@ export async function getMemberProfileData(
   } catch (error) {
     console.error(`获取成员 ${id} 档案失败:`, error);
     throw new Error(`Failed to retrieve profile for member ${id}`);
+  }
+}
+
+/**
+ * 获取所有成员信息，用于管理列表。
+ * @returns 排序后的 Member 数组
+ */
+export async function getAllMembersForManager(): Promise<Member[]> {
+  console.log("DB: 获取所有成员信息 (用于管理列表)");
+  try {
+    const members = await prisma.member.findMany({
+      // Fetch full Member objects
+      orderBy: [
+        { enrollment_year: "asc" },
+        { name_en: "asc" },
+      ],
+    });
+    console.log(`DB: 获取到 ${members.length} 位成员 (管理列表)`);
+
+    // Define status order mapping (ensure this is defined only once)
+    const statusOrderMap: Record<MemberStatus, number> = {
+      [MemberStatus.PROFESSOR]: 1,
+      [MemberStatus.POSTDOC]: 2,
+      [MemberStatus.PHD_STUDENT]: 3,
+      [MemberStatus.MASTER_STUDENT]: 4,
+      [MemberStatus.UNDERGRADUATE]: 5,
+      [MemberStatus.VISITING_SCHOLAR]: 6,
+      [MemberStatus.RESEARCH_STAFF]: 7,
+      [MemberStatus.ALUMNI]: 8,
+      [MemberStatus.OTHER]: 99,
+    };
+
+    // Sort the flat list
+    const sortedMemberList = [...members].sort((a, b) => {
+      const statusA = a.status || MemberStatus.OTHER;
+      const statusB = b.status || MemberStatus.OTHER;
+      const orderA = statusOrderMap[statusA] || 99;
+      const orderB = statusOrderMap[statusB] || 99;
+
+      if (orderA !== orderB) {
+        return orderA - orderB;
+      }
+
+      const yearA = a.enrollment_year ?? Infinity;
+      const yearB = b.enrollment_year ?? Infinity;
+      const isStudentA =
+        a.status === MemberStatus.PHD_STUDENT ||
+        a.status === MemberStatus.MASTER_STUDENT ||
+        a.status === MemberStatus.UNDERGRADUATE;
+      
+      if (yearA !== yearB && yearA !== Infinity && yearB !== Infinity) { 
+        return isStudentA ? yearA - yearB : yearB - yearA;
+      }
+      // Ensure consistent return type (number) even if years are Infinity
+      if (yearA !== yearB) { 
+        // If one year is Infinity (null), treat it as larger/smaller consistently
+        return yearA === Infinity ? 1 : -1; // Treat null year as "later"
+      }
+
+      return (a.name_en ?? a.name_zh ?? "").localeCompare(
+        b.name_en ?? b.name_zh ?? "",
+      );
+    });
+
+    return sortedMemberList;
+  } catch (error) {
+    console.error("获取所有成员信息 (管理列表) 失败:", error);
+    throw new Error("Failed to fetch members for manager.");
+  }
+}
+
+// --- Education CRUD Functions --- 
+
+/**
+ * Get a single education record by its ID.
+ */
+export async function getEducationRecordById(educationId: number): Promise<Education | null> {
+  console.log(`DB: 获取教育记录 ID: ${educationId}`);
+  try {
+    const education = await prisma.education.findUnique({
+      where: { id: educationId },
+    });
+    if (!education) {
+      console.log(`DB: 未找到教育记录 ID: ${educationId}`);
+      return null;
+    }
+    console.log(`DB: 成功获取教育记录 ID: ${educationId}`);
+    return education;
+  } catch (error) {
+    console.error(`获取教育记录 ID ${educationId} 失败:`, error);
+    throw new Error("Failed to fetch education record.");
+  }
+}
+
+/**
+ * Create a new education record for a member.
+ */
+export async function createEducationRecord(memberId: string, data: EducationFormData): Promise<Education> {
+  console.log(`DB: 为成员 ${memberId} 创建新的教育记录`);
+  
+  if (!data.degree || !data.school) {
+    throw new Error("Degree and School are required fields for creating education record.");
+  }
+
+  try {
+    const processedData = {
+      degree: data.degree, 
+      school: data.school, 
+      field: data.field ?? null, 
+      start_year: data.start_year ? Number(data.start_year) : null,
+      end_year: data.end_year ? Number(data.end_year) : null,
+      thesis_title: data.thesis_title ?? null,
+      description: data.description ?? null,
+      display_order: data.display_order ? Number(data.display_order) : 0,
+    };
+
+    const newEducation = await prisma.education.create({
+      data: {
+        ...processedData, 
+        member_id: memberId, 
+      },
+    });
+    console.log(`DB: 成功为成员 ${memberId} 创建教育记录 ID: ${newEducation.id}`);
+    return newEducation;
+  } catch (error) {
+    console.error(`为成员 ${memberId} 创建教育记录失败:`, error);
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      if (error.code === 'P2003') {
+        throw new Error(`Invalid member ID: ${memberId}`);
+      }
+    }
+    throw new Error("Failed to create education record.");
+  }
+}
+
+/**
+ * Update an existing education record.
+ */
+export async function updateEducationRecord(educationId: number, data: EducationFormData): Promise<Education> {
+  console.log(`DB: 更新教育记录 ID: ${educationId}`);
+  try {
+    const processedData = {
+      ...data,
+      start_year: data.start_year ? Number(data.start_year) : data.start_year === null ? null : undefined, 
+      end_year: data.end_year ? Number(data.end_year) : data.end_year === null ? null : undefined,
+      display_order: data.display_order ? Number(data.display_order) : data.display_order === 0 ? 0 : undefined,
+    };
+    Object.keys(processedData).forEach(key => processedData[key as keyof typeof processedData] === undefined && delete processedData[key as keyof typeof processedData]);
+    
+    const updatedEducation = await prisma.education.update({
+      where: { id: educationId },
+      data: processedData,
+    });
+    console.log(`DB: 成功更新教育记录 ID: ${educationId}`);
+    return updatedEducation;
+  } catch (error) {
+    console.error(`更新教育记录 ID ${educationId} 失败:`, error);
+    throw new Error("Failed to update education record.");
+  }
+}
+
+/**
+ * Delete an education record by its ID.
+ */
+export async function deleteEducationRecord(educationId: number): Promise<Education> {
+  console.log(`DB: 删除教育记录 ID: ${educationId}`);
+  try {
+    const deletedEducation = await prisma.education.delete({
+      where: { id: educationId },
+    });
+    console.log(`DB: 成功删除教育记录 ID: ${educationId}`);
+    return deletedEducation;
+  } catch (error) {
+    console.error(`删除教育记录 ID ${educationId} 失败:`, error);
+    throw new Error("Failed to delete education record.");
   }
 }

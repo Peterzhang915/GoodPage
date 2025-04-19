@@ -1,8 +1,31 @@
 [
   {
+    "timestamp": "2025-04-18T09:28:00.172Z",
+    "title": "4.18",
+    "news": [
+      "We update the homepage for GoodLAB. This time, we update a lot of things."
+    ]
+  },
+  {
+    "timestamp": "2025-04-18T03:33:10.881Z",
+    "title": "4.18",
+    "news": [
+      "We update the homepage for GoodLAB."
+    ]
+  },
+  {
+    "timestamp": "2025-04-18T03:32:12.134Z",
+    "title": "4.12",
+    "news": [
+      "We update the homepage for GoodLAB."
+    ]
+  },
+  {
     "timestamp": "2025-04-14T14:17:55.256Z",
     "title": "4.12",
-    "news": ["We update the homepage of GoodLAB."]
+    "news": [
+      "We update the homepage of GoodLAB."
+    ]
   },
   {
     "timestamp": "2025-04-12T07:23:41.728Z",
@@ -50,25 +73,5 @@
       "We always look for self-motivated under/graduate students who are ready to take on ambitious challenges to join my research group (with financial support).",
       "News: We have won the First Prize of Provincial Technology Advancement Award, the only ONE in Computer Science in 2024.222"
     ]
-  },
-  {
-    "timestamp": "2025-04-12T05:06:32.919Z",
-    "title": "(Untitled Legacy News)",
-    "news": [
-      "We always look for self-motivated under/graduate students who are ready to take on ambitious challenges to join my research group (with financial support).",
-      "News: We have won the First Prize of Provincial Technology Advancement Award, the only ONE in Computer Science in 2024.111"
-    ]
-  },
-  {
-    "timestamp": "2025-04-12T05:05:58.502Z",
-    "title": "(Untitled Legacy News)",
-    "news": [
-      "We always look for self-motivated under/graduate students who are ready to take on ambitious challenges to join my research group (with financial support).",
-      "News: We have won the First Prize of Provincial Technology Advancement Award, the only ONE in Computer Science in 2024."
-    ]
-  },
-  {
-    "timestamp": "2025-04-12T04:18:14.761Z",
-    "news": ["111"]
   }
 ]

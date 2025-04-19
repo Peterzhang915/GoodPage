@@ -13,6 +13,7 @@ import { useEffect } from "react";
 import { AnimatePresence } from "framer-motion";
 import { motion } from "framer-motion";
 import { useDeveloperMode } from "@/contexts/DeveloperModeContext";
+import { ThemeProvider, useTheme } from "next-themes";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -64,9 +65,11 @@ export default function RootLayout({
   const router = useRouter();
   const pathname = usePathname();
   const isDinoPage = pathname === "/dino";
+  const isDeveloperPath = pathname.startsWith("/developer");
+  const { setTheme } = useTheme();
 
   // Removed isDinoPage check
-  const isDeveloperPath = pathname.startsWith("/developer");
+  // const isDeveloperPath = pathname.startsWith("/developer");
 
   // Keep Konami trigger IF useCheatCode is still used
   useCheatCode(
@@ -133,6 +136,22 @@ export default function RootLayout({
     };
   }, [isDinoPage, isDeveloperPath]); // Need isDinoPage here too
 
+  // --- UseEffect to force dark theme on developer paths ---
+  useEffect(() => {
+    if (isDeveloperPath) {
+      console.log("[Layout Theme] Forcing dark theme for developer path.");
+      setTheme('dark');
+    } else {
+      // Optional: Revert to system theme for non-developer paths
+      // console.log("[Layout Theme] Setting theme to system default.");
+      // setTheme('system'); 
+      // If you uncomment setTheme('system'), ensure 'theme' from useTheme() 
+      // isn't added as a dependency to avoid potential loops,
+      // or use more complex logic to set only when transitioning *away*
+      // from the developer path. For now, just forcing dark might be enough.
+    }
+  }, [isDeveloperPath, setTheme]); // Depend on path and setter
+
   if (isDinoPage) {
     return (
       <html lang="en">
@@ -145,19 +164,22 @@ export default function RootLayout({
   }
 
   return (
-    <html lang="en">
-      {/* Restore default body class */}
+    <html lang="en" suppressHydrationWarning>
       <body
-        className={`${inter.className} flex flex-col min-h-screen ${isDeveloperPath ? "bg-gray-900" : "bg-gray-50"}`}
+        className={`${inter.className} flex flex-col min-h-screen`}
       >
-        <DeveloperModeProvider>
-          {/* Always render Navbar */}
-          <Navbar />
-          {/* Add pt-0 to main for navbar height */}
-          <main className={`flex-grow pt-0`}>{children}</main>
-          {/* Footer logic remains */}
-          {!isDeveloperPath && <Footer />}
-        </DeveloperModeProvider>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <DeveloperModeProvider>
+            <Navbar />
+            <main className={`flex-grow pt-0`}>{children}</main>
+            {!isDeveloperPath && <Footer />}
+          </DeveloperModeProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

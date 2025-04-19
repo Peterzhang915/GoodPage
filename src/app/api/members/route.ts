@@ -1,16 +1,18 @@
 import { NextResponse } from "next/server";
-import { getAllMembers, MemberWithDisplayStatus } from "@/lib/db";
+import { getAllMembersForManager } from "@/lib/members";
 
 export async function GET() {
   try {
-    const members: MemberWithDisplayStatus[] = await getAllMembers();
-    return NextResponse.json(members);
+    const members = await getAllMembersForManager();
+    return NextResponse.json({ success: true, data: members });
   } catch (error) {
-    console.error("Failed to fetch members:", error);
-    // 向客户端返回更通用的错误消息，避免泄露服务器细节
+    console.error("API Error fetching members:", error);
+    // Extract error message safely
+    const message = error instanceof Error ? error.message : "Internal Server Error";
+    // Return a standard error response
     return NextResponse.json(
-      { message: "无法获取成员列表，请稍后重试。" },
-      { status: 500 }, // Internal Server Error
+      { success: false, error: { code: 'MEMBER_FETCH_FAILED', message } },
+      { status: 500 }
     );
   }
 }
