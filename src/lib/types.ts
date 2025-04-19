@@ -52,14 +52,17 @@ export type DisplayAuthor =
     };
 
 // 用于出版物列表和详情的、包含格式化作者的数据结构
-// 【修改】 使用 displayAuthors 替代旧的 authors
-export type PublicationInfo = Omit<
+// 【修改】 使用 displayAuthors 替代旧的 authors, 移除 isHighlyCited from Pick, 添加 publicationAuthors
+export type PublicationInfo = Pick<
   Publication,
-  "createdAt" | "updatedAt" | "authors"
+  'id' | 'title' | 'year' | 'venue' | 'ccf_rank' |
+  'pdf_url' | 'code_repository_url' | 'project_page_url' | 'video_url' | 'slides_url' |
+  'number' | 'volume' | 'pages' | 'publisher' | 'abstract' | 'type'
 > & {
-  displayAuthors: DisplayAuthor[]; // 新增：结构化的作者列表
-  // authors?: AuthorInfo[]; // 旧的内部作者列表，可以移除或标记为可选/弃用
-  // authors_full_string?: string | null; // 这个字段现在主要在后端处理，前端不需要直接用
+  displayAuthors: DisplayAuthor[];
+  isFeatured: boolean;
+  profileDisplayOrder: number | null;
+  // publicationAuthors?: PublicationAuthor[]; // Removed: Not strictly needed for display type
 };
 
 // 【新增】为作者信息定义具名类型 (这个类型现在主要在后端处理时用，前端用 DisplayAuthor)

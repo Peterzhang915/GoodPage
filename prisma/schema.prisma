@@ -280,7 +280,11 @@ model Patent {
 model AcademicService {
   id              Int      @id @default(autoincrement()) // 自增 ID 主键
   member_id       String   // Relation to Member
-  content         String   @default("") // Add default value to allow migration on existing data
+  organization    String?  // Added: Name of the organization (e.g., Conference Name, Journal Name) - Made optional
+  role            String?  // Added: Role held (e.g., "PC Member", "Reviewer", "Session Chair") - Made optional
+  start_year      Int?     // Added: Start year of the service (optional)
+  end_year        Int?     // Added: End year of the service (optional)
+  description     String?  // Added: Optional further description
   display_order   Int      @default(0)
   isFeatured      Boolean  @default(false) // Manually controlled highlight
 
@@ -351,10 +355,15 @@ model PublicationAuthor {
   author_order          Int         // 作者顺序 (必填)
   is_corresponding_author Boolean @default(false) // 是否为通讯作者 (可选)
 
+  // --- 新增字段 ---
+  isFeaturedOnProfile   Boolean     @default(false) // 是否在成员主页推荐
+  profileDisplayOrder   Int         @default(0)     // 在成员主页推荐时的显示顺序
+
   // 约束和索引
   @@id([publication_id, member_id])     // 复合主键: 同一篇论文，一个作者只出现一次
   @@unique([publication_id, author_order]) // 唯一约束: 同一篇论文，一个顺序只有一个作者
   @@index([member_id])                  // 索引: 加速按作者查找论文
+  @@index([member_id, isFeaturedOnProfile, profileDisplayOrder]) // 新增索引: 加速查询成员的推荐论文
 }
 
 // 照片标签模型 (用于管理所有标签)

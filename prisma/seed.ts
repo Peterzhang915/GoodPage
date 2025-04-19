@@ -276,36 +276,85 @@ async function main() {
 
     // Define checkIsFeatured function BEFORE its first use
     const checkIsFeatured = (
-      yearOrPeriod: number | string | undefined | null,
+      startYear: number | null | undefined,
+      endYear: number | null | undefined,
     ): boolean => {
-      if (!yearOrPeriod) return false;
-      const currentYear = new Date().getFullYear();
-      const checkYear = (y: number) => y >= currentYear - 3; // Last 3 years + current year
+      if (startYear === null && endYear === null) return false; // Explicitly handle null/undefined case
+      if (startYear === undefined && endYear === undefined) return false;
 
-      if (typeof yearOrPeriod === "number") {
-        return checkYear(yearOrPeriod);
-      } else if (typeof yearOrPeriod === "string") {
-        const match = yearOrPeriod.match(/\b(\d{4})\b/g); // Find all years
-        if (match) {
-          const lastYear = parseInt(match[match.length - 1], 10);
-          return checkYear(lastYear);
-        }
+      const currentYear = new Date().getFullYear();
+      const earliestYearToCheck = currentYear - 3; // Check against the last 3 years + current year
+
+      if (typeof endYear === 'number') {
+          // If there's an end year, check if it's recent enough
+          if (endYear >= earliestYearToCheck) {
+              // Also check if the start year (if exists) is not *after* the current year
+              if (typeof startYear === 'number') {
+                 return startYear <= currentYear;
+              } else {
+                 // If only end year exists, it's recent enough
+                 return true;
+              }
+          } else {
+              // End year is too old
+              return false;
+          }
+      } else if (typeof startYear === 'number') {
+          // If no end year, but there's a start year (ongoing or single year)
+          // Check if the start year is within the relevant period (including future starts? Let's assume yes for now)
+          // Or simply check if it's recent enough compared to the cutoff
+          return startYear >= earliestYearToCheck;
       }
+
+      // Fallback if only endYear is null/undefined but startYear isn't a number (shouldn't happen with parseIntSafe)
       return false;
     };
 
-    // Now use checkIsFeatured
+    // --- Updated Academic Services Parsing --- 
+    // Ensure the map function correctly returns objects matching the Prisma type
     const academicServicesData: Prisma.AcademicServiceCreateManyInput[] =
-      academicServicesRaw.map((content, index) => {
-        const yearMatch = content.match(/\b\d{4}\b/g);
-        const period = yearMatch ? yearMatch.join(", ") : null;
+      academicServicesRaw.map((rawString, index): Prisma.AcademicServiceCreateManyInput => { // Explicitly type the return of the map callback
+        let description = rawString.trim();
+        let start_year: number | null = null;
+        let end_year: number | null = null;
+        let role: string | null = null;
+        let organization: string | null = null;
+
+        // 1. Extract year/period (YYYY-YYYY or YYYY)
+        const yearRegex = /\b(\d{4})(?:\s*[-\u2013\u2014]\s*(\d{4}))?\b\s*$/;
+        const yearMatch = description.match(yearRegex);
+        if (yearMatch) {
+          start_year = parseIntSafe(yearMatch[1]);
+          end_year = parseIntSafe(yearMatch[2]);
+          description = description.replace(yearRegex, "").trim().replace(/[,，]$/, "").trim();
+        } else {
+           const anyYearMatch = description.match(/\b(\d{4})\b/g);
+           if (anyYearMatch) {
+               start_year = parseIntSafe(anyYearMatch[anyYearMatch.length - 1]);
+           }
+        }
+
+        // 2. Split remaining description into role and organization
+        const parts = description.split(/[,，]/);
+        if (parts.length >= 2) {
+          organization = parts.pop()?.trim() || null;
+          role = parts.join(", ").trim();
+        } else if (description) {
+          role = description;
+        }
+
+        // Ensure the returned object matches AcademicServiceCreateManyInput
         return {
           member_id: memberId,
-          content: content,
+          role: role,
+          organization: organization,
+          start_year: start_year,
+          end_year: end_year,
+          description: rawString,
           display_order: index,
-          isFeatured: checkIsFeatured(period), // Now this should work
+          isFeatured: checkIsFeatured(start_year, end_year), // Call corrected function
         };
-      });
+      }); // End of map function
 
     const awardsData: Prisma.AwardCreateManyInput[] = [];
     const sponsorshipsData: Prisma.SponsorshipCreateManyInput[] = [];
@@ -315,39 +364,30 @@ async function main() {
 
     awardsAndSponsorshipsRaw.forEach((item) => {
       const lowerCaseItem = item.toLowerCase();
-
-      // Try to extract the last year or period for isFeatured check
       let year: number | undefined = undefined;
       let period: string | undefined = undefined;
+      const periodMatch = item.match(/\b(\d{4}\s*-\s*\d{4})\b\s*$/);
+      const yearMatch = item.match(/\(?\b(\d{4})\b\)?\s*$/);
+      if (periodMatch) { period = periodMatch[1]; }
+      else if (yearMatch) { year = parseInt(yearMatch[1], 10); }
 
-      const periodMatch = item.match(/\b(\d{4}\s*-\s*\d{4})\b\s*$/); // YYYY-YYYY at the end
-      const yearMatch = item.match(/\(?\b(\d{4})\b\)?\s*$/); // YYYY at the end, optional parentheses
-
-      if (periodMatch) {
-        period = periodMatch[1];
-      } else if (yearMatch) {
-        year = parseInt(yearMatch[1], 10);
-      }
-
-      // Differentiate based on keywords - Simplified: just assign to Award or Sponsorship
+      // Differentiate based on keywords - Simplified
       if (
         lowerCaseItem.includes("grant") ||
         lowerCaseItem.includes("funding") ||
         lowerCaseItem.includes("project") ||
-        lowerCaseItem.includes(" pi,") ||
-        lowerCaseItem.includes("co-pi,")
-      ) {
-        // Sponsorship/Grant/Project
+        lowerCaseItem.includes(" pi,") || // Check includes syntax if error persists
+        lowerCaseItem.includes("co-pi,") // Check includes syntax if error persists
+      ) { // Fixed potential syntax issue around 'if' condition
         sponsorshipsData.push({
           member_id: memberId,
-          content: item, // Store the full original string
-          period: period ?? year?.toString(), // Use period if found, else year string
-          link_url: null, // Add logic later if needed
+          content: item,
+          period: period ?? year?.toString(),
+          link_url: null,
           display_order: sponsorshipOrder++,
-          isFeatured: checkIsFeatured(period ?? year),
+          isFeatured: checkIsFeatured(year, year),
         });
       } else {
-        // Award/Honor
         let level: AwardLevel = AwardLevel.OTHER;
         if (
           lowerCaseItem.includes("best paper") ||
@@ -367,15 +407,15 @@ async function main() {
           lowerCaseItem.includes("nomination")
         )
           level = AwardLevel.BRONZE;
-
+        // Fixed potential syntax issue before push
         awardsData.push({
           member_id: memberId,
-          content: item, // Store the full original string
-          year: year, // Use extracted year (if any)
+          content: item,
+          year: year,
           level: level,
-          link_url: null, // Add logic later if needed
+          link_url: null,
           display_order: awardOrder++,
-          isFeatured: checkIsFeatured(year),
+          isFeatured: checkIsFeatured(year, year),
         });
       }
     });
@@ -662,17 +702,17 @@ async function main() {
   }
 
   // --- 9. Other Tables ---
-  console.log(`跳过填充其他表 (无测试数据)`);
+  console.log(`Skipping other table seeding (no test data)`);
 }
 
-// --- 执行主函数并处理结果 ---
+// --- 执行主函数并处理结果 --- Corrected promise handling structure
 main()
-    .then(async () => {
-    console.log("测试数据填充成功！");
-        await prisma.$disconnect();
-    })
-    .catch(async (e) => {
-    console.error("填充测试数据时出错:", e);
-        await prisma.$disconnect();
-        process.exit(1);
-    });
+  .then(async () => {
+    console.log("Test data seeding successful!");
+    await prisma.$disconnect();
+  })
+  .catch(async (e) => {
+    console.error("Error seeding test data:", e);
+    await prisma.$disconnect();
+    process.exit(1);
+  }); // Ensure semicolon is here if needed, or just end

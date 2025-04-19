@@ -74,9 +74,15 @@ const AcademicServicesSection: React.FC<AcademicServicesSectionProps> = ({
                 className={`mr-2 mt-1 flex-shrink-0 ${themeColors.textColorTertiary ?? "text-gray-500"}`}
               />
               <div>
-                {service.content}
-                {/* Add link rendering if AcademicService schema includes link_url */}
-                {/* {service.link_url && ... } */}
+                <span className="font-medium">{service.role}</span> at {service.organization}
+                {(service.start_year || service.end_year) && (
+                  <span className="block text-xs text-gray-500 dark:text-gray-400">
+                    {service.start_year}
+                    {(service.end_year && service.start_year) ? ` - ${service.end_year}` : ''}
+                    {(!service.start_year && service.end_year) ? service.end_year : ''}
+                    {(service.start_year && !service.end_year) ? ' - Present' : ''}
+                  </span>
+                )}
               </div>
             </li>
           ))}
@@ -144,9 +150,15 @@ const AcademicServicesSection: React.FC<AcademicServicesSectionProps> = ({
                     className={`mr-2 mt-1 flex-shrink-0 ${themeColors.textColorTertiary ?? "text-gray-400"}`}
                   />
                   <div>
-                    {service.content}
-                    {/* Add link rendering if AcademicService schema includes link_url */}
-                    {/* {service.link_url && ... } */}
+                    <span className="font-medium">{service.role}</span> at {service.organization}
+                    {(service.start_year || service.end_year) && (
+                      <span className="block text-xs text-gray-500 dark:text-gray-400">
+                        {service.start_year}
+                        {(service.end_year && service.start_year) ? ` - ${service.end_year}` : ''}
+                        {(!service.start_year && service.end_year) ? service.end_year : ''}
+                        {(service.start_year && !service.end_year) ? ' - Present' : ''}
+                      </span>
+                    )}
                   </div>
                 </div>
               ))}

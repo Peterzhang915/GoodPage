@@ -2,7 +2,7 @@
 
 import prisma from '@/lib/prisma';
 import { revalidatePath } from 'next/cache'; // 用于更新后重新验证页面缓存
-import type { Member } from '@/lib/prisma'; // 导入完整 Member 类型以进行 Pick
+import type { Member } from '@/lib/prisma'; // 只导入 Member 类型
 import { MemberStatus } from '@/lib/prisma'; // 导入 MemberStatus 枚举
 
 // --- 安全性增强: 定义允许通过此 Action 更新的字段列表 ---

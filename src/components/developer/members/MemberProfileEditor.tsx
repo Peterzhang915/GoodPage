@@ -1,7 +1,12 @@
-'use client'; // 编辑器是客户端组件，因为它需要交互和状态
+'use client';
 
-import React, { useState, ChangeEvent } from 'react'; // Import ChangeEvent
-import type { MemberProfileData } from '@/lib/types'; // 导入成员档案数据类型
+// React and Hooks
+import React, { useState, ChangeEvent, useMemo, useEffect } from 'react'; // Added useEffect
+
+// Framer Motion for Animations
+import { motion, AnimatePresence } from 'framer-motion';
+
+// UI Components from shadcn/ui and Lucide Icons
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -9,15 +14,58 @@ import { Label } from '@/components/ui/label';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { Save, X, Pencil } from 'lucide-react'; // 引入图标
+import { Checkbox } from "@/components/ui/checkbox";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { Save, X, Pencil, ChevronDown, ChevronUp } from 'lucide-react';
 
-// 导入 Server Action 用于更新
+// Notifications
+import { toast } from 'sonner';
+
+// Dnd-Kit for Drag and Drop
+import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, type DragEndEvent } from '@dnd-kit/core';
+import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+
+// Prisma Types and Enums
+import { MemberStatus, Prisma } from '@prisma/client'; // Use the direct import
+import type { Education, Award, Teaching, Project, ProjectMember, Publication, PublicationAuthor, AcademicService, Presentation, SoftwareDataset } from '@prisma/client'; // Import model types including SoftwareDataset
+
+// Custom Application Types
+import { memberProfileIncludeArgs, type MemberProfileData, type PublicationInfo } from '@/lib/types'; // Import shared types
+
+// Server Actions
 import { updateMemberField, updateMemberStatus, updateMemberProfileVisibility } from '@/app/actions/memberActions';
-// 导入其他需要的组件和类型
-import { MemberStatus } from '@/lib/prisma'; // 导入 MemberStatus 枚举
-import { toast } from 'sonner'; // Restore import
+import { addEducationRecord, updateEducationRecord, deleteEducationRecord, type EducationFormData } from '@/app/actions/educationActions';
+import { addAwardRecord, updateAwardRecord, deleteAwardRecord, type AwardFormData } from '@/app/actions/awardActions';
+import { addTeachingRecord, updateTeachingRecord, deleteTeachingRecord, type TeachingFormData } from '@/app/actions/teachingActions';
+import { updateFeaturedPublications } from '@/app/actions/publicationActions';
+import { addProjectRecord, updateProjectRecord, deleteProjectRecord, type ProjectFormData } from '@/app/actions/projectActions';
+import { addAcademicServiceRecord, updateAcademicServiceRecord, deleteAcademicServiceRecord, type AcademicServiceFormData } from '@/app/actions/academicServiceActions'; // Import AcademicService actions and type
+import { addPresentationRecord, updatePresentationRecord, deletePresentationRecord, type PresentationFormData } from '@/app/actions/presentationActions'; // Import Presentation actions and type
+import { addSoftwareDatasetRecord, updateSoftwareDatasetRecord, deleteSoftwareDatasetRecord, type SoftwareDatasetFormData } from '@/app/actions/softwareDatasetActions'; // Import SoftwareDataset actions and type
 
-// --- Props 定义 ---
+// Custom Modal Components (assuming they are in the same directory)
+import { EducationFormModal } from './EducationFormModal';
+import { AwardFormModal } from './AwardFormModal';
+import { TeachingFormModal } from './TeachingFormModal';
+import { ProjectFormModal } from './ProjectFormModal';
+import { AcademicServiceFormModal } from './AcademicServiceFormModal'; // Import the new modal
+import { PresentationFormModal } from './PresentationFormModal'; // Import the new modal
+import { SoftwareDatasetFormModal } from './SoftwareDatasetFormModal'; // Import the new modal
+
+// --- Type Definitions ---
+// Define types used internally within this component
+
+// Type for editable publications list - ensure all fields are present and correctly typed
+type EditablePublication = PublicationInfo & {
+  isFeatured: boolean;
+  profileDisplayOrder: number | null;
+  // isHighlyCited: boolean; // Removed: Data not available directly on PublicationInfo
+};
+
+// Type for data passed to ProfileForm
+
+// --- Props 定义 --- (Main component props)
 type MemberProfileEditorProps = {
   initialData: MemberProfileData;
 };
@@ -146,12 +194,109 @@ function EditableTextField({ label, fieldName, initialValue, memberId, isTextAre
 
 
 // --- 主编辑器组件 --- 
+
+// Define section IDs for state management
+type SectionId = 
+  | 'basicInfo' 
+  | 'detailedProfile' 
+  | 'links' 
+  | 'education' 
+  | 'awards' 
+  | 'featuredPublications'
+  | 'projects'
+  | 'presentations'
+  | 'softwareDatasets'
+  | 'patents'
+  | 'academicServices';
+
+// Type for editable project list item (combining Project and ProjectMember info)
+type EditableProjectInfo = ProjectMember & { project: Project };
+
 export default function MemberProfileEditor({ initialData }: MemberProfileEditorProps) {
   // --- State for specific fields ---
   const [currentStatus, setCurrentStatus] = useState<MemberStatus | undefined>(initialData.status ?? undefined);
   const [isStatusLoading, setIsStatusLoading] = useState(false);
   const [isPublic, setIsPublic] = useState<boolean>(initialData.is_profile_public ?? true); // Default to true if null/undefined initially?
   const [isVisibilityLoading, setIsVisibilityLoading] = useState(false);
+
+  // --- State for Education Modal ---
+  const [isEducationModalOpen, setIsEducationModalOpen] = useState(false);
+  const [editingEducationData, setEditingEducationData] = useState<Partial<Education> | null>(null);
+  // Local state to reflect changes immediately, updated from initialData and after actions
+  const [educationHistory, setEducationHistory] = useState<Education[]>(initialData.educationHistory || []);
+
+  // --- State for Award Modal ---
+  const [isAwardModalOpen, setIsAwardModalOpen] = useState(false);
+  const [editingAward, setEditingAward] = useState<Partial<Award> | null>(null);
+  // Local state for awards, initialized from props and updated after actions
+  const [awardsList, setAwardsList] = useState<Award[]>(initialData.awards || []);
+
+  // --- State for Teaching Modal ---
+  const [isTeachingModalOpen, setIsTeachingModalOpen] = useState(false);
+  const [editingTeaching, setEditingTeaching] = useState<Partial<Teaching> | null>(null);
+  // Use the correct field name 'teachingRoles' from MemberProfileData type
+  const [teachingList, setTeachingList] = useState<Teaching[]>(initialData.teachingRoles || []);
+
+  // --- State for Academic Service Modal --- Added
+  const [isAcademicServiceModalOpen, setIsAcademicServiceModalOpen] = useState(false);
+  const [editingAcademicService, setEditingAcademicService] = useState<AcademicService | null>(null);
+  const [academicServicesList, setAcademicServicesList] = useState<AcademicService[]>(initialData.academicServices || []);
+
+  // --- State for Presentation Modal --- Added
+  const [isPresentationModalOpen, setIsPresentationModalOpen] = useState(false);
+  const [editingPresentation, setEditingPresentation] = useState<Presentation | null>(null);
+  const [presentationList, setPresentationList] = useState<Presentation[]>(initialData.presentations || []);
+
+  // --- State for Featured Publications ---
+
+  const [editablePublications, setEditablePublications] = useState<EditablePublication[]>(() => {
+      // Ensure the mapping creates objects matching the full EditablePublication type
+      return initialData.publications.map((pub: PublicationInfo): EditablePublication => {
+          // No longer need to find authorEntry here, as isFeatured and profileDisplayOrder
+          // should be directly available on the PublicationInfo object (pub) coming from initialData.
+          // const authorEntry = pub.publicationAuthors?.find(pa => pa.member_id === initialData.id);
+
+          return {
+              ...pub, // Spread base PublicationInfo properties (which now includes isFeatured and profileDisplayOrder)
+              // isFeatured: authorEntry?.isFeaturedOnProfile ?? false, // Removed: Use pub.isFeatured directly
+              // profileDisplayOrder: authorEntry?.profileDisplayOrder ?? null, // Removed: Use pub.profileDisplayOrder directly
+          };
+      });
+  });
+  const [isSavingFeatured, setIsSavingFeatured] = useState(false);
+
+  // --- State for Card Collapse/Expand ---
+  const [openSections, setOpenSections] = useState<Record<SectionId, boolean>>(() => ({
+      basicInfo: true, // Default open states
+      detailedProfile: true,
+      links: true,
+      education: true,
+      awards: true,
+      featuredPublications: true,
+      projects: false,
+      presentations: false,
+      softwareDatasets: false,
+      patents: false,
+      academicServices: false,
+  }));
+
+  // --- State for Project Modal and Data ---
+  const [isProjectModalOpen, setIsProjectModalOpen] = useState(false);
+  // Store the full Project object and the member's role for editing
+  const [editingProjectData, setEditingProjectData] = useState<(Project & { memberRole?: string }) | undefined>(undefined);
+  // Local state for projects list, initialized from initialData
+  const [projectsList, setProjectsList] = useState<EditableProjectInfo[]>(initialData.projects || []);
+
+  // --- State for Software & Datasets Modal and Data ---
+  const [isSoftwareDatasetModalOpen, setIsSoftwareDatasetModalOpen] = useState(false);
+  // Correct state variable name based on types.ts (member.softwareAndDatasets)
+  const [editingSoftwareAndDataset, setEditingSoftwareAndDataset] = useState<SoftwareDataset | null>(null);
+  const [softwareAndDatasetsList, setSoftwareAndDatasetsList] = useState<SoftwareDataset[]>(initialData.softwareAndDatasets || []);
+
+  // Toggle function
+  const toggleSection = (sectionId: SectionId) => {
+      setOpenSections(prev => ({ ...prev, [sectionId]: !prev[sectionId] }));
+  };
 
   // --- Handlers ---
   const handleStatusChange = async (newStatusValue: string) => { 
@@ -233,15 +378,613 @@ export default function MemberProfileEditor({ initialData }: MemberProfileEditor
     }
   };
 
+  // --- Handlers for Education CRUD ---
+  const handleOpenAddEducationModal = () => {
+    setEditingEducationData(null); // Ensure we are adding, not editing
+    setIsEducationModalOpen(true);
+  };
+
+  const handleOpenEditEducationModal = (education: Education) => {
+    setEditingEducationData(education);
+    setIsEducationModalOpen(true);
+  };
+
+  const handleCloseEducationModal = () => {
+    setIsEducationModalOpen(false);
+    setEditingEducationData(null); // Clear editing state on close
+  };
+
+  // This function will be passed to the modal's onSubmit prop
+  const handleEducationSubmit = async (data: EducationFormData, educationId?: number): Promise<void> => {
+    const actionPromise = educationId
+      ? updateEducationRecord(educationId, data)
+      : addEducationRecord(initialData.id, data); // Pass memberId for adding
+
+    // Using toast.promise for better UX
+    toast.promise(actionPromise, {
+      loading: 'Saving education record...',
+      success: (result: { success: boolean; error?: string; education?: Education }) => {
+        if (result.success && result.education) {
+          // --- Update local state for immediate feedback ---
+          if (educationId) {
+            // Update existing item in local state
+            setEducationHistory((prev: Education[]) =>
+              prev.map((edu: Education) => edu.id === educationId ? result.education! : edu)
+            );
+          } else {
+            // Add new item to local state
+            setEducationHistory((prev: Education[]) =>
+                [...prev, result.education!]
+            );
+          }
+          handleCloseEducationModal(); // Close modal on success
+          return `Education record ${educationId ? 'updated' : 'added'} successfully!`;
+        } else {
+          // Force into error state if success is false or education data missing
+          throw new Error(result.error || 'Failed to save education record.');
+        }
+      },
+      error: (err: any) => {
+        // Error toast will display this message from the caught error
+        return `Error: ${err.message || 'An unknown error occurred'}`;
+      },
+    });
+
+    // We don't need to await here because toast.promise handles the lifecycle.
+    // However, if you needed to do something *after* success/error specifically,
+    // you might await and then act based on the result.
+  };
+
+
+  const handleDeleteEducation = async (educationId: number) => {
+      // Call the delete action directly
+      const actionPromise = deleteEducationRecord(educationId);
+
+      toast.promise(actionPromise, {
+          loading: 'Deleting education record...',
+          success: (result: { success: boolean; error?: string }) => {
+              if (result.success) {
+                  // Update local state upon successful deletion
+                  setEducationHistory((prev: Education[]) => prev.filter((edu: Education) => edu.id !== educationId));
+                  return 'Education record deleted successfully!';
+              } else {
+                   // Force into error state
+                  throw new Error(result.error || 'Failed to delete education record.');
+              }
+          },
+          error: (err: any) => `Error: ${err.message || 'An unknown error occurred'}`,
+      });
+   };
+
+  // --- Handlers for Award CRUD ---
+  const handleOpenAddAwardModal = () => {
+    setEditingAward(null);
+    setIsAwardModalOpen(true);
+  };
+
+  const handleOpenEditAwardModal = (award: Award) => {
+    setEditingAward(award);
+    setIsAwardModalOpen(true);
+  };
+
+  const handleCloseAwardModal = () => {
+    setIsAwardModalOpen(false);
+    setEditingAward(null);
+  };
+
+  const handleAwardSubmit = async (data: AwardFormData, awardId?: number): Promise<void> => {
+    const actionPromise = awardId
+      ? updateAwardRecord(awardId, data)
+      : addAwardRecord(initialData.id, data);
+
+    toast.promise(actionPromise, {
+      loading: 'Saving award record...',
+      success: (result: { success: boolean; error?: string; award?: Award }) => {
+        if (result.success && result.award) {
+          if (awardId) {
+            // Update existing award in local state
+            setAwardsList((prev) =>
+              prev.map((award) => (award.id === awardId ? result.award! : award))
+            );
+          } else {
+            // Add new award to local state
+            setAwardsList((prev) => [...prev, result.award!]);
+          }
+          handleCloseAwardModal();
+          return `Award record ${awardId ? 'updated' : 'added'} successfully!`;
+        } else {
+          throw new Error(result.error || 'Failed to save award record.');
+        }
+      },
+      error: (err: any) => `Error: ${err.message || 'An unknown error occurred'}`,
+    });
+  };
+
+  const handleDeleteAward = async (awardId: number) => {
+    const actionPromise = deleteAwardRecord(awardId);
+
+    toast.promise(actionPromise, {
+      loading: 'Deleting award record...',
+      success: (result: { success: boolean; error?: string }) => {
+        if (result.success) {
+          setAwardsList((prev) => prev.filter((award) => award.id !== awardId));
+          return 'Award record deleted successfully!';
+        } else {
+          throw new Error(result.error || 'Failed to delete award record.');
+        }
+      },
+      error: (err: any) => `Error: ${err.message || 'An unknown error occurred'}`,
+    });
+  };
+
+  // --- Handlers for Teaching CRUD ---
+  const handleOpenAddTeachingModal = () => {
+    setEditingTeaching(null);
+    setIsTeachingModalOpen(true);
+  };
+
+  const handleOpenEditTeachingModal = (teaching: Teaching) => {
+    setEditingTeaching(teaching);
+    setIsTeachingModalOpen(true);
+  };
+
+  const handleCloseTeachingModal = () => {
+    setIsTeachingModalOpen(false);
+    setEditingTeaching(null);
+  };
+
+  const handleTeachingSubmit = async (data: TeachingFormData, teachingId?: number): Promise<void> => {
+    const actionPromise = teachingId
+      ? updateTeachingRecord(teachingId, data)
+      : addTeachingRecord(initialData.id, data);
+
+    toast.promise(actionPromise, {
+      loading: 'Saving teaching record...',
+      success: (result: { success: boolean; error?: string; teaching?: Teaching }) => {
+        if (result.success && result.teaching) {
+          if (teachingId) {
+            setTeachingList((prev) =>
+              prev.map((teach) => (teach.id === teachingId ? result.teaching! : teach))
+            );
+          } else {
+            setTeachingList((prev) => [...prev, result.teaching!]);
+          }
+          handleCloseTeachingModal();
+          return `Teaching record ${teachingId ? 'updated' : 'added'} successfully!`;
+        } else {
+          throw new Error(result.error || 'Failed to save teaching record.');
+        }
+      },
+      error: (err: any) => `Error: ${err.message || 'An unknown error occurred'}`,
+    });
+  };
+
+  const handleDeleteTeaching = async (teachingId: number) => {
+    const actionPromise = deleteTeachingRecord(teachingId);
+
+    toast.promise(actionPromise, {
+      loading: 'Deleting teaching record...',
+      success: (result: { success: boolean; error?: string }) => {
+        if (result.success) {
+          setTeachingList((prev) => prev.filter((teach) => teach.id !== teachingId));
+          return 'Teaching record deleted successfully!';
+        } else {
+          throw new Error(result.error || 'Failed to delete teaching record.');
+        }
+      },
+      error: (err: any) => `Error: ${err.message || 'An unknown error occurred'}`,
+    });
+  };
+
+  // --- Handler for Saving Featured Publications ---
+  const handleSaveFeaturedPublications = async () => {
+    setIsSavingFeatured(true);
+    // The data structure sent to the action needs to reflect how `PublicationAuthor` stores this info
+    const featuredUpdates = editablePublications
+      .map((pub, index) => ({
+        publicationId: pub.id,
+        isFeatured: pub.isFeatured, // This now correctly reflects the checkbox state
+        order: pub.profileDisplayOrder ?? index, // Use saved order if exists, otherwise current index
+        // Note: The action `updateFeaturedPublications` needs to handle this structure
+        // likely by updating the corresponding PublicationAuthor record for this member.
+      }));
+
+    // Assuming `updateFeaturedPublications` expects an array of { publicationId, isFeatured, order }
+    // It should internally find the PublicationAuthor record for memberId+publicationId and update it.
+    console.log("Sending featured updates:", featuredUpdates);
+    const actionPromise = updateFeaturedPublications(initialData.id, featuredUpdates);
+    toast.promise(actionPromise, {
+      loading: 'Saving featured publications list...',
+      success: (result) => {
+        if (result.success) {
+          return 'Featured publications updated successfully!';
+        } else {
+          throw new Error(result.error || 'Failed to update featured publications.');
+        }
+      },
+      error: (err: any) => `Error: ${err.message || 'An unknown error occurred'}`, // Improved error display
+    });
+    try {
+      await actionPromise;
+    } catch (e) {
+      // Errors handled by toast
+    } finally {
+      setIsSavingFeatured(false);
+    }
+  };
+
+  // --- Handler to toggle featured status for a publication ---
+  const handleToggleFeatured = (publicationId: number) => {
+    setEditablePublications(currentPubs =>
+        currentPubs.map(pub =>
+            pub.id === publicationId
+                ? { ...pub, isFeatured: !pub.isFeatured }
+                : pub
+        )
+    );
+  };
+
+  // --- @dnd-kit Sensor setup ---
+  const sensors = useSensors(
+    useSensor(PointerSensor), // Use pointer events (mouse, touch)
+    useSensor(KeyboardSensor, { // Use keyboard for accessibility
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  // --- @dnd-kit Drag End Handler ---
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    // Ensure 'over' is not null before proceeding
+    if (over && active.id !== over.id) {
+        setEditablePublications((items) => {
+            const oldIndex = items.findIndex(item => item.id.toString() === active.id);
+            const newIndex = items.findIndex(item => item.id.toString() === over.id);
+
+            // Check if indices are valid before moving
+            if (oldIndex === -1 || newIndex === -1) {
+                console.error("Could not find dragged item index in state.");
+                return items; // Return original items if index lookup fails
+            }
+
+            // Use arrayMove utility for correct reordering
+            return arrayMove(items, oldIndex, newIndex);
+        });
+    }
+  };
+
+  // --- Handlers for Project CRUD --- 
+  const handleOpenAddProjectModal = () => {
+    setEditingProjectData(undefined); // Clear editing state
+    setIsProjectModalOpen(true);
+  };
+
+  const handleOpenEditProjectModal = (projectInfo: EditableProjectInfo) => {
+    // Map the role from ProjectMember (string | null) to what the modal expects (string | undefined)
+    setEditingProjectData({ ...projectInfo.project, memberRole: projectInfo.role ?? undefined });
+    setIsProjectModalOpen(true);
+  };
+
+  const handleCloseProjectModal = () => {
+    setIsProjectModalOpen(false);
+    setEditingProjectData(undefined);
+  };
+
+  const handleProjectSubmit = async (data: ProjectFormData, projectId?: number): Promise<void> => {
+      const actionToPerform = () => projectId
+        ? updateProjectRecord(projectId, data)
+        : addProjectRecord(initialData.id, data);
+
+      type ActionResult = Awaited<ReturnType<typeof actionToPerform>>;
+
+      toast.promise(actionToPerform, {
+        loading: 'Saving project record...',
+        success: (result: ActionResult) => {
+            if (result.success && result.project) {
+                const savedProject = result.project as Project; // Assert as base Project type
+
+                if (projectId) {
+                    // --- Update existing project logic ---
+                    setProjectsList(prev =>
+                        prev.map(pm =>
+                            pm.project_id === projectId
+                                ? { ...pm,
+                                    project: { ...pm.project, ...savedProject }, // Update project details
+                                    role: data.role ?? pm.role // Update role from form data, fallback to previous
+                                  }
+                                : pm
+                        )
+                    );
+                } else {
+                    // --- Add new project logic ---
+                    // Construct the new state item directly from the saved project and form data
+                    const newEditableProject: EditableProjectInfo = {
+                        project_id: savedProject.id,
+                        member_id: initialData.id, // Current member's ID
+                        role: data.role ?? null, // Map undefined from form to null for ProjectMember type
+                        project: savedProject // The project data returned by the server action
+                    };
+                    setProjectsList(prev => [...prev, newEditableProject]);
+                }
+                handleCloseProjectModal();
+                return `Project record ${projectId ? 'updated' : 'added'} successfully!`;
+            } else {
+                throw new Error(result.error || 'Failed to save project record.');
+            }
+        },
+        error: (err: any) => {
+             // Try to parse Zod error if it's a JSON string
+             try {
+                const fieldErrors = JSON.parse(err.message);
+                // Format Zod errors for better readability
+                return `Validation Error: ${Object.entries(fieldErrors).map(([field, errors]) => `${field}: ${(errors as string[]).join(', ')}`).join('; ')}`;
+             } catch (e) { 
+                 // Default error message if parsing fails
+                 return `Error: ${err.message || 'An unknown error occurred'}`;
+             }
+        },
+    });
+  };
+
+  const handleDeleteProject = async (projectId: number, memberId: string) => {
+      // Call delete action with the composite key parts
+      const actionPromise = deleteProjectRecord(projectId, memberId);
+
+      toast.promise(actionPromise, {
+          loading: 'Deleting project record...',
+          success: (result) => {
+              if (result.success) {
+                  // Update local state upon successful deletion
+                  setProjectsList(prev => prev.filter(pm => !(pm.project_id === projectId && pm.member_id === memberId)));
+                  return 'Project record deleted successfully!';
+              } else {
+                   throw new Error(result.error || 'Failed to delete project record.');
+              }
+          },
+          error: (err: any) => `Error: ${err.message || 'An unknown error occurred'}`,
+      });
+   };
+
+  // --- Handlers for Academic Service CRUD --- Added
+  const handleOpenAddServiceModal = () => {
+    setEditingAcademicService(null);
+    setIsAcademicServiceModalOpen(true);
+  };
+
+  const handleOpenEditServiceModal = (service: AcademicService) => {
+    setEditingAcademicService(service);
+    setIsAcademicServiceModalOpen(true);
+  };
+
+  const handleCloseServiceModal = () => {
+    setIsAcademicServiceModalOpen(false);
+    setEditingAcademicService(null);
+  };
+
+  const handleAcademicServiceSubmit = async (data: AcademicServiceFormData, serviceId?: number): Promise<void> => {
+    const actionPromise = serviceId
+      ? updateAcademicServiceRecord(serviceId, data)
+      : addAcademicServiceRecord(initialData.id, data);
+
+    toast.promise(actionPromise, {
+      loading: 'Saving academic service record...',
+      success: (result: { success: boolean; error?: string; academicService?: AcademicService }) => {
+        if (result.success && result.academicService) {
+          if (serviceId) {
+            setAcademicServicesList((prev) =>
+              prev.map((svc) => (svc.id === serviceId ? result.academicService! : svc))
+            );
+          } else {
+            setAcademicServicesList((prev) => [...prev, result.academicService!]);
+          }
+          handleCloseServiceModal();
+          return `Academic service record ${serviceId ? 'updated' : 'added'} successfully!`
+        } else {
+          throw new Error(result.error || 'Failed to save academic service record.');
+        }
+      },
+      error: (err: any) => {
+          try {
+             const fieldErrors = JSON.parse(err.message);
+             return `Validation Error: ${Object.entries(fieldErrors).map(([field, errors]) => `${field}: ${(errors as string[]).join(', ')}`).join('; ')}`;
+           } catch (e) {
+              return `Error: ${err.message || 'An unknown error occurred'}`;
+           }
+      },
+    });
+  };
+
+  const handleDeleteAcademicService = async (serviceId: number) => {
+    const actionPromise = deleteAcademicServiceRecord(serviceId);
+
+    toast.promise(actionPromise, {
+      loading: 'Deleting academic service record...',
+      success: (result: { success: boolean; error?: string }) => {
+        if (result.success) {
+          setAcademicServicesList((prev) => prev.filter((svc) => svc.id !== serviceId));
+          return 'Academic service record deleted successfully!';
+        } else {
+          throw new Error(result.error || 'Failed to delete academic service record.');
+        }
+      },
+      error: (err: any) => `Error: ${err.message || 'An unknown error occurred'}`,
+    });
+  };
+
+  // --- Handlers for Presentation CRUD --- Added
+  const handleOpenAddPresentationModal = () => {
+    setEditingPresentation(null);
+    setIsPresentationModalOpen(true);
+  };
+
+  const handleOpenEditPresentationModal = (presentation: Presentation) => {
+    setEditingPresentation(presentation);
+    setIsPresentationModalOpen(true);
+  };
+
+  const handleClosePresentationModal = () => {
+    setIsPresentationModalOpen(false);
+    setEditingPresentation(null);
+  };
+
+  const handlePresentationSubmit = async (data: PresentationFormData, presentationId?: number): Promise<void> => {
+    const actionPromise = presentationId
+      ? updatePresentationRecord(presentationId, data)
+      : addPresentationRecord(initialData.id, data);
+
+    toast.promise(actionPromise, {
+      loading: 'Saving presentation record...',
+      success: (result: { success: boolean; error?: string; presentation?: Presentation }) => {
+        if (result.success && result.presentation) {
+          if (presentationId) {
+            setPresentationList((prev) =>
+              prev.map((pres) => (pres.id === presentationId ? result.presentation! : pres))
+            );
+          } else {
+            setPresentationList((prev) => [...prev, result.presentation!]);
+          }
+          handleClosePresentationModal();
+          return `Presentation record ${presentationId ? 'updated' : 'added'} successfully!`;
+        } else {
+          throw new Error(result.error || 'Failed to save presentation record.');
+        }
+      },
+      error: (err: any) => {
+          try {
+             const fieldErrors = JSON.parse(err.message);
+             return `Validation Error: ${Object.entries(fieldErrors).map(([field, errors]) => `${field}: ${(errors as string[]).join(', ')}`).join('; ')}`;
+          } catch (e) {
+             return `Error: ${err.message || 'An unknown error occurred'}`;
+          }
+      },
+    });
+  };
+
+  const handleDeletePresentation = async (presentationId: number) => {
+    const actionPromise = deletePresentationRecord(presentationId);
+
+    toast.promise(actionPromise, {
+      loading: 'Deleting presentation record...',
+      success: (result: { success: boolean; error?: string }) => {
+        if (result.success) {
+          setPresentationList((prev) => prev.filter((pres) => pres.id !== presentationId));
+          return 'Presentation record deleted successfully!';
+        } else {
+          throw new Error(result.error || 'Failed to delete presentation record.');
+        }
+      },
+      error: (err: any) => `Error: ${err.message || 'An unknown error occurred'}`,
+    });
+  };
+
+  // --- CRUD Handlers for Software & Datasets ---
+  const handleOpenAddSoftwareDatasetModal = () => {
+      setEditingSoftwareAndDataset(null);
+      setIsSoftwareDatasetModalOpen(true);
+  };
+
+  const handleOpenEditSoftwareDatasetModal = (record: SoftwareDataset) => {
+      setEditingSoftwareAndDataset(record);
+      setIsSoftwareDatasetModalOpen(true);
+  };
+
+  const handleCloseSoftwareDatasetModal = () => {
+      setIsSoftwareDatasetModalOpen(false);
+      setEditingSoftwareAndDataset(null);
+  };
+
+  const handleSoftwareDatasetSubmit = async (data: SoftwareDatasetFormData): Promise<{ success: boolean; error?: string; softwareDataset?: SoftwareDataset }> => {
+      const isEditing = !!editingSoftwareAndDataset;
+      // Define action only once
+      const action = isEditing
+          ? updateSoftwareDatasetRecord(editingSoftwareAndDataset!.id, data) // Update
+          : addSoftwareDatasetRecord(initialData.id, data); // Add, using initialData.id
+
+      const promise = action.then(result => {
+          if (!result.success || !result.softwareDataset) {
+              throw new Error(result.error || "Operation failed or no data returned.");
+          }
+
+          if (isEditing) {
+              setSoftwareAndDatasetsList(prev =>
+                  prev.map(item => (item.id === result.softwareDataset!.id ? result.softwareDataset! : item))
+              );
+          } else {
+              setSoftwareAndDatasetsList(prev => [...prev, result.softwareDataset!]);
+          }
+          handleCloseSoftwareDatasetModal();
+          return result; // Return the successful result
+      }).catch(err => {
+           console.error("Action failed:", err);
+           // Re-throw a clean error for the toast
+           throw new Error(err.message || "An unexpected error occurred");
+      });
+
+      toast.promise(promise, {
+          loading: isEditing ? 'Updating record...' : 'Adding record...',
+          success: isEditing ? 'Record updated successfully!' : 'Record added successfully!',
+          error: (err: Error) => `Error: ${err.message}`,
+      });
+
+      // This function needs to align with its signature, returning the result promise.
+      // The onSubmit wrapper will handle the void conversion.
+      return promise;
+  };
+
+  const handleDeleteSoftwareDataset = async (id: number) => {
+      // Add confirmation dialog
+      if (!confirm("Are you sure you want to delete this record?")) {
+          return;
+      }
+
+      const promise = deleteSoftwareDatasetRecord(id).then(result => {
+          if (!result.success) {
+               throw new Error(result.error || "Failed to delete record.");
+          }
+          setSoftwareAndDatasetsList(prev => prev.filter(item => item.id !== id));
+          return result; // Return result on success
+      }).catch(err => {
+          console.error("Delete failed:", err);
+          throw new Error(err.message || "An unexpected error occurred during deletion.");
+      });
+
+       toast.promise(promise, {
+          loading: 'Deleting record...',
+          success: 'Record deleted successfully!',
+          error: (err: Error) => `Error: ${err.message}`,
+      });
+
+      // Handle potential errors if needed beyond toast
+       try {
+          await promise;
+      } catch (error) {
+          // Errors are toasted, but you might want additional logging or UI feedback here
+          console.error("Final catch for delete error:", error);
+      }
+  };
+
   return (
     <div className="space-y-6 pb-10"> 
 
       {/* --- Section 1: Basic Info --- */} 
-      <Card className="dark:bg-gray-800 dark:border-gray-700">
-        <CardHeader>
+      <Card className="dark:bg-gray-800 dark:border-gray-700 overflow-hidden">
+        <CardHeader className="flex flex-row items-center justify-between cursor-pointer" onClick={() => toggleSection('basicInfo')}>
           <CardTitle className="dark:text-green-400">Basic Information</CardTitle>
+          <Button variant="ghost" size="icon" aria-label={openSections.basicInfo ? "Collapse Basic Information" : "Expand Basic Information"}>
+             {openSections.basicInfo ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
+          </Button>
         </CardHeader>
-        <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-1">
+        <motion.div
+            initial={false}
+            animate={{
+                height: openSections.basicInfo ? 'auto' : 0,
+                opacity: openSections.basicInfo ? 1 : 0,
+            }}
+            transition={{ duration: 0.3, ease: "easeInOut" }}
+            style={{ overflow: 'hidden' }}
+        >
+            <CardContent className="pt-4 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-1">
           <EditableTextField label="English Name" fieldName="name_en" initialValue={initialData.name_en} memberId={initialData.id} />
           <EditableTextField label="Chinese Name" fieldName="name_zh" initialValue={initialData.name_zh} memberId={initialData.id} />
           <EditableTextField label="Email" fieldName="email" initialValue={initialData.email} memberId={initialData.id} inputType="email" />
@@ -249,35 +992,35 @@ export default function MemberProfileEditor({ initialData }: MemberProfileEditor
           <EditableTextField label="Chinese Title" fieldName="title_zh" initialValue={initialData.title_zh} memberId={initialData.id} />
 
           <div className="mb-4">
-            <Label htmlFor="status" className="dark:text-gray-300">Status</Label>
-            <Select value={currentStatus ?? ""} onValueChange={handleStatusChange} disabled={isStatusLoading}>
-              <SelectTrigger className="w-full dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100">
-                <SelectValue placeholder="Select status..." />
-              </SelectTrigger>
-              <SelectContent className="dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100">
-                {Object.values(MemberStatus).map(status => (
-                  <SelectItem key={status} value={status} className="dark:hover:bg-gray-700 dark:focus:bg-gray-700">
-                    {formatStatusLabel(status)}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+                <Label htmlFor="status" className="dark:text-gray-300">Status</Label>
+                <Select value={currentStatus ?? ""} onValueChange={handleStatusChange} disabled={isStatusLoading}>
+                  <SelectTrigger className="w-full dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100">
+                    <SelectValue placeholder="Select status..." />
+                  </SelectTrigger>
+                  <SelectContent className="dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100">
+                    {Object.values(MemberStatus).map(status => (
+                      <SelectItem key={status} value={status} className="dark:hover:bg-gray-700 dark:focus:bg-gray-700">
+                        {formatStatusLabel(status)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
           </div>
 
-          <div className="mb-4 flex items-center space-x-3 justify-between rounded-md border dark:border-gray-700 p-3 col-span-1 md:col-span-2">
-            <Label htmlFor="is_profile_public" className="text-sm font-medium cursor-pointer dark:text-gray-300">
-                Profile Public
-                <p className="text-xs text-gray-500 dark:text-gray-400">
-                   Make this member's profile page visible to the public internet.
-                </p>
-            </Label>
-            <Switch
-              id="is_profile_public"
-              checked={isPublic}
-              onCheckedChange={handleVisibilityChange}
-              disabled={isVisibilityLoading}
-              aria-label="Toggle profile visibility"
-            />
+              <div className="mb-4 flex items-center space-x-3 justify-between rounded-md border dark:border-gray-700 p-3 col-span-1 md:col-span-2">
+                <Label htmlFor="is_profile_public" className="text-sm font-medium cursor-pointer dark:text-gray-300">
+                    Profile Public
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                       Make this member's profile page visible to the public internet.
+                    </p>
+                </Label>
+                <Switch
+                  id="is_profile_public"
+                  checked={isPublic}
+                  onCheckedChange={handleVisibilityChange}
+                  disabled={isVisibilityLoading}
+                  aria-label="Toggle profile visibility"
+                />
           </div>
 
           <EditableTextField
@@ -301,31 +1044,41 @@ export default function MemberProfileEditor({ initialData }: MemberProfileEditor
           <EditableTextField label="Pronouns" fieldName="pronouns" initialValue={initialData.pronouns} memberId={initialData.id} placeholder="e.g., she/her, he/him, they/them" />
           <EditableTextField label="Avatar URL" fieldName="avatar_url" initialValue={initialData.avatar_url} memberId={initialData.id} inputType="url" />
         </CardContent>
+        </motion.div>
       </Card>
 
       {/* --- Section 2: Detailed Profile --- */} 
-      <Card className="dark:bg-gray-800 dark:border-gray-700">
-        <CardHeader>
+      <Card className="dark:bg-gray-800 dark:border-gray-700 overflow-hidden">
+        <CardHeader className="flex flex-row items-center justify-between cursor-pointer" onClick={() => toggleSection('detailedProfile')}>
           <CardTitle className="dark:text-green-400">Detailed Profile</CardTitle>
+           <Button variant="ghost" size="icon" aria-label={openSections.detailedProfile ? "Collapse Detailed Profile" : "Expand Detailed Profile"}>
+             {openSections.detailedProfile ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
+          </Button>
         </CardHeader>
-        <CardContent className="grid grid-cols-1 gap-y-1">
+        <motion.div initial={false} animate={{ height: openSections.detailedProfile ? 'auto' : 0, opacity: openSections.detailedProfile ? 1 : 0 }} transition={{ duration: 0.3, ease: "easeInOut" }} style={{ overflow: 'hidden' }}>
+           <CardContent className="pt-4 grid grid-cols-1 gap-y-1">
           <EditableTextField label="English Bio" fieldName="bio_en" initialValue={initialData.bio_en} memberId={initialData.id} isTextArea={true} />
           <EditableTextField label="Chinese Bio" fieldName="bio_zh" initialValue={initialData.bio_zh} memberId={initialData.id} isTextArea={true} />
-          <EditableTextField label="Research Statement (English)" fieldName="research_statement_en" initialValue={initialData.research_statement_en} memberId={initialData.id} isTextArea={true} />
-          <EditableTextField label="Research Statement (Chinese)" fieldName="research_statement_zh" initialValue={initialData.research_statement_zh} memberId={initialData.id} isTextArea={true} />
+              <EditableTextField label="Research Statement (English)" fieldName="research_statement_en" initialValue={initialData.research_statement_en} memberId={initialData.id} isTextArea={true} />
+              <EditableTextField label="Research Statement (Chinese)" fieldName="research_statement_zh" initialValue={initialData.research_statement_zh} memberId={initialData.id} isTextArea={true} />
           <EditableTextField label="Research Interests" fieldName="research_interests" initialValue={initialData.research_interests} memberId={initialData.id} isTextArea={true} placeholder="Comma-separated interests" />
           <EditableTextField label="Skills" fieldName="skills" initialValue={initialData.skills} memberId={initialData.id} isTextArea={true} placeholder="Comma-separated skills" />
           <EditableTextField label="More About Me" fieldName="more_about_me" initialValue={initialData.more_about_me} memberId={initialData.id} isTextArea={true} />
           <EditableTextField label="Interests & Hobbies" fieldName="interests_hobbies" initialValue={initialData.interests_hobbies} memberId={initialData.id} isTextArea={true} />
         </CardContent>
+        </motion.div>
       </Card>
 
       {/* --- Section 3: Links --- */} 
-      <Card className="dark:bg-gray-800 dark:border-gray-700">
-          <CardHeader>
+      <Card className="dark:bg-gray-800 dark:border-gray-700 overflow-hidden">
+          <CardHeader className="flex flex-row items-center justify-between cursor-pointer" onClick={() => toggleSection('links')}>
               <CardTitle className="dark:text-green-400">Links & IDs</CardTitle>
+              <Button variant="ghost" size="icon" aria-label={openSections.links ? "Collapse Links" : "Expand Links"}>
+                 {openSections.links ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
+              </Button>
           </CardHeader>
-          <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-1">
+          <motion.div initial={false} animate={{ height: openSections.links ? 'auto' : 0, opacity: openSections.links ? 1 : 0 }} transition={{ duration: 0.3, ease: "easeInOut" }} style={{ overflow: 'hidden' }}>
+             <CardContent className="pt-4 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-1">
               <EditableTextField label="Personal Website" fieldName="personal_website" initialValue={initialData.personal_website} memberId={initialData.id} inputType="url" />
               <EditableTextField label="GitHub Username" fieldName="github_username" initialValue={initialData.github_username} memberId={initialData.id} />
               <EditableTextField label="LinkedIn URL" fieldName="linkedin_url" initialValue={initialData.linkedin_url} memberId={initialData.id} inputType="url" />
@@ -333,122 +1086,705 @@ export default function MemberProfileEditor({ initialData }: MemberProfileEditor
               <EditableTextField label="DBLP ID" fieldName="dblp_id" initialValue={initialData.dblp_id} memberId={initialData.id} />
               <EditableTextField label="CV URL" fieldName="cv_url" initialValue={initialData.cv_url} memberId={initialData.id} inputType="url" />
           </CardContent>
+           </motion.div>
       </Card>
 
       {/* --- Section 4: Education History --- */} 
-      <Card className="dark:bg-gray-800 dark:border-gray-700">
-        <CardHeader className="flex flex-row items-center justify-between">
+      <Card className="dark:bg-gray-800 dark:border-gray-700 overflow-hidden">
+        <CardHeader className="flex flex-row items-center justify-between cursor-pointer" onClick={() => toggleSection('education')}>
           <CardTitle className="dark:text-green-400">Education History</CardTitle>
-          <Button size="sm" className="dark:bg-blue-600 dark:hover:bg-blue-700 dark:text-white">Add Education</Button>
+           <div> {/* Wrap button and chevron */} 
+              <Button size="sm" className="dark:bg-blue-600 dark:hover:bg-blue-700 dark:text-white mr-2" onClick={(e) => { e.stopPropagation(); handleOpenAddEducationModal(); }}>
+                  Add Education
+              </Button>
+              <Button variant="ghost" size="icon" aria-label={openSections.education ? "Collapse Education History" : "Expand Education History"}>
+                {openSections.education ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
+             </Button>
+           </div>
         </CardHeader>
-        <CardContent>
-          {initialData.educationHistory.length > 0 ? (
+         <motion.div initial={false} animate={{ height: openSections.education ? 'auto' : 0, opacity: openSections.education ? 1 : 0 }} transition={{ duration: 0.3, ease: "easeInOut" }} style={{ overflow: 'hidden' }}>
+            <CardContent className="pt-4">
+              {educationHistory.length > 0 ? (
              <ul className="space-y-3">
-              {initialData.educationHistory.map(edu => (
+                   {[...educationHistory].sort((a, b) => (b.start_year ?? 0) - (a.start_year ?? 0)).map(edu => (
                  <li key={edu.id} className="border-b dark:border-gray-700 pb-3 flex justify-between items-start group">
                    <div className="flex-grow mr-4">
-                     <p className="font-semibold dark:text-gray-200">{edu.degree} in {edu.field || 'N/A'}</p>
+                          <p className="font-semibold dark:text-gray-200">{edu.degree} in {edu.field || 'N/A'}</p>
                      <p className="text-sm text-gray-700 dark:text-gray-300">{edu.school}</p>
                      <p className="text-sm text-gray-500 dark:text-gray-400">{edu.start_year} - {edu.end_year || 'Present'}</p>
-                     {edu.thesis_title && <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 italic">Thesis: {edu.thesis_title}</p>}
-                     {edu.description && <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{edu.description}</p>}
+                          {edu.thesis_title && <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 italic">Thesis: {edu.thesis_title}</p>}
+                          {edu.description && <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{edu.description}</p>}
                    </div>
                    <div className="space-x-1 flex-shrink-0 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
-                     <Button variant="outline" size="icon" className="h-7 w-7 dark:border-gray-600 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-indigo-400" aria-label="Edit education record"><Pencil className="h-3.5 w-3.5" /></Button>
-                     <Button variant="destructive" size="icon" className="h-7 w-7 dark:bg-red-700 dark:hover:bg-red-600 dark:text-white" aria-label="Delete education record"><X className="h-3.5 w-3.5" /></Button>
+                          <Button
+                             variant="outline"
+                             size="icon"
+                             className="h-7 w-7 dark:border-gray-600 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-indigo-400"
+                             aria-label="Edit education record"
+                             onClick={() => handleOpenEditEducationModal(edu)}
+                          >
+                              <Pencil className="h-3.5 w-3.5" />
+                          </Button>
+                          <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                  <Button
+                                      variant="destructive"
+                                      size="icon"
+                                      className="h-7 w-7 dark:bg-red-700 dark:hover:bg-red-600 dark:text-white"
+                                      aria-label="Delete education record"
+                                  >
+                                      <X className="h-3.5 w-3.5" />
+                                  </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent className="dark:bg-gray-850 dark:border-gray-700">
+                                  <AlertDialogHeader>
+                                      <AlertDialogTitle className="dark:text-red-400">Are you absolutely sure?</AlertDialogTitle>
+                                      <AlertDialogDescription className="dark:text-gray-400">
+                                          This action cannot be undone. This will permanently delete this education record.
+                                      </AlertDialogDescription>
+                                  </AlertDialogHeader>
+                                  <AlertDialogFooter>
+                                      <AlertDialogCancel className="dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700">Cancel</AlertDialogCancel>
+                                      <AlertDialogAction
+                                          onClick={() => handleDeleteEducation(edu.id)}
+                                          className="dark:bg-red-600 dark:hover:bg-red-700 dark:text-white"
+                                      >
+                                          Yes, delete it
+                                      </AlertDialogAction>
+                                  </AlertDialogFooter>
+                              </AlertDialogContent>
+                          </AlertDialog>
                    </div>
                  </li>
               ))}
              </ul>
            ) : (
-             <p className="text-gray-500 italic dark:text-gray-400">No education history added yet.</p>
+                 <p className="text-gray-500 italic dark:text-gray-400">No education history added yet.</p>
            )}
         </CardContent>
+         </motion.div>
       </Card>
 
       {/* --- Section 5: Awards --- */} 
-       <Card className="dark:bg-gray-800 dark:border-gray-700">
-           <CardHeader className="flex flex-row items-center justify-between">
+       <Card className="dark:bg-gray-800 dark:border-gray-700 overflow-hidden">
+           <CardHeader className="flex flex-row items-center justify-between cursor-pointer" onClick={() => toggleSection('awards')}>
                <CardTitle className="dark:text-green-400">Awards</CardTitle>
-               <Button size="sm" className="dark:bg-blue-600 dark:hover:bg-blue-700 dark:text-white">Add Award</Button>
+               <div> {/* Wrap button and chevron */} 
+                 <Button size="sm" className="dark:bg-blue-600 dark:hover:bg-blue-700 dark:text-white mr-2" onClick={(e) => { e.stopPropagation(); handleOpenAddAwardModal(); }}>Add Award</Button>
+                 <Button variant="ghost" size="icon" aria-label={openSections.awards ? "Collapse Awards" : "Expand Awards"}>
+                    {openSections.awards ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
+                 </Button>
+              </div>
            </CardHeader>
-           <CardContent>
-                {initialData.awards.length > 0 ? (
+            <motion.div initial={false} animate={{ height: openSections.awards ? 'auto' : 0, opacity: openSections.awards ? 1 : 0 }} transition={{ duration: 0.3, ease: "easeInOut" }} style={{ overflow: 'hidden' }}>
+                <CardContent className="pt-4">
+                   {awardsList.length > 0 ? (
                    <ul className="space-y-3">
-                       {initialData.awards.map(award => (
+                          {[...awardsList] // Sort by year (desc), then display_order (asc)
+                              .sort((a, b) => (b.year ?? 0) - (a.year ?? 0) || (a.display_order ?? Infinity) - (b.display_order ?? Infinity))
+                              .map((award: Award) => (
                            <li key={award.id} className="border-b dark:border-gray-700 pb-3 flex justify-between items-start group">
                                <div className="flex-grow mr-4">
-                                   <p className="font-semibold dark:text-gray-200">{award.content}</p>
+                                      <p className="font-semibold dark:text-gray-200">{award.content}</p>
                                    {award.year && <p className="text-sm text-gray-500 dark:text-gray-400">{award.year}</p>}
+                                      {/* Optionally display other fields like level or link */}
+                                      {award.level && <p className="text-xs text-gray-500 dark:text-gray-400 italic">Level: {award.level}</p>}
+                                      {award.link_url && 
+                                          <a href={award.link_url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-500 hover:underline dark:text-blue-400 block mt-1">
+                                              Link
+                                          </a>
+                                      }
                                </div>
                                <div className="space-x-1 flex-shrink-0 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
-                                   <Button variant="outline" size="icon" className="h-7 w-7 dark:border-gray-600 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-indigo-400" aria-label="Edit award record"><Pencil className="h-3.5 w-3.5" /></Button>
-                                   <Button variant="destructive" size="icon" className="h-7 w-7 dark:bg-red-700 dark:hover:bg-red-600 dark:text-white" aria-label="Delete award record"><X className="h-3.5 w-3.5" /></Button>
+                                      {/* Edit Button */}
+                                      <Button
+                                        variant="outline"
+                                        size="icon"
+                                        className="h-7 w-7 dark:border-gray-600 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-indigo-400"
+                                        aria-label="Edit award record"
+                                        onClick={() => handleOpenEditAwardModal(award)}
+                                      >
+                                          <Pencil className="h-3.5 w-3.5" />
+                                      </Button>
+                                      {/* Delete Button with Confirmation */}
+                                       <AlertDialog>
+                                           <AlertDialogTrigger asChild>
+                                               <Button
+                                                   variant="destructive"
+                                                   size="icon"
+                                                   className="h-7 w-7 dark:bg-red-700 dark:hover:bg-red-600 dark:text-white"
+                                                   aria-label="Delete award record"
+                                               >
+                                                   <X className="h-3.5 w-3.5" />
+                                               </Button>
+                                           </AlertDialogTrigger>
+                                           <AlertDialogContent className="dark:bg-gray-850 dark:border-gray-700">
+                                               <AlertDialogHeader>
+                                                   <AlertDialogTitle className="dark:text-red-400">Are you absolutely sure?</AlertDialogTitle>
+                                                   <AlertDialogDescription className="dark:text-gray-400">
+                                                       This action cannot be undone. This will permanently delete this award record.
+                                                   </AlertDialogDescription>
+                                               </AlertDialogHeader>
+                                               <AlertDialogFooter>
+                                                   <AlertDialogCancel className="dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700">Cancel</AlertDialogCancel>
+                                                   <AlertDialogAction
+                                                       onClick={() => handleDeleteAward(award.id)}
+                                                       className="dark:bg-red-600 dark:hover:bg-red-700 dark:text-white"
+                                                   >
+                                                       Yes, delete it
+                                                   </AlertDialogAction>
+                                               </AlertDialogFooter>
+                                           </AlertDialogContent>
+                                       </AlertDialog>
                                </div>
                            </li>
                        ))}
                    </ul>
                 ) : (
-                    <p className="text-gray-500 italic dark:text-gray-400">No awards added yet.</p>
+                       <p className="text-gray-500 italic dark:text-gray-400">No awards added yet.</p>
                 )}
            </CardContent>
+            </motion.div>
        </Card>
 
-      {/* --- Section 6: Publications --- */} 
-      <Card className="dark:bg-gray-800 dark:border-gray-700">
-        <CardHeader>
-          <CardTitle className="dark:text-green-400">Featured Publications</CardTitle>
-           <p className="text-sm text-gray-500 dark:text-gray-400">Select and order publications to display on the profile.</p>
+      {/* --- Section 6: Featured Publications --- */}
+      <Card className="dark:bg-gray-800 dark:border-gray-700 overflow-hidden">
+        <CardHeader className="flex flex-row items-center justify-between cursor-pointer" onClick={() => toggleSection('featuredPublications')}>
+          <div>
+            <CardTitle className="dark:text-green-400">Featured Publications</CardTitle>
+            <p className="text-sm text-gray-500 dark:text-gray-400">Select and reorder publications to feature on your public profile.</p>
+          </div>
+          <Button variant="ghost" size="icon" aria-label={openSections.featuredPublications ? "Collapse Featured Publications" : "Expand Featured Publications"}>
+            {openSections.featuredPublications ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
+          </Button>
         </CardHeader>
-        <CardContent>
-           <p className="text-amber-600 dark:text-amber-400 font-semibold">Implementation needed: Fetch all member publications, display as a checklist/sortable list.</p>
+        <motion.div
+            initial={false}
+            animate={{
+                height: openSections.featuredPublications ? 'auto' : 0,
+                opacity: openSections.featuredPublications ? 1 : 0,
+            }}
+            transition={{ duration: 0.3, ease: "easeInOut" }}
+            style={{ overflow: 'hidden' }}
+        >
+            <CardContent className="pt-4">
+              {editablePublications.length > 0 ? (
+                <DndContext
+                  sensors={sensors}
+                  collisionDetection={closestCenter}
+                  onDragEnd={handleDragEnd}
+                >
+                  <SortableContext
+                    items={editablePublications.map(p => p.id.toString())}
+                    strategy={verticalListSortingStrategy}
+                  >
+                      <div className="space-y-1">
+                        {editablePublications.map((pub) => (
+                          <SortablePublicationItem
+                            key={pub.id}
+                            pub={pub}
+                            isSavingFeatured={isSavingFeatured}
+                            onToggleFeatured={handleToggleFeatured}
+                          />
+                        ))}
+                      </div>
+                  </SortableContext>
+                </DndContext>
+              ) : (
+                <p className="text-gray-500 italic dark:text-gray-400">No publications found for this member.</p>
+              )}
         </CardContent>
+            <CardFooter className="flex justify-end">
+                <Button
+                    onClick={handleSaveFeaturedPublications}
+                    disabled={isSavingFeatured}
+                    className="dark:bg-indigo-600 dark:hover:bg-indigo-700 dark:text-white"
+                >
+                    {isSavingFeatured ? 'Saving...' : 'Save Featured List'}
+                </Button>
+            </CardFooter>
+        </motion.div>
       </Card>
 
       {/* --- Section 7: Other Sections --- */} 
-      <Card className="dark:bg-gray-800 dark:border-gray-700">
-          <CardHeader className="flex flex-row items-center justify-between">
+      <Card className="dark:bg-gray-800 dark:border-gray-700 overflow-hidden">
+          <CardHeader className="flex flex-row items-center justify-between cursor-pointer" onClick={() => toggleSection('projects')}>
               <CardTitle className="dark:text-green-400">Projects</CardTitle>
-              <Button size="sm" className="dark:bg-blue-600 dark:hover:bg-blue-700 dark:text-white">Add Project</Button>
+               <div>
+                  <Button size="sm" className="dark:bg-blue-600 dark:hover:bg-blue-700 dark:text-white mr-2" onClick={(e) => { e.stopPropagation(); handleOpenAddProjectModal(); }}>Add Project</Button>
+                  <Button variant="ghost" size="icon" aria-label={openSections.projects ? "Collapse Projects" : "Expand Projects"}>
+                     {openSections.projects ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
+                  </Button>
+               </div>
           </CardHeader>
-          <CardContent><p className="text-gray-500 italic dark:text-gray-400">Project editing not implemented yet.</p></CardContent>
+           <motion.div initial={false} animate={{ height: openSections.projects ? 'auto' : 0, opacity: openSections.projects ? 1 : 0 }} transition={{ duration: 0.3, ease: "easeInOut" }} style={{ overflow: 'hidden' }}>
+             <CardContent className="pt-4">
+                  {projectsList.length > 0 ? (
+                     <ul className="space-y-3">
+                        {[...projectsList].sort((a, b) => (b.project.start_year ?? 0) - (a.project.start_year ?? 0)).map(pm => (
+                             <li key={`${pm.project_id}-${pm.member_id}`} className="border-b dark:border-gray-700 pb-3 flex justify-between items-start group">
+                                <div className="flex-grow mr-4">
+                                    <p className="font-semibold dark:text-gray-200">{pm.project.title}</p>
+                                    {pm.project.start_year && <p className="text-sm text-gray-500 dark:text-gray-400">
+                                        {pm.project.start_year} - {pm.project.end_year || 'Present'}
+                                    </p>}
+                                    {pm.role && <p className="text-xs text-gray-500 dark:text-gray-400 italic mt-1">Role: {pm.role}</p>}
+                                    {pm.project.description && <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{pm.project.description}</p>}
+                                    {pm.project.url && 
+                                       <a href={pm.project.url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-500 hover:underline dark:text-blue-400 block mt-1">
+                                           Project Link
+                                       </a>
+                                   }
+                               </div>
+                                <div className="space-x-1 flex-shrink-0 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
+                                    {/* Edit Button */} 
+                                    <Button
+                                        variant="outline"
+                                        size="icon"
+                                        className="h-7 w-7 dark:border-gray-600 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-indigo-400"
+                                        aria-label="Edit project record"
+                                        onClick={() => handleOpenEditProjectModal(pm)} // Pass the whole project member info
+                                    >
+                                        <Pencil className="h-3.5 w-3.5" />
+                                    </Button>
+                                    {/* Delete Button with Confirmation */} 
+                                     <AlertDialog>
+                                         <AlertDialogTrigger asChild>
+                                             <Button
+                                                 variant="destructive"
+                                                 size="icon"
+                                                 className="h-7 w-7 dark:bg-red-700 dark:hover:bg-red-600 dark:text-white"
+                                                 aria-label="Delete project record"
+                                             >
+                                                 <X className="h-3.5 w-3.5" />
+                                             </Button>
+                                         </AlertDialogTrigger>
+                                         <AlertDialogContent className="dark:bg-gray-850 dark:border-gray-700">
+                                             <AlertDialogHeader>
+                                                 <AlertDialogTitle className="dark:text-red-400">Are you sure?</AlertDialogTitle>
+                                                 <AlertDialogDescription className="dark:text-gray-400">
+                                                     This will remove your association with this project. It will not delete the project itself if others are linked.
+                                                 </AlertDialogDescription>
+                                             </AlertDialogHeader>
+                                             <AlertDialogFooter>
+                                                 <AlertDialogCancel className="dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700">Cancel</AlertDialogCancel>
+                                                 <AlertDialogAction
+                                                     onClick={() => handleDeleteProject(pm.project_id, pm.member_id)} // Pass composite key parts
+                                                     className="dark:bg-red-600 dark:hover:bg-red-700 dark:text-white"
+                                                 >
+                                                     Yes, remove link
+                                                 </AlertDialogAction>
+                                             </AlertDialogFooter>
+                                         </AlertDialogContent>
+                                     </AlertDialog>
+                                </div>
+                            </li>
+                        ))}
+                     </ul>
+                  ) : (
+                    <p className="text-gray-500 italic dark:text-gray-400">No projects added yet.</p>
+                  )}
+               </CardContent>
+           </motion.div>
       </Card>
-      <Card className="dark:bg-gray-800 dark:border-gray-700">
-          <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle className="dark:text-green-400">Teaching</CardTitle>
-              <Button size="sm" className="dark:bg-blue-600 dark:hover:bg-blue-700 dark:text-white">Add Teaching</Button>
-          </CardHeader>
-          <CardContent><p className="text-gray-500 italic dark:text-gray-400">Teaching editing not implemented yet.</p></CardContent>
-      </Card>
-       <Card className="dark:bg-gray-800 dark:border-gray-700">
-          <CardHeader className="flex flex-row items-center justify-between">
+      <Card className="dark:bg-gray-800 dark:border-gray-700 overflow-hidden">
+          <CardHeader className="flex flex-row items-center justify-between cursor-pointer" onClick={() => toggleSection('presentations')}>
               <CardTitle className="dark:text-green-400">Presentations</CardTitle>
-              <Button size="sm" className="dark:bg-blue-600 dark:hover:bg-blue-700 dark:text-white">Add Presentation</Button>
+               <div>
+                 <Button size="sm" className="dark:bg-blue-600 dark:hover:bg-blue-700 dark:text-white mr-2" onClick={(e) => { e.stopPropagation(); handleOpenAddPresentationModal(); }}>
+                    Add Presentation
+                 </Button>
+                 <Button variant="ghost" size="icon" aria-label={openSections.presentations ? "Collapse Presentations" : "Expand Presentations"}>
+                    {openSections.presentations ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
+                 </Button>
+               </div>
           </CardHeader>
-          <CardContent><p className="text-gray-500 italic dark:text-gray-400">Presentation editing not implemented yet.</p></CardContent>
-       </Card>
-       <Card className="dark:bg-gray-800 dark:border-gray-700">
-          <CardHeader className="flex flex-row items-center justify-between">
+           <motion.div initial={false} animate={{ height: openSections.presentations ? 'auto' : 0, opacity: openSections.presentations ? 1 : 0 }} transition={{ duration: 0.3, ease: "easeInOut" }} style={{ overflow: 'hidden' }}>
+              <CardContent className="pt-4">
+                 {presentationList.length > 0 ? (
+                    <ul className="space-y-3">
+                       {/* Sort by year desc, then order asc */}
+                       {[...presentationList].sort((a, b) => (b.year ?? 0) - (a.year ?? 0) || (a.display_order ?? Infinity) - (b.display_order ?? Infinity)).map(pres => (
+                          <li key={pres.id} className="border-b dark:border-gray-700 pb-3 flex justify-between items-start group">
+                             <div className="flex-grow mr-4">
+                                <p className="font-semibold dark:text-gray-200">{pres.title}</p>
+                                <p className="text-sm text-gray-700 dark:text-gray-300">
+                                    {pres.event_name}{pres.location ? `, ${pres.location}` : ''}{pres.year ? ` (${pres.year})` : ''}
+                                    {pres.is_invited && <span className="ml-2 text-xs font-semibold text-indigo-600 dark:text-indigo-400">(Invited Talk)</span>}
+                                </p>
+                                {(pres.url || pres.conference_url) && (
+                                    <div className="mt-1 space-x-2">
+                                        {pres.url && <a href={pres.url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-500 hover:underline dark:text-blue-400">[Slides/Video]</a>}
+                                        {pres.conference_url && <a href={pres.conference_url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-500 hover:underline dark:text-blue-400">[Conference]</a>}
+                                    </div>
+                                )}
+                             </div>
+                             <div className="space-x-1 flex-shrink-0 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
+                                 {/* Edit Button */}
+                                 <Button
+                                     variant="outline"
+                                     size="icon"
+                                     className="h-7 w-7 dark:border-gray-600 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-indigo-400"
+                                     aria-label="Edit presentation record"
+                                     onClick={() => handleOpenEditPresentationModal(pres)}
+                                 >
+                                     <Pencil className="h-3.5 w-3.5" />
+                                 </Button>
+                                 {/* Delete Button */}
+                                 <AlertDialog>
+                                     <AlertDialogTrigger asChild>
+                                         <Button
+                                             variant="destructive"
+                                             size="icon"
+                                             className="h-7 w-7 dark:bg-red-700 dark:hover:bg-red-600 dark:text-white"
+                                             aria-label="Delete presentation record"
+                                         >
+                                             <X className="h-3.5 w-3.5" />
+                                         </Button>
+                                     </AlertDialogTrigger>
+                                     <AlertDialogContent className="dark:bg-gray-850 dark:border-gray-700">
+                                         <AlertDialogHeader>
+                                             <AlertDialogTitle className="dark:text-red-400">Are you absolutely sure?</AlertDialogTitle>
+                                             <AlertDialogDescription className="dark:text-gray-400">
+                                                 This action cannot be undone. This will permanently delete this presentation record.
+                                             </AlertDialogDescription>
+                                         </AlertDialogHeader>
+                                         <AlertDialogFooter>
+                                             <AlertDialogCancel className="dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700">Cancel</AlertDialogCancel>
+                                             <AlertDialogAction
+                                                 onClick={() => handleDeletePresentation(pres.id)}
+                                                 className="dark:bg-red-600 dark:hover:bg-red-700 dark:text-white"
+                                             >
+                                                 Yes, delete it
+                                             </AlertDialogAction>
+                                         </AlertDialogFooter>
+                                     </AlertDialogContent>
+                                 </AlertDialog>
+                             </div>
+                          </li>
+                       ))}
+                    </ul>
+                 ) : (
+                   <p className="text-gray-500 italic dark:text-gray-400">No presentations added yet.</p>
+                 )}
+              </CardContent>
+           </motion.div>
+      </Card>
+       <Card className="dark:bg-gray-800 dark:border-gray-700 overflow-hidden">
+          <CardHeader className="flex flex-row items-center justify-between cursor-pointer" onClick={() => toggleSection('softwareDatasets')}>
               <CardTitle className="dark:text-green-400">Software & Datasets</CardTitle>
-              <Button size="sm" className="dark:bg-blue-600 dark:hover:bg-blue-700 dark:text-white">Add Artefact</Button>
+              <div>
+                 <Button size="sm" className="dark:bg-blue-600 dark:hover:bg-blue-700 dark:text-white mr-2" onClick={(e) => { e.stopPropagation(); handleOpenAddSoftwareDatasetModal(); }}>
+                    Add Artefact
+                 </Button>
+                 <Button variant="ghost" size="icon" aria-label={openSections.softwareDatasets ? "Collapse Software & Datasets" : "Expand Software & Datasets"}>
+                    {openSections.softwareDatasets ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
+                 </Button>
+              </div>
           </CardHeader>
-          <CardContent><p className="text-gray-500 italic dark:text-gray-400">Software/Dataset editing not implemented yet.</p></CardContent>
+           <motion.div initial={false} animate={{ height: openSections.softwareDatasets ? 'auto' : 0, opacity: openSections.softwareDatasets ? 1 : 0 }} transition={{ duration: 0.3, ease: "easeInOut" }} style={{ overflow: 'hidden' }}>
+              <CardContent className="pt-4">
+                 {softwareAndDatasetsList.length > 0 ? (
+                     <ul className="space-y-3">
+                        {[...softwareAndDatasetsList].sort((a, b) => (a.display_order ?? Infinity) - (b.display_order ?? Infinity)).map(dataset => (
+                           <li key={dataset.id} className="border-b dark:border-gray-700 pb-3 flex justify-between items-start group">
+                              <div className="flex-grow mr-4">
+                                 <p className="font-semibold dark:text-gray-200">{dataset.title}</p>
+                                 {dataset.description && <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{dataset.description}</p>}
+                              </div>
+                              <div className="space-x-1 flex-shrink-0 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
+                                  {/* Edit Button */}
+                                  <Button
+                                      variant="outline"
+                                      size="icon"
+                                      className="h-7 w-7 dark:border-gray-600 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-indigo-400"
+                                      aria-label="Edit software dataset record"
+                                      onClick={() => handleOpenEditSoftwareDatasetModal(dataset)}
+                                  >
+                                      <Pencil className="h-3.5 w-3.5" />
+                                  </Button>
+                                  {/* Delete Button with Confirmation */}
+                                  <AlertDialog>
+                                      <AlertDialogTrigger asChild>
+                                          <Button
+                                              variant="destructive"
+                                              size="icon"
+                                              className="h-7 w-7 dark:bg-red-700 dark:hover:bg-red-600 dark:text-white"
+                                              aria-label="Delete software dataset record"
+                                          >
+                                              <X className="h-3.5 w-3.5" />
+                                          </Button>
+                                      </AlertDialogTrigger>
+                                      <AlertDialogContent className="dark:bg-gray-850 dark:border-gray-700">
+                                          <AlertDialogHeader>
+                                              <AlertDialogTitle className="dark:text-red-400">Are you absolutely sure?</AlertDialogTitle>
+                                              <AlertDialogDescription className="dark:text-gray-400">
+                                                  This action cannot be undone. This will permanently delete this software dataset record.
+                                              </AlertDialogDescription>
+                                          </AlertDialogHeader>
+                                          <AlertDialogFooter>
+                                              <AlertDialogCancel className="dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700">Cancel</AlertDialogCancel>
+                                              <AlertDialogAction
+                                                  onClick={() => handleDeleteSoftwareDataset(dataset.id)}
+                                                  className="dark:bg-red-600 dark:hover:bg-red-700 dark:text-white"
+                                              >
+                                                  Yes, delete it
+                                              </AlertDialogAction>
+                                          </AlertDialogFooter>
+                                      </AlertDialogContent>
+                                  </AlertDialog>
+                              </div>
+                           </li>
+                        ))}
+                     </ul>
+                  ) : (
+                    <p className="text-gray-500 italic dark:text-gray-400">No software datasets added yet.</p>
+                  )}
+               </CardContent>
+           </motion.div>
        </Card>
-       <Card className="dark:bg-gray-800 dark:border-gray-700">
-          <CardHeader className="flex flex-row items-center justify-between">
+       <Card className="dark:bg-gray-800 dark:border-gray-700 overflow-hidden">
+          <CardHeader className="flex flex-row items-center justify-between cursor-pointer" onClick={() => toggleSection('patents')}>
               <CardTitle className="dark:text-green-400">Patents</CardTitle>
-              <Button size="sm" className="dark:bg-blue-600 dark:hover:bg-blue-700 dark:text-white">Add Patent</Button>
+               <div>
+                 <Button size="sm" className="dark:bg-blue-600 dark:hover:bg-blue-700 dark:text-white mr-2">Add Patent</Button>
+                 <Button variant="ghost" size="icon" aria-label={openSections.patents ? "Collapse Patents" : "Expand Patents"}>
+                    {openSections.patents ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
+                 </Button>
+               </div>
           </CardHeader>
-          <CardContent><p className="text-gray-500 italic dark:text-gray-400">Patent editing not implemented yet.</p></CardContent>
+           <motion.div initial={false} animate={{ height: openSections.patents ? 'auto' : 0, opacity: openSections.patents ? 1 : 0 }} transition={{ duration: 0.3, ease: "easeInOut" }} style={{ overflow: 'hidden' }}>
+              <CardContent className="pt-4"><p className="text-gray-500 italic dark:text-gray-400">Patent editing not implemented yet.</p></CardContent>
+           </motion.div>
        </Card>
-        <Card className="dark:bg-gray-800 dark:border-gray-700">
-          <CardHeader className="flex flex-row items-center justify-between">
+        <Card className="dark:bg-gray-800 dark:border-gray-700 overflow-hidden">
+          <CardHeader className="flex flex-row items-center justify-between cursor-pointer" onClick={() => toggleSection('academicServices')}>
               <CardTitle className="dark:text-green-400">Academic Services</CardTitle>
-              <Button size="sm" className="dark:bg-blue-600 dark:hover:bg-blue-700 dark:text-white">Add Service</Button>
+              <div>
+                 <Button size="sm" className="dark:bg-blue-600 dark:hover:bg-blue-700 dark:text-white mr-2" onClick={(e) => { e.stopPropagation(); handleOpenAddServiceModal(); }}>
+                    Add Service
+                 </Button>
+                 <Button variant="ghost" size="icon" aria-label={openSections.academicServices ? "Collapse Academic Services" : "Expand Academic Services"}>
+                    {openSections.academicServices ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
+                 </Button>
+              </div>
           </CardHeader>
-          <CardContent><p className="text-gray-500 italic dark:text-gray-400">Academic Service editing not implemented yet.</p></CardContent>
+           <motion.div initial={false} animate={{ height: openSections.academicServices ? 'auto' : 0, opacity: openSections.academicServices ? 1 : 0 }} transition={{ duration: 0.3, ease: "easeInOut" }} style={{ overflow: 'hidden' }}>
+              <CardContent className="pt-4">
+                 {academicServicesList.length > 0 ? (
+                     <ul className="space-y-3">
+                        {[...academicServicesList].sort((a, b) => (a.display_order ?? Infinity) - (b.display_order ?? Infinity)).map(service => (
+                           <li key={service.id} className="border-b dark:border-gray-700 pb-3 flex justify-between items-start group">
+                              <div className="flex-grow mr-4">
+                                 <p className="font-semibold dark:text-gray-200">{service.role} <span className="text-gray-600 dark:text-gray-400">at</span> {service.organization}</p>
+                                 {(service.start_year || service.end_year) && (
+                                     <p className="text-sm text-gray-500 dark:text-gray-400">
+                                         {service.start_year}{service.end_year ? ` - ${service.end_year}` : service.start_year ? ' - Present' : ''}
+                                     </p>
+                                 )}
+                                 {service.description && <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{service.description}</p>}
+                              </div>
+                              <div className="space-x-1 flex-shrink-0 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
+                                  {/* Edit Button */}
+                                  <Button
+                                      variant="outline"
+                                      size="icon"
+                                      className="h-7 w-7 dark:border-gray-600 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-indigo-400"
+                                      aria-label="Edit academic service record"
+                                      onClick={() => handleOpenEditServiceModal(service)}
+                                  >
+                                      <Pencil className="h-3.5 w-3.5" />
+                                  </Button>
+                                  {/* Delete Button with Confirmation */}
+                                  <AlertDialog>
+                                      <AlertDialogTrigger asChild>
+                                          <Button
+                                              variant="destructive"
+                                              size="icon"
+                                              className="h-7 w-7 dark:bg-red-700 dark:hover:bg-red-600 dark:text-white"
+                                              aria-label="Delete academic service record"
+                                          >
+                                              <X className="h-3.5 w-3.5" />
+                                          </Button>
+                                      </AlertDialogTrigger>
+                                      <AlertDialogContent className="dark:bg-gray-850 dark:border-gray-700">
+                                          <AlertDialogHeader>
+                                              <AlertDialogTitle className="dark:text-red-400">Are you absolutely sure?</AlertDialogTitle>
+                                              <AlertDialogDescription className="dark:text-gray-400">
+                                                  This action cannot be undone. This will permanently delete this academic service record.
+                                              </AlertDialogDescription>
+                                          </AlertDialogHeader>
+                                          <AlertDialogFooter>
+                                              <AlertDialogCancel className="dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700">Cancel</AlertDialogCancel>
+                                              <AlertDialogAction
+                                                  onClick={() => handleDeleteAcademicService(service.id)}
+                                                  className="dark:bg-red-600 dark:hover:bg-red-700 dark:text-white"
+                                              >
+                                                  Yes, delete it
+                                              </AlertDialogAction>
+                                          </AlertDialogFooter>
+                                      </AlertDialogContent>
+                                  </AlertDialog>
+                              </div>
+                           </li>
+                        ))}
+                     </ul>
+                  ) : (
+                    <p className="text-gray-500 italic dark:text-gray-400">No academic services added yet.</p>
+                  )}
+               </CardContent>
+           </motion.div>
        </Card>
 
+      {/* Render the Education Modal */}
+      <EducationFormModal
+        isOpen={isEducationModalOpen}
+        onClose={handleCloseEducationModal}
+        onSubmit={handleEducationSubmit}
+        initialData={editingEducationData}
+        memberId={initialData.id}
+      />
+
+      {/* Render the Award Modal */}
+      <AwardFormModal
+        isOpen={isAwardModalOpen}
+        onClose={handleCloseAwardModal}
+        onSubmit={handleAwardSubmit}
+        initialData={editingAward}
+        memberId={initialData.id}
+      />
+
+      {/* Render the Teaching Modal */}
+      <TeachingFormModal
+        isOpen={isTeachingModalOpen}
+        onClose={handleCloseTeachingModal}
+        onSubmit={handleTeachingSubmit}
+        initialData={editingTeaching}
+        memberId={initialData.id}
+      />
+
+      {/* Render the Project Modal */} 
+      <ProjectFormModal
+        isOpen={isProjectModalOpen}
+        onClose={handleCloseProjectModal}
+        onSubmit={handleProjectSubmit}
+        initialData={editingProjectData} // Pass the correctly typed state here
+        memberId={initialData.id}
+      />
+
+      {/* Render the Academic Service Modal */}
+      <AcademicServiceFormModal
+        isOpen={isAcademicServiceModalOpen}
+        onClose={handleCloseServiceModal}
+        onSubmit={handleAcademicServiceSubmit}
+        initialData={editingAcademicService}
+        memberId={initialData.id}
+      />
+
+      {/* Render the Presentation Modal */} 
+      <PresentationFormModal
+        isOpen={isPresentationModalOpen}
+        onClose={handleClosePresentationModal}
+        onSubmit={handlePresentationSubmit}
+        initialData={editingPresentation}
+        memberId={initialData.id}
+      />
+
+      {/* Render the Software & Datasets Modal */}
+      <SoftwareDatasetFormModal
+        isOpen={isSoftwareDatasetModalOpen}
+        onClose={handleCloseSoftwareDatasetModal}
+        onSubmit={async (data) => {
+          try {
+              // Await the submit handler. Success/error is handled internally (toast, state updates).
+              await handleSoftwareDatasetSubmit(data);
+              // If it resolves without error, we're done. Return void implicitly.
+          } catch (error) {
+              // If handleSoftwareDatasetSubmit throws (after toast), catch it here.
+              // This prevents unhandled rejections. The error is already displayed via toast.
+              console.error("Caught error in onSubmit wrapper:", error);
+              // Do not re-throw unless the modal component specifically needs to react to failure.
+          }
+      }}
+        initialData={editingSoftwareAndDataset}
+        memberId={initialData.id}
+      />
+
+    </div>
+  );
+} 
+
+// --- Sortable Item Component for Publications ---
+// It's often cleaner to extract the sortable item logic
+interface SortablePublicationItemProps {
+    pub: EditablePublication;
+    isSavingFeatured: boolean;
+    onToggleFeatured: (id: number) => void;
+}
+
+function SortablePublicationItem({ pub, isSavingFeatured, onToggleFeatured }: SortablePublicationItemProps) {
+    const { // Destructure props from useSortable
+        attributes,
+        listeners, // These are for the drag handle
+        setNodeRef, // Ref for the draggable element
+        transform,
+        transition,
+        isDragging, // State to know if it's being dragged
+    } = useSortable({ id: pub.id.toString() });
+
+    const style = {
+        transform: CSS.Transform.toString(transform), // Apply transform for visual feedback
+        transition, // Apply transition for smooth movement
+        // Add some visual indication while dragging
+        opacity: isDragging ? 0.7 : 1,
+        zIndex: isDragging ? 10 : 'auto',
+        boxShadow: isDragging ? '0 4px 8px rgba(0,0,0,0.1)' : 'none',
+        cursor: 'default', // Default cursor for the item
+    };
+
+    return (
+        <div
+            ref={setNodeRef} // Attach the ref here
+            style={style} // Apply dynamic styles
+            className={`flex items-start space-x-2 p-2 border dark:border-gray-700 rounded bg-white dark:bg-gray-850 relative`} // Add relative for zIndex
+            // Removed snapshot styling, using isDragging directly
+        >
+            {/* Drag Handle - Apply listeners here */}
+            <div
+                {...attributes} // Required attributes for sortable item
+                {...listeners} // Attach listeners to the handle
+                className="pt-1 cursor-grab focus:outline-none touch-none" // Use touch-none for better mobile
+                aria-label="Drag to reorder"
+            >
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-grip-vertical text-gray-400 dark:text-gray-500"><circle cx="9" cy="12" r="1"/><circle cx="9" cy="5" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="15" cy="19" r="1"/></svg>
+            </div>
+            {/* Checkbox aligned with handle */}
+            <Checkbox
+                id={`featured-pub-${pub.id}`}
+                checked={pub.isFeatured}
+                onCheckedChange={() => onToggleFeatured(pub.id)}
+                aria-labelledby={`featured-pub-label-${pub.id}`}
+                disabled={isSavingFeatured}
+                className="mt-1" // Adjust vertical alignment if needed
+            />
+            {/* Publication details take remaining space */}
+            <div className="flex-grow">
+                <label
+                    htmlFor={`featured-pub-${pub.id}`}
+                    id={`featured-pub-label-${pub.id}`}
+                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 dark:text-gray-200 cursor-pointer"
+                >
+                    {pub.title}
+                </label>
+                <div className="text-xs text-gray-500 dark:text-gray-400 mt-1 flex items-center space-x-2 flex-wrap">
+                    <span>{pub.venue} ({pub.year})</span>
+                    {pub.ccf_rank && (
+                        <span className="inline-block bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-200 px-1.5 py-0.5 rounded text-[10px] font-semibold">
+                            CCF {pub.ccf_rank}
+                        </span>
+                    )}
+                </div>
+            </div>
     </div>
   );
 } 

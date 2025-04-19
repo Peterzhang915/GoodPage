@@ -288,7 +288,7 @@ export async function getMemberProfileData(
           project_page_url: true,
           is_peer_reviewed: true,
           publication_status: true,
-          authors_full_string: true, // 包含原始作者字符串
+          authors_full_string: true,
           authors: {
             // 包含关联的 PublicationAuthor (用于获取内部作者信息)
             select: {
@@ -307,8 +307,66 @@ export async function getMemberProfileData(
     console.log(`DB: 成功获取成员 ${id} 的所有关联数据`);
 
     // 3. 格式化出版物列表 (实现智能作者显示)
-    const publicationsFormatted: PublicationInfo[] = memberPublicationsRaw.map(
-      (p) => {
+    // First, get PublicationAuthor records specifically for this member to access isFeatured and order
+    const publicationAuthorRecords = await prisma.publicationAuthor.findMany({
+        where: {
+            member_id: id,
+            publication_id: { in: memberPublicationsRaw.map(p => p.id) }
+        },
+        select: { // Select only the necessary fields
+            publication_id: true,
+            isFeaturedOnProfile: true,
+            profileDisplayOrder: true,
+        }
+    });
+
+    // Create a map for easy lookup of isFeatured and order by publication_id
+    const pubAuthorDetailsMap = new Map<number, { isFeatured: boolean; order: number | null }>();
+    publicationAuthorRecords.forEach(pa => {
+        pubAuthorDetailsMap.set(pa.publication_id, {
+            isFeatured: pa.isFeaturedOnProfile ?? false,
+            order: pa.profileDisplayOrder // Keep null as null
+        });
+    });
+
+    type PublicationWithAuthorsPayload = Prisma.PublicationGetPayload<{
+      select: {
+        id: true;
+        title: true;
+        venue: true;
+        year: true;
+        volume: true;
+        number: true;
+        pages: true;
+        publisher: true;
+        ccf_rank: true;
+        dblp_url: true;
+        pdf_url: true;
+        abstract: true;
+        keywords: true;
+        type: true;
+        slides_url: true;
+        video_url: true;
+        code_repository_url: true;
+        project_page_url: true;
+        is_peer_reviewed: true;
+        publication_status: true;
+        authors_full_string: true;
+        authors: {
+          select: {
+            author_order: true;
+            is_corresponding_author: true;
+            author: {
+              select: { id: true; name_en: true; name_zh: true };
+            };
+          };
+          orderBy: { author_order: "asc" };
+        };
+      };
+    }>;
+
+    let publicationsFormatted: PublicationInfo[] = memberPublicationsRaw.map(
+      (p: PublicationWithAuthorsPayload): PublicationInfo => {
         // 将内部作者信息提取到 Map 中，方便按 order 查找
         const internalAuthorsMap = new Map<
           number,
@@ -374,12 +432,48 @@ export async function getMemberProfileData(
           });
         }
 
-        // 移除原始的 authors 关联数据，只保留 displayAuthors
-        const { authors, ...restOfPub } = p;
+        // Get the featured status and order from the map
+        const authorDetails = pubAuthorDetailsMap.get(p.id) || { isFeatured: false, order: null };
 
-        return { ...restOfPub, displayAuthors };
+        // Construct the final PublicationInfo object explicitly
+        // Ensuring all fields required by PublicationInfo are present and correctly typed
+        return {
+            id: p.id,
+            title: p.title,
+            year: p.year,
+            venue: p.venue,
+            ccf_rank: p.ccf_rank,
+            pdf_url: p.pdf_url,
+            code_repository_url: p.code_repository_url,
+            project_page_url: p.project_page_url,
+            video_url: p.video_url,
+            slides_url: p.slides_url,
+            number: p.number,
+            volume: p.volume,
+            pages: p.pages,
+            publisher: p.publisher,
+            abstract: p.abstract,
+            type: p.type,
+            displayAuthors: displayAuthors,
+            isFeatured: authorDetails.isFeatured,
+            profileDisplayOrder: authorDetails.order,
+            // publicationAuthors: p.authors // Removed: Not assigning raw authors relation
+        };
       },
     );
+
+    // Sort the formatted publications based on profileDisplayOrder
+    publicationsFormatted.sort((a, b) => {
+        const orderA = a.profileDisplayOrder ?? Infinity; // Treat null/undefined as last
+        const orderB = b.profileDisplayOrder ?? Infinity;
+        if (orderA !== orderB) {
+            return orderA - orderB; // Sort by order first
+        }
+        // If order is the same or both are null, fallback to year descending
+        const yearA = a.year ?? 0;
+        const yearB = b.year ?? 0;
+        return yearB - yearA;
+    });
 
     // 4. 计算显示状态
     const displayStatus = calculateMemberGradeStatus(member);
