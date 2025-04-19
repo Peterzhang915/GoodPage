@@ -13,7 +13,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { toast } from 'sonner';
 import type { ProjectFormData } from '@/app/actions/projectActions'; // Import the type
-import type { Project, ProjectMember } from '@/lib/prisma'; // Import Prisma types
+// Import Prisma types directly from @prisma/client
+import type { Project, ProjectMember } from '@prisma/client';
 
 // Define the Zod schema again here or import if preferred and possible
 // For simplicity, defining again, ensure it matches the Action's schema

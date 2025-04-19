@@ -295,7 +295,7 @@ async function main() {
                  // If only end year exists, it's recent enough
                  return true;
               }
-          } else {
+    } else {
               // End year is too old
               return false;
           }
@@ -707,12 +707,12 @@ async function main() {
 
 // --- 执行主函数并处理结果 --- Corrected promise handling structure
 main()
-  .then(async () => {
+    .then(async () => {
     console.log("Test data seeding successful!");
-    await prisma.$disconnect();
-  })
-  .catch(async (e) => {
+        await prisma.$disconnect();
+    })
+    .catch(async (e) => {
     console.error("Error seeding test data:", e);
-    await prisma.$disconnect();
-    process.exit(1);
+        await prisma.$disconnect();
+        process.exit(1);
   }); // Ensure semicolon is here if needed, or just end

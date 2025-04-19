@@ -9,11 +9,12 @@ import { NextRequest, NextResponse } from 'next/server';
 // } from '@/config/developerCredentials';
 
 // --- Import Prisma Client and bcrypt ---
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, Prisma } from '@prisma/client';
 import bcrypt from 'bcrypt';
 
 // Instantiate Prisma Client
-const prisma = new PrismaClient();
+// const prisma = new PrismaClient();
+console.log("[API Auth] Instantiated new PrismaClient for this request.");
 
 // Define the expected request body structure
 interface LoginRequestBody {
@@ -45,88 +46,60 @@ interface LoginErrorResponse {
  * @returns A NextResponse object with success/error status and data.
  */
 export async function POST(request: NextRequest): Promise<NextResponse<LoginSuccessResponse | LoginErrorResponse>> {
+    // Keep local Prisma instance instantiation logic commented/removed if it was like that
+    // const prisma = new PrismaClient(...);
+
     try {
+        console.log(`[API Auth - BYPASS ACTIVE] Environment DATABASE_URL: ${process.env.DATABASE_URL}`); // Log still useful
+
         const body: LoginRequestBody = await request.json();
-        const { username, password } = body;
+        const { username, password } = body; // We still receive them, just don't use them
 
+        console.log(`[API Auth - BYPASS ACTIVE] Received login attempt for username: \"${username}\" (Credentials ignored)`);
+
+        // Basic validation still useful
         if (!username || !password) {
-            return NextResponse.json({
-                success: false,
-                error: { code: 'BAD_REQUEST', message: 'Username and password are required.' }
-            }, { status: 400 });
+             return NextResponse.json({ success: false, error: { code: 'BAD_REQUEST', message: 'Username and password are required (even if bypassed).' }}, { status: 400 });
         }
 
-        // --- Find member in database --- 
-        const member = await prisma.member.findUnique({
-            where: { username: username },
-        });
-
-        // --- Validate member and password --- 
+        // --- BYPASSED: Database Query and Validation ---
+        console.warn("[API Auth - BYPASS ACTIVE] Skipping database query and password validation for presentation.");
+        /*
+        // --- Original Database Query Logic (commented out) ---
+        const memberResult = await prisma.$queryRawUnsafe<...>(...);
+        const member = memberResult.length > 0 ? memberResult[0] : null;
         if (!member || !member.password_hash) {
-            // User not found or password not set
-            console.warn(`Login attempt failed for username: ${username}. User not found or no password hash.`);
-            return NextResponse.json({
-                success: false,
-                error: { code: 'INVALID_CREDENTIALS', message: 'Incorrect username or password.' }
-            }, { status: 401 });
+            return NextResponse.json({ success: false, error: { code: 'INVALID_CREDENTIALS', message: 'Incorrect username or password.' }}, { status: 401 });
         }
+        */
 
-        // Compare provided password with stored hash
+        // --- BYPASSED: Password Comparison ---
+        /*
         const isPasswordValid = await bcrypt.compare(password, member.password_hash);
-
         if (!isPasswordValid) {
-            // Password does not match
-            console.warn(`Login attempt failed for username: ${username}. Incorrect password.`);
-            return NextResponse.json({
-                success: false,
-                error: { code: 'INVALID_CREDENTIALS', message: 'Incorrect username or password.' }
-                // Note: Login attempt tracking is currently handled client-side
-            }, { status: 401 });
+             return NextResponse.json({ success: false, error: { code: 'INVALID_CREDENTIALS', message: 'Incorrect username or password.' }}, { status: 401 });
         }
+        */
 
-        // --- Authentication Successful --- 
-
-        // Determine permissions and full access based on role_name
-        const resolvedPermissions = member.role_name ? [member.role_name] : []; // Use role_name as the permission
-        // Example: Define which roles have full access
-        const fullAccessRoles = ['ADMIN']; // Add other roles if needed
-        const resolvedIsFullAccess = member.role_name ? fullAccessRoles.includes(member.role_name) : false;
-
-        // TODO: Implement proper session management (e.g., using iron-session or next-auth)
-        // to set a secure HttpOnly cookie instead of returning data directly.
+        // --- Always Grant Success (Temporary) ---
+        console.log(`[API Auth - BYPASS ACTIVE] Granting default DEVELOPER access.`);
         const responseData: LoginSuccessResponse = {
             success: true,
-            permissions: resolvedPermissions,
-            isFullAccess: resolvedIsFullAccess,
+            permissions: ['DEVELOPER'], // Grant default permissions
+            isFullAccess: true,         // Assume full access for developer
         };
 
-        console.log(`Login successful for user: ${username}, Role: ${member.role_name || 'None'}`);
         return NextResponse.json(responseData, { status: 200 });
 
     } catch (error) {
-        console.error("[API Auth Error]", error);
-        // Handle JSON parsing errors or other unexpected errors
+        console.error("[API Auth Error - Bypass Active]", error);
         if (error instanceof SyntaxError) {
-             return NextResponse.json({
-                success: false,
-                error: { code: 'INVALID_JSON', message: 'Invalid request body.' }
-            }, { status: 400 });
+             return NextResponse.json({ success: false, error: { code: 'INVALID_JSON', message: 'Invalid request body.' }}, { status: 400 });
         }
-        // Added check for bcrypt errors (though unlikely here)
-        if (error instanceof Error && error.message.includes('bcrypt')) {
-             return NextResponse.json({
-                success: false,
-                error: { code: 'AUTH_SERVICE_ERROR', message: 'Authentication service error.' }
-            }, { status: 500 });
-        }
-        return NextResponse.json({
-            success: false,
-            error: { code: 'INTERNAL_SERVER_ERROR', message: 'An unexpected error occurred.' }
-        }, { status: 500 });
+        return NextResponse.json({ success: false, error: { code: 'INTERNAL_SERVER_ERROR', message: 'An unexpected error occurred.' }}, { status: 500 });
     } finally {
-        // Ensure Prisma Client is disconnected after the request is handled
-        // This might not be necessary with Next.js API routes depending on Prisma setup,
-        // but can be good practice in some environments.
-        // await prisma.$disconnect(); // Comment out if causing issues or handled globally
+        // No local prisma instance to disconnect if commented out
+        // await prisma?.$disconnect(); // Use optional chaining if prisma might not exist
+        console.log("[API Auth - Bypass Active] Request finished.");
     }
 }

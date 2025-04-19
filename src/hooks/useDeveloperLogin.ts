@@ -78,6 +78,7 @@ export interface UseDeveloperLoginReturn {
   handleMotdComplete: () => void;
   currentBootMessageIndex: number;
   bootMessages: string[];
+  handleLogout: () => void;
 }
 
 const MAX_LOGIN_ATTEMPTS = 5;
@@ -107,23 +108,46 @@ const calculateRemainingLockout = (lockoutTime: number | null): number => {
   return remaining > 0 ? remaining : 0;
 };
 
+// Define localStorage keys
+const AUTH_DETAILS_KEY = 'developerAuthDetails';
+
 export const useDeveloperLogin = (): UseDeveloperLoginReturn => {
   const router = useRouter();
-  // Get the login action from the Zustand store
   const zustandLogin = useAuthStore((state) => state.login);
+  const zustandLogout = useAuthStore((state) => state.logout); // Get logout action
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated); // Get current auth state
 
   // --- State Variables ---
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [loginStage, setLoginStage] = useState<LoginStage>("awaitingPassword");
+  // Initialize loginStage based on persisted state
+  const [loginStage, setLoginStage] = useState<LoginStage>(() => {
+    // Check localStorage only on the client side
+    if (typeof window !== 'undefined') {
+      const storedAuth = localStorage.getItem(AUTH_DETAILS_KEY);
+      if (storedAuth) {
+        try {
+          const parsedAuth = JSON.parse(storedAuth);
+          if (parsedAuth && parsedAuth.permissions && typeof parsedAuth.isFullAccess === 'boolean') {
+            // Don't update Zustand here, do it in useEffect
+            return "loginComplete"; // Start in complete state
+          }
+        } catch (e) {
+          console.error("Error parsing stored auth details:", e);
+          localStorage.removeItem(AUTH_DETAILS_KEY); // Clear invalid item
+        }
+      }
+    }
+    return "awaitingPassword"; // Default state
+  });
   const [error, setError] = useState<string | null>(null);
   const [motdContent] = useState<MotdLine[]>(developerMotd);
-  const [displayMotd, setDisplayMotd] = useState(true);
-  const [isMotdComplete, setIsMotdComplete] = useState(false);
+  // Adjust initial MOTD display based on initial login stage
+  const [displayMotd, setDisplayMotd] = useState(loginStage === 'awaitingPassword');
+  const [isMotdComplete, setIsMotdComplete] = useState(loginStage !== 'awaitingPassword');
   const [motdIndex, setMotdIndex] = useState(0);
   const [processingIndex, setProcessingIndex] = useState(0);
   const [spinnerChar, setSpinnerChar] = useState(SPINNER_CHARS[0]);
-  const [authDetails, setAuthDetails] = useState<{ permissions: string[]; isFullAccess: boolean } | null>(null);
   const [currentBootMessageIndex, setCurrentBootMessageIndex] = useState(-1);
 
   const [loginAttempts, setLoginAttempts] = useSessionStorage<number>(
@@ -152,6 +176,33 @@ export const useDeveloperLogin = (): UseDeveloperLoginReturn => {
     : null;
 
   // --- Effects ---
+
+  // Effect to initialize Zustand state from localStorage on mount
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const storedAuth = localStorage.getItem(AUTH_DETAILS_KEY);
+      if (storedAuth) {
+        try {
+          const parsedAuth: { permissions: string[]; isFullAccess: boolean } = JSON.parse(storedAuth);
+          // Only update Zustand if it's not already authenticated
+          if (parsedAuth && parsedAuth.permissions && typeof parsedAuth.isFullAccess === 'boolean' && !isAuthenticated) {
+            console.log("Restoring auth state from localStorage...");
+            zustandLogin(parsedAuth.permissions, parsedAuth.isFullAccess);
+            // Ensure login stage reflects the restored state
+            if (loginStage !== 'loginComplete') {
+                setLoginStage('loginComplete');
+                setIsMotdComplete(true);
+                setDisplayMotd(false);
+            }
+          }
+        } catch (e) {
+          console.error("Error parsing stored auth details during mount:", e);
+          localStorage.removeItem(AUTH_DETAILS_KEY);
+        }
+      }
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Run only once on mount
 
   useEffect(() => {
     if (!displayMotd || isMotdComplete) return;
@@ -266,36 +317,6 @@ export const useDeveloperLogin = (): UseDeveloperLoginReturn => {
     };
   }, [loginStage]); // Only depend on loginStage
 
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Enter" && loginStage === "welcome") {
-        event.preventDefault();
-        console.log("Enter pressed in welcome stage, proceeding...");
-        if (authDetails) {
-          zustandLogin(authDetails.permissions, authDetails.isFullAccess);
-          setLoginStage("loginComplete");
-          router.push("/developer");
-        } else {
-          console.error("Auth details missing when trying to complete login.");
-          setError("An internal error occurred during login.");
-          setLoginStage("awaitingPassword");
-        }
-      }
-    };
-
-    if (loginStage === "welcome") {
-      document.addEventListener("keydown", handleKeyDown);
-      console.log("Welcome stage active, listening for Enter key...");
-    } else {
-      document.removeEventListener("keydown", handleKeyDown);
-    }
-
-    return () => {
-      document.removeEventListener("keydown", handleKeyDown);
-      console.log("Cleaning up Enter key listener.");
-    };
-  }, [loginStage, authDetails, router, zustandLogin]);
-
   // --- Handlers ---
 
   const handleMotdCompleteInternal = useCallback(() => {
@@ -322,50 +343,61 @@ export const useDeveloperLogin = (): UseDeveloperLoginReturn => {
 
       setLoginStage("validating");
       setError(null);
-      setAuthDetails(null);
-      setCurrentBootMessageIndex(-1); // Reset boot index here too
+      setCurrentBootMessageIndex(-1);
 
       try {
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
+        await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate delay
+
         const response = await fetch("/api/auth/developer", {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ username, password }),
         });
 
         const data: LoginApiResponse = await response.json();
 
         if (!response.ok || !data.success) {
-          const errorMessage = data.success === false 
-            ? data.error.message 
-            : `API Error: ${response.status} ${response.statusText}`;
-          setError(errorMessage);
-
-          const newAttempts = loginAttempts - 1;
-          setLoginAttempts(newAttempts);
-          if (newAttempts <= 0) {
-            const newLockoutTime = Date.now() + LOCKOUT_DURATION;
-            setLockoutTime(newLockoutTime);
-            setError(
-              `Too many failed attempts. Account locked for ${
-                LOCKOUT_DURATION / 1000 / 60
-              } minutes.`,
-            );
-          } else {
-            setError(`${errorMessage} ${newAttempts} attempts remaining.`);
-          }
-          setLoginStage("awaitingPassword");
-          passwordInputRef.current?.select();
-          return;
+            // ... (error handling: set error, decrement attempts, potential lockout)
+            const errorMessage = data.success === false
+                ? data.error.message
+                : `API Error: ${response.status} ${response.statusText}`;
+            setError(errorMessage);
+            const newAttempts = loginAttempts - 1;
+            setLoginAttempts(newAttempts);
+            if (newAttempts <= 0) {
+                const newLockoutTime = Date.now() + LOCKOUT_DURATION;
+                setLockoutTime(newLockoutTime);
+                setError(`Too many failed attempts. Account locked for ${LOCKOUT_DURATION / 1000 / 60} minutes.`);
+            } else {
+                setError(`${errorMessage} ${newAttempts} attempts remaining.`);
+            }
+            setLoginStage("awaitingPassword");
+            passwordInputRef.current?.select();
+            return;
         }
 
+        // --- Login Successful --- 
         if (data.success === true) {
-          setAuthDetails({ permissions: data.permissions, isFullAccess: data.isFullAccess });
+          // 1. Store auth details in localStorage
+          const authDataToStore = {
+            permissions: data.permissions,
+            isFullAccess: data.isFullAccess,
+            // Add username for potential display later?
+            username: username,
+            timestamp: Date.now() // Add timestamp for potential expiration later
+          };
+          localStorage.setItem(AUTH_DETAILS_KEY, JSON.stringify(authDataToStore));
+          console.log("Auth details saved to localStorage.");
+
+          // 2. Update Zustand store
+          zustandLogin(data.permissions, data.isFullAccess);
+          console.log("Zustand store updated.");
+
+          // 3. Reset login attempts/lockout
           setLoginAttempts(MAX_LOGIN_ATTEMPTS);
           setLockoutTime(null);
+
+          // 4. Transition to next stage (unlocking/welcome)
           setLoginStage("unlocking");
         }
       } catch (err: any) {
@@ -375,13 +407,14 @@ export const useDeveloperLogin = (): UseDeveloperLoginReturn => {
       }
     },
     [
-      username,
+      username, // Add username dependency
       password,
       isLocked,
       loginStage,
       loginAttempts,
       setLoginAttempts,
       setLockoutTime,
+      zustandLogin,
     ],
   );
 
@@ -398,6 +431,129 @@ export const useDeveloperLogin = (): UseDeveloperLoginReturn => {
     },
     [],
   );
+
+  // --- Implement Logout Logic --- 
+  const handleLogout = useCallback(() => {
+    console.log("Logging out developer...");
+    // 1. Clear localStorage
+    localStorage.removeItem(AUTH_DETAILS_KEY);
+    // 2. Clear Zustand store
+    zustandLogout();
+    // 3. Reset local state of the hook
+    setUsername("");
+    setPassword("");
+    setError(null);
+    setLoginAttempts(MAX_LOGIN_ATTEMPTS); // Reset attempts
+    setLockoutTime(null); // Clear lockout
+    setLoginStage("awaitingPassword"); // Go back to login prompt
+    setIsMotdComplete(false); // Re-enable MOTD for next login
+    setDisplayMotd(true);
+    setMotdIndex(0);
+    setCurrentBootMessageIndex(-1); // Reset boot sequence
+    console.log("Developer logged out.");
+    // Optionally redirect, though often handled by consuming component
+    // router.push('/'); 
+  }, [zustandLogout, setLoginAttempts, setLockoutTime]);
+
+  // --- Konami Code Effect (Moved after handler definitions) --- 
+  // (Should only reveal login prompt now)
+  useEffect(() => {
+    const konamiSequence = [
+      'ArrowUp', 'ArrowUp',
+      'ArrowDown', 'ArrowDown',
+      'ArrowLeft', 'ArrowRight',
+      'ArrowLeft', 'ArrowRight',
+      'b', 'a'
+    ];
+    let currentIndex = 0;
+
+    const handleKonami = (event: KeyboardEvent) => {
+      // Only process if awaiting password and not locked
+      if (loginStage !== 'awaitingPassword' || isLocked) return;
+
+      if (event.key.toLowerCase() === konamiSequence[currentIndex].toLowerCase()) {
+        currentIndex++;
+        if (currentIndex === konamiSequence.length) {
+          console.log("Konami Code detected! Revealing login prompt.");
+          currentIndex = 0; // Reset sequence
+
+          // Action: Ensure login form is ready
+          if (!isMotdComplete) {
+            skipMotd(); // skipMotd is now defined before usage
+          }
+
+          // Ensure focus is on the username input
+          setTimeout(() => {
+            usernameInputRef.current?.focus();
+          }, 50);
+        }
+      } else {
+        // Reset sequence logic
+        if (event.key.toLowerCase() === konamiSequence[0].toLowerCase()) {
+          currentIndex = 1;
+        } else {
+          currentIndex = 0;
+        }
+      }
+    };
+
+    // Add listener only when awaiting password and not locked
+    document.addEventListener('keydown', handleKonami);
+    if (loginStage === 'awaitingPassword' && !isLocked) {
+        console.log("Konami Code listener active (Reveal Mode).");
+    }
+
+
+    return () => {
+      document.removeEventListener('keydown', handleKonami);
+    };
+    // Dependencies are correct now
+  }, [loginStage, isLocked, skipMotd, isMotdComplete]);
+
+  // Effect to handle Enter key press in welcome stage to proceed
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      // Check if Enter key is pressed and the stage is welcome
+      if (event.key === "Enter" && loginStage === "welcome") {
+        event.preventDefault();
+        console.log("Enter pressed in welcome stage, proceeding...");
+
+        // Check the global auth state from Zustand
+        // Access the store directly within the handler using useAuthStore.getState()
+        const currentAuthState = useAuthStore.getState();
+
+        if (currentAuthState.isAuthenticated) {
+          // If authenticated (state already set by handleLogin/Konami/initial load),
+          // simply transition to the final stage and navigate.
+          console.log("Authenticated, navigating to /developer");
+          setLoginStage("loginComplete");
+          router.push("/developer");
+        } else {
+          // This case should ideally not happen if logic is correct,
+          // but as a fallback, log an error and reset.
+          console.error("Auth state not found in Zustand store when trying to complete login.");
+          setError("An internal error occurred. Please try logging in again.");
+          // Call logout to ensure clean state
+          handleLogout(); // Reset everything
+        }
+      }
+    };
+
+    // Add listener only when in welcome stage
+    if (loginStage === "welcome") {
+      document.addEventListener("keydown", handleKeyDown);
+      console.log("Welcome stage active, listening for Enter key...");
+    } else {
+      document.removeEventListener("keydown", handleKeyDown);
+    }
+
+    // Cleanup listener
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+      console.log("Cleaning up Enter key listener.");
+    };
+    // Dependency should include loginStage and potentially handleLogout
+  }, [loginStage, router, handleLogout]); // Removed zustandLogin, no longer calling it here
 
   // --- Return Values ---
   return {
@@ -424,5 +580,6 @@ export const useDeveloperLogin = (): UseDeveloperLoginReturn => {
     handleMotdComplete,
     currentBootMessageIndex,
     bootMessages,
+    handleLogout,
   };
 };

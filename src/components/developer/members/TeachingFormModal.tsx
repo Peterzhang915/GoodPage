@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import type { Teaching } from '@/lib/prisma';
+import type { Teaching } from '@prisma/client';
 import type { TeachingFormData } from '@/app/actions/teachingActions'; // Import the form data type
 
 // --- Zod Schema for Teaching Validation ---

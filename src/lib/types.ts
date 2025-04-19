@@ -16,7 +16,7 @@ import type {
   PublicationAuthor,
   MemberStatus, // 确保 MemberStatus 从 @/lib/prisma (或 @prisma/client) 正确导出为值
   Prisma, // Prisma 命名空间，用于 GetPayload
-} from "@/lib/prisma"; // 确保路径正确
+} from "@prisma/client"; // Changed import source
 
 // --- 定义前端需要的复合数据类型 ---
 
