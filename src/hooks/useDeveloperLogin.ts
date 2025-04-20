@@ -111,15 +111,24 @@ const calculateRemainingLockout = (lockoutTime: number | null): number => {
 // Define localStorage keys
 const AUTH_DETAILS_KEY = 'developerAuthDetails';
 
+// Define type for temporary auth data storage
+interface TempAuthData {
+    permissions: string[];
+    isFullAccess: boolean;
+    username: string; // Keep username for potential use
+}
+
 export const useDeveloperLogin = (): UseDeveloperLoginReturn => {
   const router = useRouter();
   const zustandLogin = useAuthStore((state) => state.login);
-  const zustandLogout = useAuthStore((state) => state.logout); // Get logout action
-  const isAuthenticated = useAuthStore((state) => state.isAuthenticated); // Get current auth state
+  const zustandLogout = useAuthStore((state) => state.logout);
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
 
   // --- State Variables ---
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  // Add state for temporary auth data storage
+  const [tempAuthData, setTempAuthData] = useState<TempAuthData | null>(null);
   // Initialize loginStage based on persisted state
   const [loginStage, setLoginStage] = useState<LoginStage>(() => {
     // Check localStorage only on the client side
@@ -284,6 +293,7 @@ export const useDeveloperLogin = (): UseDeveloperLoginReturn => {
     }
   }, [isMotdComplete, isLocked, loginStage]);
 
+  // --- MODIFIED Effect for Boot Animation (unlocking stage) ---
   useEffect(() => {
     let bootInterval: NodeJS.Timeout | null = null;
     let welcomeTimeout: NodeJS.Timeout | null = null;
@@ -296,9 +306,15 @@ export const useDeveloperLogin = (): UseDeveloperLoginReturn => {
           if (nextIndex >= bootMessages.length) {
             // Last message shown, clear interval and set timeout for welcome stage
             if (bootInterval) clearInterval(bootInterval);
+            
+            // --- MODIFICATION --- 
+            // Just set the stage to welcome. DO NOT update Zustand/localStorage here.
             welcomeTimeout = setTimeout(() => {
+              console.log("Boot sequence complete. Setting stage to welcome.");
               setLoginStage("welcome");
             }, FINAL_BOOT_PAUSE);
+            // --- END MODIFICATION --- 
+            
             return prevIndex; // Stay at the last index
           } else {
             return nextIndex;
@@ -315,7 +331,8 @@ export const useDeveloperLogin = (): UseDeveloperLoginReturn => {
       if (bootInterval) clearInterval(bootInterval);
       if (welcomeTimeout) clearTimeout(welcomeTimeout);
     };
-  }, [loginStage]); // Only depend on loginStage
+  // REMOVED zustandLogin from dependencies here
+  }, [loginStage]); 
 
   // --- Handlers ---
 
@@ -336,6 +353,7 @@ export const useDeveloperLogin = (): UseDeveloperLoginReturn => {
     handleMotdCompleteInternal();
   }, [handleMotdCompleteInternal]);
 
+  // --- MODIFIED handleLogin Handler ---
   const handleLogin = useCallback(
     async (event?: React.FormEvent<HTMLFormElement>) => {
       if (event) event.preventDefault();
@@ -378,27 +396,25 @@ export const useDeveloperLogin = (): UseDeveloperLoginReturn => {
 
         // --- Login Successful --- 
         if (data.success === true) {
-          // 1. Store auth details in localStorage
-          const authDataToStore = {
+          // --- MODIFICATION START ---
+          // 1. Store successful auth data in TEMPORARY state
+          setTempAuthData({
             permissions: data.permissions,
             isFullAccess: data.isFullAccess,
-            // Add username for potential display later?
-            username: username,
-            timestamp: Date.now() // Add timestamp for potential expiration later
-          };
-          localStorage.setItem(AUTH_DETAILS_KEY, JSON.stringify(authDataToStore));
-          console.log("Auth details saved to localStorage.");
+            username: username // Store username from input
+          });
+          console.log("Auth details stored in temporary state.");
 
-          // 2. Update Zustand store
-          zustandLogin(data.permissions, data.isFullAccess);
-          console.log("Zustand store updated.");
-
-          // 3. Reset login attempts/lockout
+          // 2. Reset login attempts/lockout (this is fine)
           setLoginAttempts(MAX_LOGIN_ATTEMPTS);
           setLockoutTime(null);
+          console.log("Attempts/Lockout reset.");
 
-          // 4. Transition to next stage (unlocking/welcome)
-          setLoginStage("unlocking");
+          // 3. Transition to unlocking stage (animation starts)
+          console.log("Setting login stage to unlocking - animation should begin.");
+          setLoginStage("unlocking"); 
+          // DO NOT update Zustand or localStorage here.
+          // --- MODIFICATION END ---
         }
       } catch (err: any) {
         console.error("Login fetch error:", err);
@@ -407,14 +423,14 @@ export const useDeveloperLogin = (): UseDeveloperLoginReturn => {
       }
     },
     [
-      username, // Add username dependency
+      username, // Need username to store it temporarily
       password,
       isLocked,
       loginStage,
       loginAttempts,
       setLoginAttempts,
       setLockoutTime,
-      zustandLogin,
+      // zustandLogin is NOT needed here anymore
     ],
   );
 
@@ -510,50 +526,65 @@ export const useDeveloperLogin = (): UseDeveloperLoginReturn => {
     // Dependencies are correct now
   }, [loginStage, isLocked, skipMotd, isMotdComplete]);
 
-  // Effect to handle Enter key press in welcome stage to proceed
+  // --- MODIFIED Effect for Enter Key Press (welcome stage) ---
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      // Check if Enter key is pressed and the stage is welcome
       if (event.key === "Enter" && loginStage === "welcome") {
         event.preventDefault();
         console.log("Enter pressed in welcome stage, proceeding...");
 
-        // Check the global auth state from Zustand
-        // Access the store directly within the handler using useAuthStore.getState()
-        const currentAuthState = useAuthStore.getState();
+        // --- MODIFICATION START ---
+        // Now we commit the temporarily stored auth data
+        if (tempAuthData) {
+          console.log("Committing auth data from temporary state...");
+          // 1. Update Zustand store
+          zustandLogin(tempAuthData.permissions, tempAuthData.isFullAccess);
+          
+          // 2. Save to permanent localStorage
+          const authDataToStore = {
+            permissions: tempAuthData.permissions,
+            isFullAccess: tempAuthData.isFullAccess,
+            username: tempAuthData.username,
+            timestamp: Date.now()
+          };
+          localStorage.setItem(AUTH_DETAILS_KEY, JSON.stringify(authDataToStore));
+          console.log("Auth details saved permanently to localStorage.");
 
-        if (currentAuthState.isAuthenticated) {
-          // If authenticated (state already set by handleLogin/Konami/initial load),
-          // simply transition to the final stage and navigate.
-          console.log("Authenticated, navigating to /developer");
+          // 3. Clear the temporary state
+          setTempAuthData(null);
+
+          // 4. Transition to final stage
           setLoginStage("loginComplete");
-          router.push("/developer");
+          
+          // NOTE: No need for router.push here. The page component will react to 
+          // the zustandLogin call and render the dashboard automatically.
+          console.log("Login complete. Dashboard should now render.");
+
         } else {
-          // This case should ideally not happen if logic is correct,
-          // but as a fallback, log an error and reset.
-          console.error("Auth state not found in Zustand store when trying to complete login.");
-          setError("An internal error occurred. Please try logging in again.");
-          // Call logout to ensure clean state
-          handleLogout(); // Reset everything
+          // This case indicates an error in the flow (temp data missing)
+          console.error("Temporary auth data was missing when Enter was pressed in welcome stage!");
+          setError("An internal error occurred during login finalization. Please try again.");
+          // Trigger full logout/reset
+          handleLogout(); 
         }
+        // --- MODIFICATION END ---
       }
     };
 
-    // Add listener only when in welcome stage
     if (loginStage === "welcome") {
       document.addEventListener("keydown", handleKeyDown);
       console.log("Welcome stage active, listening for Enter key...");
     } else {
+      // Ensure listener is removed if stage changes away from welcome
       document.removeEventListener("keydown", handleKeyDown);
     }
 
     // Cleanup listener
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
-      console.log("Cleaning up Enter key listener.");
     };
-    // Dependency should include loginStage and potentially handleLogout
-  }, [loginStage, router, handleLogout]); // Removed zustandLogin, no longer calling it here
+  // Dependencies: loginStage, tempAuthData, zustandLogin, handleLogout
+  }, [loginStage, tempAuthData, zustandLogin, handleLogout]); 
 
   // --- Return Values ---
   return {
