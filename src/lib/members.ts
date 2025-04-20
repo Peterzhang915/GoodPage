@@ -1,9 +1,9 @@
 // src/lib/members.ts
 import prisma from "@/lib/prisma"; // 导入 Prisma Client 单例实例
-// 导入 Enum 和 Prisma 命名空间 (确保是从 @/lib/prisma 或 @prisma/client 正确导入值)
-import { MemberStatus, Prisma, Education } from "@/lib/prisma";
-// 导入基础模型类型 (通常已由 prisma.ts 重新导出)
+// 从 @prisma/client 导入 Prisma 命名空间和所有 Enum 值
+import { Prisma, MemberStatus, Education } from "@prisma/client"; // Import Enums like MemberStatus and Models like Education as values
 import type {
+  // 从 @prisma/client 导入所有模型类型
   Member,
   Publication,
   Award,
@@ -11,11 +11,12 @@ import type {
   ProjectMember,
   Teaching,
   Presentation,
-  SoftwareDataset,
+  SoftwareDataset, // Import Model types using 'import type'
   Patent,
   AcademicService,
   News,
-} from "@/lib/prisma";
+  // Education type is already imported as a value above, which also provides the type
+} from "@prisma/client";
 // 导入在新文件中定义的复合类型
 import type {
   MemberForCard,
@@ -66,8 +67,8 @@ export function calculateMemberGradeStatus(
     case MemberStatus.OTHER:
     default:
       // Ensure a non-null string is always returned
-      const statusString = member.status 
-          ? member.status.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
+      const statusString = member.status
+          ? member.status.replace(/_/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())
           : "Member"; // Default if status is somehow null/undefined
       return statusString || "Unknown Status"; // Final fallback
   }
@@ -311,7 +312,7 @@ export async function getMemberProfileData(
     const publicationAuthorRecords = await prisma.publicationAuthor.findMany({
         where: {
             member_id: id,
-            publication_id: { in: memberPublicationsRaw.map(p => p.id) }
+            publication_id: { in: memberPublicationsRaw.map((p: PublicationWithAuthorsPayload) => p.id) }
         },
         select: { // Select only the necessary fields
             publication_id: true,
@@ -322,7 +323,7 @@ export async function getMemberProfileData(
 
     // Create a map for easy lookup of isFeatured and order by publication_id
     const pubAuthorDetailsMap = new Map<number, { isFeatured: boolean; order: number | null }>();
-    publicationAuthorRecords.forEach(pa => {
+    publicationAuthorRecords.forEach((pa: { publication_id: number; isFeaturedOnProfile: boolean | null; profileDisplayOrder: number | null }) => {
         pubAuthorDetailsMap.set(pa.publication_id, {
             isFeatured: pa.isFeaturedOnProfile ?? false,
             order: pa.profileDisplayOrder // Keep null as null
@@ -377,7 +378,7 @@ export async function getMemberProfileData(
             is_corresponding: boolean;
           }
         >();
-        p.authors.forEach((ap) => {
+        p.authors.forEach((ap: { author_order: number; is_corresponding_author: boolean; author: { id: string; name_en: string; name_zh: string | null } }) => {
           internalAuthorsMap.set(ap.author_order, {
             id: ap.author.id,
             name_en: ap.author.name_en,
@@ -392,9 +393,9 @@ export async function getMemberProfileData(
         if (authorString) {
           const fragments = authorString
             .split(";")
-            .map((f) => f.trim())
-            .filter((f) => f);
-          fragments.forEach((fragment, index) => {
+            .map((f: string) => f.trim())
+            .filter((f: string) => f);
+          fragments.forEach((fragment: string, index: number) => {
             const internalAuthor = internalAuthorsMap.get(index);
             if (internalAuthor) {
               // 匹配到内部作者
@@ -420,7 +421,7 @@ export async function getMemberProfileData(
           console.warn(
             `Publication ID ${p.id} is missing authors_full_string. Falling back to internal authors only.`,
           );
-          p.authors.forEach((ap) => {
+          p.authors.forEach((ap: { author_order: number; is_corresponding_author: boolean; author: { id: string; name_en: string; name_zh: string | null } }) => {
             displayAuthors.push({
               type: "internal",
               id: ap.author.id,
@@ -627,8 +628,10 @@ export async function createEducationRecord(memberId: string, data: EducationFor
     console.error(`为成员 ${memberId} 创建教育记录失败:`, error);
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
       if (error.code === 'P2003') {
-        throw new Error(`Invalid member ID: ${memberId}`);
+        console.error(`Foreign key constraint failed (P2003) for member ID: ${memberId}`);
       }
+      // It's often better to let the original error propagate or wrap it
+      // throw new Error(`Database error during education record creation: ${error.message}`);
     }
     throw new Error("Failed to create education record.");
   }

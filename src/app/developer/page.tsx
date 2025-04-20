@@ -9,11 +9,17 @@ import DeveloperDashboard from "@/components/developer/DeveloperDashboard";
 import { useDeveloperMode } from "@/contexts/DeveloperModeContext";
 // Import the Zustand store hook
 import { useAuthStore } from "@/store/authStore";
+// Import the login hook to get its handleLogout function
+import { useDeveloperLogin } from "@/hooks/useDeveloperLogin";
 
 // --- Developer Page Component --- //
 const DeveloperPage: React.FC = () => {
   // Get state and actions from Zustand store
-  const { isAuthenticated, permissions, isFullAccess, logout } = useAuthStore();
+  const { isAuthenticated, permissions, isFullAccess } = useAuthStore();
+
+  // Get the logout handler from the useDeveloperLogin hook
+  // Note: We might not need all return values, but we need the hook instance
+  const { handleLogout: developerHookLogout } = useDeveloperLogin();
 
   // Local UI state remains
   const [activeTool, setActiveTool] = useState<string | null>(null);
@@ -46,21 +52,6 @@ const DeveloperPage: React.FC = () => {
   const handleCloseTool = useCallback(() => {
     setActiveTool(null);
   }, []);
-
-  // --- Logout Handler (Updated) ---
-  const handleLogout = useCallback(() => {
-    logout(); // Call the logout action from the store
-    // UI cleanup remains here
-    setIsDeveloperToolsUIVisible(false);
-    setActiveTool(null);
-    setShowDeveloperTools(false); // Explicitly hide tools on logout action
-    // Optional: Keep API call for backend session invalidation if needed,
-    // store logout might handle token removal, but explicit server logout is good practice.
-    fetch("/api/auth/developer/logout", { method: "POST" }).catch((err) =>
-      console.error("Logout API call failed:", err),
-    );
-    console.log("User logout initiated via handleLogout. Setting DevToolsVisible=false.");
-  }, [logout, setIsDeveloperToolsUIVisible]); // Dependencies updated
 
   // --- Effect for Body Class ---
   useEffect(() => {
@@ -96,7 +87,7 @@ const DeveloperPage: React.FC = () => {
   if (isAuthenticated && showDeveloperTools) {
     return (
       <DeveloperDashboard
-        onLogout={handleLogout}          // Keep logout handler prop
+        onLogout={developerHookLogout} // Pass the logout handler from the hook
       />
     );
   }
