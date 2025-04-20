@@ -75,20 +75,25 @@ export default async function MemberEditPage({ params }: MemberEditPageProps) {
 
   // --- Render the Editor Component ---
   return (
-    <div className="container mx-auto p-4 md:p-6 lg:p-8 dark:bg-gray-900 dark:text-gray-100 min-h-screen">
+    <div className="container mx-auto p-4 md:p-6 lg:p-8 bg-gray-900 text-gray-100 min-h-screen">
 
-      {/* Back Button */}
-      <div className="mb-4"> {/* Add some margin below the button */}
+      {/* Back Button - Changed to primary blue style */}
+      <div className="mb-4">
         <Link href="/developer" passHref>
-          <Button variant="outline" size="sm" className="dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white">
+          <Button 
+            variant="default" // CHANGED to default
+            size="sm" 
+            // CHANGED to blue style
+            className="inline-flex items-center text-xs bg-blue-600 hover:bg-blue-700 text-white focus-visible:ring-blue-500 disabled:opacity-50 disabled:bg-blue-800"
+          >
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Developer Tools
           </Button>
         </Link>
       </div>
 
-      {/* Page Title */}
-      <h1 className="text-2xl font-bold mb-6 border-b pb-2 dark:text-green-400 dark:border-gray-700">
+      {/* Page Title - Ensure text color is appropriate for dark bg */}
+      <h1 className="text-2xl font-bold mb-6 border-b pb-2 text-green-400 border-gray-700">
         Edit Profile: {memberData.name_en} ({memberData.name_zh || 'N/A'})
       </h1>
 

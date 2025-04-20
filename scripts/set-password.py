@@ -92,35 +92,3 @@ def set_password():
 
 if __name__ == "__main__":
     set_password() 
-        print(f'✅ Successfully updated password hash for user "{username}".')
-        print(f'🔑 Remember the password you provided: "{new_password}"')
-
-    except sqlite3.Error as e:
-        print(f"An SQLite error occurred: {e}")
-        sys.exit(1)
-    except Exception as e:
-        print(f"An unexpected error occurred: {e}")
-        sys.exit(1)
-    finally:
-        if conn:
-            conn.close()
-            print('Database connection closed.')
-
-if __name__ == "__main__":
-    set_password() 
-        print(f'✅ Successfully updated password hash for user "{username}".')
-        print(f'🔑 Remember the password you provided: "{new_password}"')
-
-    except sqlite3.Error as e:
-        print(f"An SQLite error occurred: {e}")
-        sys.exit(1)
-    except Exception as e:
-        print(f"An unexpected error occurred: {e}")
-        sys.exit(1)
-    finally:
-        if conn:
-            conn.close()
-            print('Database connection closed.')
-
-if __name__ == "__main__":
-    set_password() 
