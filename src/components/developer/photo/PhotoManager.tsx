@@ -21,13 +21,6 @@ const PhotoManager: React.FC<PhotoManagerProps> = ({ onClose }) => {
           <Image size={24} /> {/* 添加图标 */}
           Manage Photos (Coming Soon)
         </h2>
-        <button
-          onClick={onClose}
-          className="inline-flex items-center px-3 py-1.5 border border-gray-600 rounded-md shadow-sm text-xs font-medium text-gray-300 bg-gray-700 hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-indigo-500 transition-colors"
-        >
-          <ArrowLeft size={14} className="mr-1" />
-          Back to Tools
-        </button>
       </div>
 
       {/* 主要内容区域 */}

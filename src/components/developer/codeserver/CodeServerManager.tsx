@@ -165,14 +165,6 @@ const CodeServerManager: React.FC<CodeServerManagerProps> = ({ onClose }) => {
           <Server size={24} />
           Manage Code Servers
         </h2>
-        <button
-          onClick={onClose}
-          disabled={!!editingServerId} // 编辑时禁用返回按钮，防止意外丢失编辑
-          className="inline-flex items-center px-3 py-1.5 border border-gray-600 rounded-md shadow-sm text-xs font-medium text-gray-300 bg-gray-700 hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-indigo-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          <ArrowLeft size={14} className="mr-1" />
-          Back to Tools
-        </button>
       </div>
 
       {/* 添加服务器表单 */}

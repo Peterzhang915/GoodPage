@@ -122,15 +122,6 @@ const MemberManager: React.FC<MemberManagerProps> = ({ onClose }) => {
             {isLoading ? <Loader2 size={14} className="mr-1 animate-spin"/> : <RefreshCw size={14} className="mr-1"/>}
             {isLoading ? "Refreshing..." : "Refresh"}
           </Button>
-          <Button
-            variant="default"
-            size="sm"
-            onClick={onClose}
-            className="inline-flex items-center text-xs bg-blue-600 hover:bg-blue-700 text-white focus-visible:ring-blue-500 disabled:opacity-50 disabled:bg-blue-800"
-            title="Back to Developer Tools"
-          >
-            <ArrowLeft size={14} className="mr-1" /> Back
-          </Button>
         </div>
       </div>
 
