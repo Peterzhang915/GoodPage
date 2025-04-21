@@ -15,17 +15,21 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Loader2, Save, XCircle } from 'lucide-react';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { PublicationType } from '@prisma/client';
 
-// --- Simplified Zod Schema --- 
+// --- Zod Schema --- 
 const publicationFormSchema = z.object({
   title: z.string().min(1, { message: 'Title is required.' }),
   year: z.coerce.number()
     .int()
     .min(1900, { message: 'Year must be 1900 or later.' })
     .max(new Date().getFullYear() + 5, { message: 'Year seems too far in the future.' }),
-  // Temporarily commenting out other fields
-  // venue: z.string().nullable().optional().transform(val => val === '' ? null : val), 
-  // ... other fields ...
+  venue: z.string().nullable().optional().transform(val => val === '' ? null : val), 
+  authors_full_string: z.string().nullable().optional().transform(val => val === '' ? null : val),
+  pdf_url: z.string().url({ message: "Please enter a valid URL." }).nullable().optional().transform(val => val === '' ? null : val),
+  type: z.nativeEnum(PublicationType).optional(),
 });
 
 // Infer TypeScript type
@@ -46,14 +50,16 @@ export const PublicationForm: React.FC<PublicationFormProps> = ({
   isLoading: isSubmitting = false,
 }) => {
 
-  // Setup react-hook-form with simplified defaults
+  // Setup react-hook-form with explicit type and simplified defaults
   const form = useForm<PublicationFormData>({
     resolver: zodResolver(publicationFormSchema),
     defaultValues: {
       title: initialData?.title || '',
       year: initialData?.year || new Date().getFullYear(),
-      // venue: initialData?.venue ?? null,
-      // ... other defaults ...
+      venue: initialData?.venue ?? null,
+      authors_full_string: initialData?.authors_full_string ?? null,
+      pdf_url: initialData?.pdf_url ?? null,
+      type: initialData?.type ?? PublicationType.CONFERENCE,
     },
   });
 
@@ -107,14 +113,96 @@ export const PublicationForm: React.FC<PublicationFormProps> = ({
           }}
         />
 
-        {/* --- Temporarily Hidden Fields --- */}
-        {/* 
-        <FormField name="venue" ... />
-        <FormField name="authors_full_string" ... />
-        <FormField name="type" ... />
-        <FormField name="pdf_url" ... /> 
-        ... etc ...
-        */}
+        {/* Venue (Optional) */}
+        <FormField
+          control={form.control}
+          name="venue"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Venue</FormLabel>
+              <FormControl>
+                <Input 
+                  placeholder="e.g., ICSE 2024, IEEE TSE" 
+                  {...field} 
+                  value={field.value ?? ''} // Render empty string if null
+                  onChange={(e) => field.onChange(e.target.value === '' ? null : e.target.value)} // Handle empty string for null
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        {/* Authors Full String (Optional) */}
+        <FormField
+          control={form.control}
+          name="authors_full_string"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Authors (Full String for Display)</FormLabel>
+              <FormControl>
+                <Textarea 
+                  placeholder="e.g., John Doe*, Jane Smith (Equal Contribution)" 
+                  {...field} 
+                  value={field.value ?? ''}
+                  onChange={(e) => field.onChange(e.target.value === '' ? null : e.target.value)}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        {/* PDF URL (Optional) */}
+        <FormField
+          control={form.control}
+          name="pdf_url"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>PDF URL</FormLabel>
+              <FormControl>
+                <Input 
+                  type="url" 
+                  placeholder="https://example.com/paper.pdf" 
+                  {...field} 
+                  value={field.value ?? ''}
+                  onChange={(e) => field.onChange(e.target.value === '' ? null : e.target.value)}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        {/* Type (Optional, Default: CONFERENCE) */}
+        <FormField
+          control={form.control}
+          name="type"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Type</FormLabel>
+              <Select
+                onValueChange={field.onChange}
+                value={field.value ?? PublicationType.CONFERENCE}
+              >
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select publication type" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {Object.values(PublicationType).map((typeValue) => (
+                    <SelectItem key={typeValue} value={typeValue}>
+                      {/* Simple formatting: Capitalize first letter, lowercase rest */}
+                      {typeValue.charAt(0) + typeValue.slice(1).toLowerCase().replace(/_/g, ' ')}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
         {/* Action Buttons */}
         <div className="flex justify-end space-x-3 pt-4 border-t border-gray-700">
