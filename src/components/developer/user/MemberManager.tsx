@@ -21,6 +21,7 @@ import {
   DialogClose,
 } from "@/components/ui/dialog";
 import { AddMemberForm } from "./AddMemberForm";
+import { useAuthStore } from "@/store/authStore";
 
 // Placeholder for Member type - ideally import from a shared types file
 interface Member {
@@ -29,6 +30,7 @@ interface Member {
   name_zh?: string | null;
   status: string;
   avatar_url?: string | null;
+  username?: string | null; // Ensure username is included
   // Add other relevant fields if needed for display
 }
 
@@ -37,6 +39,8 @@ interface MemberManagerProps {
 }
 
 const MemberManager: React.FC<MemberManagerProps> = ({ onClose }) => {
+  const { isFullAccess, username: loggedInUsername } = useAuthStore();
+
   const [members, setMembers] = useState<Member[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -46,7 +50,7 @@ const MemberManager: React.FC<MemberManagerProps> = ({ onClose }) => {
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch("/api/members"); // Assuming this endpoint exists
+      const res = await fetch("/api/members?includeUsername=true"); // Example: added query param if needed
       if (!res.ok) {
         let errorMsg = `Failed to fetch members (Status: ${res.status})`;
         try {
@@ -61,7 +65,14 @@ const MemberManager: React.FC<MemberManagerProps> = ({ onClose }) => {
       }
       const result = await res.json();
       if (result.success && Array.isArray(result.data)) {
-        setMembers(result.data);
+        let fetchedMembers = result.data as Member[];
+        
+        if (!isFullAccess && loggedInUsername) {
+          fetchedMembers = fetchedMembers.filter(member => member.username === loggedInUsername);
+          console.log(`User role detected. Filtered members down to user: ${loggedInUsername}`);
+        }
+        
+        setMembers(fetchedMembers);
       } else {
           throw new Error(result.error || "Invalid data format received from API.");
       }
@@ -71,7 +82,7 @@ const MemberManager: React.FC<MemberManagerProps> = ({ onClose }) => {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [isFullAccess, loggedInUsername]);
 
   useEffect(() => {
     fetchMembers();
@@ -89,12 +100,13 @@ const MemberManager: React.FC<MemberManagerProps> = ({ onClose }) => {
         <h2 className="text-2xl font-semibold text-green-400">Manage Members</h2>
         <div className="flex items-center space-x-2">
            <Dialog open={isAddMemberDialogOpen} onOpenChange={setIsAddMemberDialogOpen}>
-            <DialogTrigger asChild>
+            <DialogTrigger asChild disabled={!isFullAccess}>
               <Button
                 variant="default"
                 size="sm"
-                className="inline-flex items-center text-xs bg-blue-600 hover:bg-blue-700 text-white"
-                title="Add New Member"
+                className="inline-flex items-center text-xs bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-blue-800"
+                title={isFullAccess ? "Add New Member" : "Permission Required"}
+                disabled={!isFullAccess}
               >
                 <UserPlus size={14} className="mr-1" /> Add Member
               </Button>
@@ -144,40 +156,42 @@ const MemberManager: React.FC<MemberManagerProps> = ({ onClose }) => {
         {!isLoading && !error && (
           <ul className="space-y-3 pr-2">
             {members.length === 0 ? (
-                 <p className="text-center text-gray-500 italic mt-8">No members found.</p>
+                 <p className="text-center text-gray-500 italic mt-8">
+                   {isFullAccess ? "No members found." : "Could not find your member profile."}
+                 </p>
             ) : (
                  members.map((member) => (
-                  <li
-                    key={member.id}
-                    className="flex items-center justify-between p-3 bg-gray-700 rounded-md hover:bg-gray-600 transition-colors"
-                  >
-                    <div className="flex items-center space-x-3">
-                      {/* Basic Avatar Placeholder */}
-                      <div className="w-8 h-8 rounded-full bg-gray-500 flex items-center justify-center text-xs text-white overflow-hidden">
-                        {member.avatar_url ? (
-                          <img src={member.avatar_url} alt={`${member.name_en}'s avatar`} className="w-full h-full object-cover" />
-                        ) : (
-                          <span>{member.name_en.charAt(0).toUpperCase()}</span>
-                        )}
-                      </div>
-                      <div>
-                         <span className="font-medium text-gray-200">{member.name_en}</span>
-                         {member.name_zh && <span className="text-sm text-gray-400 ml-2">({member.name_zh})</span>}
-                         <span className="block text-xs text-gray-400 capitalize">
-                            {member.status ? member.status.toLowerCase().replace(/_/g, ' ') : 'N/A'}
-                         </span>
-                      </div>
-                    </div>
-                    <Link
-                      href={`/developer/members/${member.id}/edit`}
-                      passHref
-                      className="p-1 text-gray-400 hover:text-indigo-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-700 focus:ring-indigo-500 rounded"
-                      title={`Edit ${member.name_en}`}
-                    >
-                      <Edit size={16} />
-                    </Link>
-                  </li>
-                ))
+                      <li
+                        key={member.id}
+                        className="flex items-center justify-between p-3 bg-gray-700 rounded-md hover:bg-gray-600 transition-colors"
+                      >
+                        <div className="flex items-center space-x-3">
+                          {/* Basic Avatar Placeholder */}
+                          <div className="w-8 h-8 rounded-full bg-gray-500 flex items-center justify-center text-xs text-white overflow-hidden">
+                            {member.avatar_url ? (
+                              <img src={member.avatar_url} alt={`${member.name_en}'s avatar`} className="w-full h-full object-cover" />
+                            ) : (
+                              <span>{member.name_en.charAt(0).toUpperCase()}</span>
+                            )}
+                          </div>
+                          <div>
+                             <span className="font-medium text-gray-200">{member.name_en}</span>
+                             {member.name_zh && <span className="text-sm text-gray-400 ml-2">({member.name_zh})</span>}
+                             <span className="block text-xs text-gray-400 capitalize">
+                                {member.status ? member.status.toLowerCase().replace(/_/g, ' ') : 'N/A'}
+                             </span>
+                          </div>
+                        </div>
+                        <Link
+                          href={`/developer/members/${member.id}/edit`}
+                          passHref
+                          className="p-1 text-gray-400 hover:text-indigo-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-700 focus:ring-indigo-500 rounded" 
+                          title={`Edit ${member.name_en}`}
+                        >
+                          <Edit size={16} />
+                        </Link>
+                      </li>
+                 ))
             )}
           </ul>
         )}

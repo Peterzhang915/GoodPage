@@ -5,7 +5,8 @@ interface AuthState {
   isAuthenticated: boolean;
   permissions: string[] | null;
   isFullAccess: boolean;
-  login: (permissions: string[], isFullAccess: boolean) => void;
+  username: string | null;
+  login: (username: string, permissions: string[], isFullAccess: boolean) => void;
   logout: () => void;
 }
 
@@ -15,12 +16,14 @@ const authStoreCreator: StateCreator<AuthState> = (set) => ({
   isAuthenticated: false,
   permissions: null,
   isFullAccess: false,
+  username: null,
 
   // Action to update state upon successful login
-  login: (permissions: string[], isFullAccess: boolean) => set({
+  login: (username: string, permissions: string[], isFullAccess: boolean) => set({
     isAuthenticated: true,
     permissions,
     isFullAccess,
+    username,
   }),
 
   // Action to reset state upon logout
@@ -28,6 +31,7 @@ const authStoreCreator: StateCreator<AuthState> = (set) => ({
     isAuthenticated: false,
     permissions: null,
     isFullAccess: false,
+    username: null,
   }),
 });
 

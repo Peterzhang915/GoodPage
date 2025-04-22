@@ -79,6 +79,7 @@ export interface UseDeveloperLoginReturn {
   currentBootMessageIndex: number;
   bootMessages: string[];
   handleLogout: () => void;
+  loggedInUsername: string | null;
 }
 
 const MAX_LOGIN_ATTEMPTS = 5;
@@ -118,11 +119,17 @@ interface TempAuthData {
     username: string; // Keep username for potential use
 }
 
+// Define type for persisted auth data in localStorage
+interface PersistedAuthData extends TempAuthData {
+    timestamp: number; // Add timestamp for potential expiry logic later
+}
+
 export const useDeveloperLogin = (): UseDeveloperLoginReturn => {
   const router = useRouter();
   const zustandLogin = useAuthStore((state) => state.login);
   const zustandLogout = useAuthStore((state) => state.logout);
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const loggedInUsernameFromStore = useAuthStore((state) => state.username);
 
   // --- State Variables ---
   const [username, setUsername] = useState("");
@@ -136,8 +143,10 @@ export const useDeveloperLogin = (): UseDeveloperLoginReturn => {
       const storedAuth = localStorage.getItem(AUTH_DETAILS_KEY);
       if (storedAuth) {
         try {
-          const parsedAuth = JSON.parse(storedAuth);
-          if (parsedAuth && parsedAuth.permissions && typeof parsedAuth.isFullAccess === 'boolean') {
+          // Use the more specific type for parsing
+          const parsedAuth: PersistedAuthData = JSON.parse(storedAuth);
+          // Check for required fields including username
+          if (parsedAuth && parsedAuth.username && parsedAuth.permissions && typeof parsedAuth.isFullAccess === 'boolean') {
             // Don't update Zustand here, do it in useEffect
             return "loginComplete"; // Start in complete state
           }
@@ -192,11 +201,13 @@ export const useDeveloperLogin = (): UseDeveloperLoginReturn => {
       const storedAuth = localStorage.getItem(AUTH_DETAILS_KEY);
       if (storedAuth) {
         try {
-          const parsedAuth: { permissions: string[]; isFullAccess: boolean } = JSON.parse(storedAuth);
-          // Only update Zustand if it's not already authenticated
-          if (parsedAuth && parsedAuth.permissions && typeof parsedAuth.isFullAccess === 'boolean' && !isAuthenticated) {
+          // Use the specific type
+          const parsedAuth: PersistedAuthData = JSON.parse(storedAuth);
+          // Only update Zustand if it's not already authenticated and parsed data is valid
+          if (parsedAuth && parsedAuth.username && parsedAuth.permissions && typeof parsedAuth.isFullAccess === 'boolean' && !isAuthenticated) {
             console.log("Restoring auth state from localStorage...");
-            zustandLogin(parsedAuth.permissions, parsedAuth.isFullAccess);
+            // Pass username to zustandLogin
+            zustandLogin(parsedAuth.username, parsedAuth.permissions, parsedAuth.isFullAccess);
             // Ensure login stage reflects the restored state
             if (loginStage !== 'loginComplete') {
                 setLoginStage('loginComplete');
@@ -211,7 +222,7 @@ export const useDeveloperLogin = (): UseDeveloperLoginReturn => {
       }
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Run only once on mount
+  }, []); // Keep dependencies minimal for mount effect
 
   useEffect(() => {
     if (!displayMotd || isMotdComplete) return;
@@ -399,9 +410,10 @@ export const useDeveloperLogin = (): UseDeveloperLoginReturn => {
           // --- MODIFICATION START ---
           // 1. Store successful auth data in TEMPORARY state
           setTempAuthData({
+            // Use username from input field as it was validated
+            username: username, 
             permissions: data.permissions,
             isFullAccess: data.isFullAccess,
-            username: username // Store username from input
           });
           console.log("Auth details stored in temporary state.");
 
@@ -423,14 +435,13 @@ export const useDeveloperLogin = (): UseDeveloperLoginReturn => {
       }
     },
     [
-      username, // Need username to store it temporarily
+      username, // Keep username as dependency
       password,
       isLocked,
       loginStage,
       loginAttempts,
       setLoginAttempts,
       setLockoutTime,
-      // zustandLogin is NOT needed here anymore
     ],
   );
 
@@ -453,7 +464,7 @@ export const useDeveloperLogin = (): UseDeveloperLoginReturn => {
     console.log("Logging out developer...");
     // 1. Clear localStorage
     localStorage.removeItem(AUTH_DETAILS_KEY);
-    // 2. Clear Zustand store
+    // 2. Clear Zustand store (logout action already resets username)
     zustandLogout();
     // 3. Reset local state of the hook
     setUsername("");
@@ -535,16 +546,17 @@ export const useDeveloperLogin = (): UseDeveloperLoginReturn => {
 
         // --- MODIFICATION START ---
         // Now we commit the temporarily stored auth data
-        if (tempAuthData) {
+        if (tempAuthData && tempAuthData.username) { // Ensure username exists
           console.log("Committing auth data from temporary state...");
-          // 1. Update Zustand store
-          zustandLogin(tempAuthData.permissions, tempAuthData.isFullAccess);
+          // 1. Update Zustand store - PASS USERNAME
+          zustandLogin(tempAuthData.username, tempAuthData.permissions, tempAuthData.isFullAccess);
           
           // 2. Save to permanent localStorage
-          const authDataToStore = {
+          // Use the PersistedAuthData type
+          const authDataToStore: PersistedAuthData = {
+            username: tempAuthData.username,
             permissions: tempAuthData.permissions,
             isFullAccess: tempAuthData.isFullAccess,
-            username: tempAuthData.username,
             timestamp: Date.now()
           };
           localStorage.setItem(AUTH_DETAILS_KEY, JSON.stringify(authDataToStore));
@@ -561,8 +573,8 @@ export const useDeveloperLogin = (): UseDeveloperLoginReturn => {
           console.log("Login complete. Dashboard should now render.");
 
         } else {
-          // This case indicates an error in the flow (temp data missing)
-          console.error("Temporary auth data was missing when Enter was pressed in welcome stage!");
+          // This case indicates an error in the flow (temp data or username missing)
+          console.error("Temporary auth data or username was missing when Enter was pressed in welcome stage!", tempAuthData);
           setError("An internal error occurred during login finalization. Please try again.");
           // Trigger full logout/reset
           handleLogout(); 
@@ -612,5 +624,6 @@ export const useDeveloperLogin = (): UseDeveloperLoginReturn => {
     currentBootMessageIndex,
     bootMessages,
     handleLogout,
+    loggedInUsername: loggedInUsernameFromStore,
   };
 };

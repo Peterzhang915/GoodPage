@@ -52,6 +52,8 @@ import { ProjectFormModal } from './ProjectFormModal';
 import { AcademicServiceFormModal } from './AcademicServiceFormModal'; // Import the new modal
 import { PresentationFormModal } from './PresentationFormModal'; // Import the new modal
 import { SoftwareDatasetFormModal } from './SoftwareDatasetFormModal'; // Import the new modal
+import { PasswordChangeForm } from './PasswordChangeForm'; // Import the new form component
+import { UsernameChangeForm } from './UsernameChangeForm'; // Import the new username form
 
 // --- Type Definitions ---
 // Define types used internally within this component
@@ -1047,6 +1049,12 @@ export default function MemberProfileEditor({ initialData }: MemberProfileEditor
         </motion.div>
       </Card>
 
+      {/* --- Password Change Section --- (Moved Here) */}
+      <PasswordChangeForm memberId={initialData.id} />
+
+      {/* --- Username Change Section --- (Added Here) */}
+      <UsernameChangeForm memberId={initialData.id} currentUsername={initialData.username} />
+
       {/* --- Section 2: Detailed Profile --- */} 
       <Card className="dark:bg-gray-800 dark:border-gray-700 overflow-hidden">
         <CardHeader className="flex flex-row items-center justify-between cursor-pointer" onClick={() => toggleSection('detailedProfile')}>
@@ -1090,21 +1098,34 @@ export default function MemberProfileEditor({ initialData }: MemberProfileEditor
       </Card>
 
       {/* --- Section 4: Education History --- */} 
-      <Card className="dark:bg-gray-800 dark:border-gray-700 overflow-hidden">
-        <CardHeader className="flex flex-row items-center justify-between cursor-pointer" onClick={() => toggleSection('education')}>
-          <CardTitle className="dark:text-green-400">Education History</CardTitle>
-           <div> {/* Wrap button and chevron */} 
-              <Button size="sm" className="dark:bg-blue-600 dark:hover:bg-blue-700 dark:text-white mr-2" onClick={(e) => { e.stopPropagation(); handleOpenAddEducationModal(); }}>
-                  Add Education
-              </Button>
-              <Button variant="ghost" size="icon" aria-label={openSections.education ? "Collapse Education History" : "Expand Education History"}>
-                {openSections.education ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
-             </Button>
-           </div>
+      <Card className='mb-6'>
+        <CardHeader className="flex flex-row items-center justify-between cursor-pointer bg-gray-50 dark:bg-gray-800/50 hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-colors p-3 rounded-t-lg border-b dark:border-gray-700" onClick={() => toggleSection('education')}>
+          <CardTitle className="text-base font-medium">Education History</CardTitle>
+          <div className="flex items-center space-x-2">
+             <Button 
+              onClick={(e) => { e.stopPropagation(); handleOpenAddEducationModal(); }} 
+              size="sm" 
+              // Apply blue style
+              className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 dark:text-white" 
+            >
+              Add Education
+            </Button>
+            <motion.div animate={{ rotate: openSections.education ? 180 : 0 }}>
+              <ChevronDown className="h-4 w-4 text-gray-500" />
+            </motion.div>
+          </div>
         </CardHeader>
-         <motion.div initial={false} animate={{ height: openSections.education ? 'auto' : 0, opacity: openSections.education ? 1 : 0 }} transition={{ duration: 0.3, ease: "easeInOut" }} style={{ overflow: 'hidden' }}>
-            <CardContent className="pt-4">
-              {educationHistory.length > 0 ? (
+        <AnimatePresence>
+          {openSections.education && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.3 }}
+              className="overflow-hidden"
+            >
+              <CardContent className="p-4">
+                {educationHistory.length > 0 ? (
              <ul className="space-y-3">
                    {[...educationHistory].sort((a, b) => (b.start_year ?? 0) - (a.start_year ?? 0)).map(edu => (
                  <li key={edu.id} className="border-b dark:border-gray-700 pb-3 flex justify-between items-start group">
@@ -1161,24 +1182,41 @@ export default function MemberProfileEditor({ initialData }: MemberProfileEditor
            ) : (
                  <p className="text-gray-500 italic dark:text-gray-400">No education history added yet.</p>
            )}
-        </CardContent>
-         </motion.div>
+              </CardContent>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </Card>
 
       {/* --- Section 5: Awards --- */} 
-       <Card className="dark:bg-gray-800 dark:border-gray-700 overflow-hidden">
-           <CardHeader className="flex flex-row items-center justify-between cursor-pointer" onClick={() => toggleSection('awards')}>
-               <CardTitle className="dark:text-green-400">Awards</CardTitle>
-               <div> {/* Wrap button and chevron */} 
-                 <Button size="sm" className="dark:bg-blue-600 dark:hover:bg-blue-700 dark:text-white mr-2" onClick={(e) => { e.stopPropagation(); handleOpenAddAwardModal(); }}>Add Award</Button>
-                 <Button variant="ghost" size="icon" aria-label={openSections.awards ? "Collapse Awards" : "Expand Awards"}>
-                    {openSections.awards ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
-                 </Button>
-              </div>
-           </CardHeader>
-            <motion.div initial={false} animate={{ height: openSections.awards ? 'auto' : 0, opacity: openSections.awards ? 1 : 0 }} transition={{ duration: 0.3, ease: "easeInOut" }} style={{ overflow: 'hidden' }}>
-                <CardContent className="pt-4">
-                   {awardsList.length > 0 ? (
+       <Card className='mb-6'>
+         <CardHeader className="flex flex-row items-center justify-between cursor-pointer bg-gray-50 dark:bg-gray-800/50 hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-colors p-3 rounded-t-lg border-b dark:border-gray-700" onClick={() => toggleSection('awards')}>
+           <CardTitle className="text-base font-medium">Awards</CardTitle>
+           <div className="flex items-center space-x-2">
+            <Button 
+              onClick={(e) => { e.stopPropagation(); handleOpenAddAwardModal(); }} 
+              size="sm" 
+              // Apply blue style
+              className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 dark:text-white"
+            >
+              Add Award
+            </Button>
+             <motion.div animate={{ rotate: openSections.awards ? 180 : 0 }}>
+               <ChevronDown className="h-4 w-4 text-gray-500" />
+             </motion.div>
+           </div>
+         </CardHeader>
+         <AnimatePresence>
+           {openSections.awards && (
+             <motion.div
+               initial={{ height: 0, opacity: 0 }}
+               animate={{ height: 'auto', opacity: 1 }}
+               exit={{ height: 0, opacity: 0 }}
+               transition={{ duration: 0.3 }}
+               className="overflow-hidden"
+             >
+               <CardContent className="p-4">
+                 {awardsList.length > 0 ? (
                    <ul className="space-y-3">
                           {[...awardsList] // Sort by year (desc), then display_order (asc)
                               .sort((a, b) => (b.year ?? 0) - (a.year ?? 0) || (a.display_order ?? Infinity) - (b.display_order ?? Infinity))
@@ -1243,78 +1281,85 @@ export default function MemberProfileEditor({ initialData }: MemberProfileEditor
                 ) : (
                        <p className="text-gray-500 italic dark:text-gray-400">No awards added yet.</p>
                 )}
-           </CardContent>
+              </CardContent>
             </motion.div>
+          )}
+        </AnimatePresence>
        </Card>
 
       {/* --- Section 6: Featured Publications --- */}
-      <Card className="dark:bg-gray-800 dark:border-gray-700 overflow-hidden">
-        <CardHeader className="flex flex-row items-center justify-between cursor-pointer" onClick={() => toggleSection('featuredPublications')}>
-          <div>
-            <CardTitle className="dark:text-green-400">Featured Publications</CardTitle>
-            <p className="text-sm text-gray-500 dark:text-gray-400">Select and reorder publications to feature on your public profile.</p>
-          </div>
-          <Button variant="ghost" size="icon" aria-label={openSections.featuredPublications ? "Collapse Featured Publications" : "Expand Featured Publications"}>
-            {openSections.featuredPublications ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
-          </Button>
+      <Card className='mb-6'>
+        <CardHeader className="flex flex-row items-center justify-between cursor-pointer bg-gray-50 dark:bg-gray-800/50 hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-colors p-3 rounded-t-lg border-b dark:border-gray-700" onClick={() => toggleSection('featuredPublications')}>
+          <CardTitle className="text-base font-medium">Featured Publications</CardTitle>
+           <motion.div animate={{ rotate: openSections.featuredPublications ? 180 : 0 }}>
+             <ChevronDown className="h-4 w-4 text-gray-500" />
+           </motion.div>
         </CardHeader>
-        <motion.div
-            initial={false}
-            animate={{
-                height: openSections.featuredPublications ? 'auto' : 0,
-                opacity: openSections.featuredPublications ? 1 : 0,
-            }}
-            transition={{ duration: 0.3, ease: "easeInOut" }}
-            style={{ overflow: 'hidden' }}
-        >
-            <CardContent className="pt-4">
-              {editablePublications.length > 0 ? (
-                <DndContext
-                  sensors={sensors}
-                  collisionDetection={closestCenter}
-                  onDragEnd={handleDragEnd}
-                >
-                  <SortableContext
-                    items={editablePublications.map(p => p.id.toString())}
-                    strategy={verticalListSortingStrategy}
+        <AnimatePresence>
+          {openSections.featuredPublications && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.3 }}
+              className="overflow-hidden"
+            >
+              <CardContent className="p-4">
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">Select and reorder publications to feature on your public profile.</p>
+                {editablePublications.length === 0 && (
+                  <p className="text-center text-gray-500 dark:text-gray-400 py-4">No publications found for this member.</p>
+                )}
+                {editablePublications.length > 0 && (
+                  <DndContext
+                    sensors={sensors}
+                    collisionDetection={closestCenter}
+                    onDragEnd={handleDragEnd}
                   >
-                      <div className="space-y-1">
-                        {editablePublications.map((pub) => (
-                          <SortablePublicationItem
-                            key={pub.id}
-                            pub={pub}
-                            isSavingFeatured={isSavingFeatured}
-                            onToggleFeatured={handleToggleFeatured}
-                          />
-                        ))}
-                      </div>
-                  </SortableContext>
-                </DndContext>
-              ) : (
-                <p className="text-gray-500 italic dark:text-gray-400">No publications found for this member.</p>
-              )}
-        </CardContent>
-            <CardFooter className="flex justify-end">
-                <Button
-                    onClick={handleSaveFeaturedPublications}
-                    disabled={isSavingFeatured}
-                    className="dark:bg-indigo-600 dark:hover:bg-indigo-700 dark:text-white"
-                >
+                    <SortableContext
+                      items={editablePublications.map(p => p.id.toString())}
+                      strategy={verticalListSortingStrategy}
+                    >
+                        <div className="space-y-1">
+                          {editablePublications.map((pub) => (
+                            <SortablePublicationItem
+                              key={pub.id}
+                              pub={pub}
+                              isSavingFeatured={isSavingFeatured}
+                              onToggleFeatured={handleToggleFeatured}
+                            />
+                          ))}
+                        </div>
+                    </SortableContext>
+                  </DndContext>
+                )}
+              </CardContent>
+              {editablePublications.length > 0 && (
+                <CardFooter className="border-t dark:border-gray-700 p-3">
+                  <Button 
+                    onClick={handleSaveFeaturedPublications} 
+                    disabled={isSavingFeatured} 
+                    // Apply blue style (keep default size)
+                    className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 dark:text-white disabled:opacity-50"
+                  >
                     {isSavingFeatured ? 'Saving...' : 'Save Featured List'}
-                </Button>
-            </CardFooter>
-        </motion.div>
+                  </Button>
+                </CardFooter>
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>
       </Card>
 
       {/* --- Section 7: Other Sections --- */} 
-      <Card className="dark:bg-gray-800 dark:border-gray-700 overflow-hidden">
-          <CardHeader className="flex flex-row items-center justify-between cursor-pointer" onClick={() => toggleSection('projects')}>
-              <CardTitle className="dark:text-green-400">Projects</CardTitle>
-               <div>
-                  <Button size="sm" className="dark:bg-blue-600 dark:hover:bg-blue-700 dark:text-white mr-2" onClick={(e) => { e.stopPropagation(); handleOpenAddProjectModal(); }}>Add Project</Button>
-                  <Button variant="ghost" size="icon" aria-label={openSections.projects ? "Collapse Projects" : "Expand Projects"}>
-                     {openSections.projects ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
-                  </Button>
+      <Card className='mb-6'>
+          <CardHeader className="flex flex-row items-center justify-between cursor-pointer bg-gray-50 dark:bg-gray-800/50 hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-colors p-3 rounded-t-lg border-b dark:border-gray-700" onClick={() => toggleSection('projects')}>
+              <CardTitle className="text-base font-medium">Projects</CardTitle>
+               <div className="flex items-center space-x-2">
+                  {/* Apply full blue style */}
+                  <Button size="sm" className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 dark:text-white" onClick={(e) => { e.stopPropagation(); handleOpenAddProjectModal(); }}>Add Project</Button>
+                  <motion.div animate={{ rotate: openSections.projects ? 180 : 0 }}>
+                    <ChevronDown className="h-4 w-4 text-gray-500" />
+                  </motion.div>
                </div>
           </CardHeader>
            <motion.div initial={false} animate={{ height: openSections.projects ? 'auto' : 0, opacity: openSections.projects ? 1 : 0 }} transition={{ duration: 0.3, ease: "easeInOut" }} style={{ overflow: 'hidden' }}>
@@ -1387,16 +1432,17 @@ export default function MemberProfileEditor({ initialData }: MemberProfileEditor
                </CardContent>
            </motion.div>
       </Card>
-      <Card className="dark:bg-gray-800 dark:border-gray-700 overflow-hidden">
-          <CardHeader className="flex flex-row items-center justify-between cursor-pointer" onClick={() => toggleSection('presentations')}>
-              <CardTitle className="dark:text-green-400">Presentations</CardTitle>
-               <div>
-                 <Button size="sm" className="dark:bg-blue-600 dark:hover:bg-blue-700 dark:text-white mr-2" onClick={(e) => { e.stopPropagation(); handleOpenAddPresentationModal(); }}>
+      <Card className='mb-6'>
+          <CardHeader className="flex flex-row items-center justify-between cursor-pointer bg-gray-50 dark:bg-gray-800/50 hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-colors p-3 rounded-t-lg border-b dark:border-gray-700" onClick={() => toggleSection('presentations')}>
+              <CardTitle className="text-base font-medium">Presentations</CardTitle>
+               <div className="flex items-center space-x-2">
+                 {/* Apply full blue style */}
+                 <Button size="sm" className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 dark:text-white" onClick={(e) => { e.stopPropagation(); handleOpenAddPresentationModal(); }}>
                     Add Presentation
                  </Button>
-                 <Button variant="ghost" size="icon" aria-label={openSections.presentations ? "Collapse Presentations" : "Expand Presentations"}>
-                    {openSections.presentations ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
-                 </Button>
+                  <motion.div animate={{ rotate: openSections.presentations ? 180 : 0 }}>
+                   <ChevronDown className="h-4 w-4 text-gray-500" />
+                  </motion.div>
                </div>
           </CardHeader>
            <motion.div initial={false} animate={{ height: openSections.presentations ? 'auto' : 0, opacity: openSections.presentations ? 1 : 0 }} transition={{ duration: 0.3, ease: "easeInOut" }} style={{ overflow: 'hidden' }}>
@@ -1470,16 +1516,17 @@ export default function MemberProfileEditor({ initialData }: MemberProfileEditor
               </CardContent>
            </motion.div>
       </Card>
-       <Card className="dark:bg-gray-800 dark:border-gray-700 overflow-hidden">
-          <CardHeader className="flex flex-row items-center justify-between cursor-pointer" onClick={() => toggleSection('softwareDatasets')}>
-              <CardTitle className="dark:text-green-400">Software & Datasets</CardTitle>
-              <div>
-                 <Button size="sm" className="dark:bg-blue-600 dark:hover:bg-blue-700 dark:text-white mr-2" onClick={(e) => { e.stopPropagation(); handleOpenAddSoftwareDatasetModal(); }}>
-                    Add Artefact
+       <Card className='mb-6'>
+          <CardHeader className="flex flex-row items-center justify-between cursor-pointer bg-gray-50 dark:bg-gray-800/50 hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-colors p-3 rounded-t-lg border-b dark:border-gray-700" onClick={() => toggleSection('softwareDatasets')}>
+              <CardTitle className="text-base font-medium">Software & Datasets</CardTitle>
+              <div className="flex items-center space-x-2">
+                 {/* Apply full blue style */} 
+                 <Button size="sm" className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 dark:text-white" onClick={(e) => { e.stopPropagation(); handleOpenAddSoftwareDatasetModal(); }}>
+                    Add Record
                  </Button>
-                 <Button variant="ghost" size="icon" aria-label={openSections.softwareDatasets ? "Collapse Software & Datasets" : "Expand Software & Datasets"}>
-                    {openSections.softwareDatasets ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
-                 </Button>
+                  <motion.div animate={{ rotate: openSections.softwareDatasets ? 180 : 0 }}>
+                   <ChevronDown className="h-4 w-4 text-gray-500" />
+                  </motion.div>
               </div>
           </CardHeader>
            <motion.div initial={false} animate={{ height: openSections.softwareDatasets ? 'auto' : 0, opacity: openSections.softwareDatasets ? 1 : 0 }} transition={{ duration: 0.3, ease: "easeInOut" }} style={{ overflow: 'hidden' }}>
@@ -1543,30 +1590,34 @@ export default function MemberProfileEditor({ initialData }: MemberProfileEditor
                </CardContent>
            </motion.div>
        </Card>
-       <Card className="dark:bg-gray-800 dark:border-gray-700 overflow-hidden">
-          <CardHeader className="flex flex-row items-center justify-between cursor-pointer" onClick={() => toggleSection('patents')}>
-              <CardTitle className="dark:text-green-400">Patents</CardTitle>
-               <div>
-                 <Button size="sm" className="dark:bg-blue-600 dark:hover:bg-blue-700 dark:text-white mr-2">Add Patent</Button>
-                 <Button variant="ghost" size="icon" aria-label={openSections.patents ? "Collapse Patents" : "Expand Patents"}>
-                    {openSections.patents ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
+       <Card className='mb-6'>
+          <CardHeader className="flex flex-row items-center justify-between cursor-pointer bg-gray-50 dark:bg-gray-800/50 hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-colors p-3 rounded-t-lg border-b dark:border-gray-700" onClick={() => toggleSection('patents')}>
+              <CardTitle className="text-base font-medium">Patents</CardTitle>
+               <div className="flex items-center space-x-2">
+                 {/* Apply full blue style - Note: onClick likely needs implementation later */} 
+                 <Button size="sm" className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 dark:text-white">
+                   Add Patent
                  </Button>
+                 <motion.div animate={{ rotate: openSections.patents ? 180 : 0 }}>
+                   <ChevronDown className="h-4 w-4 text-gray-500" />
+                 </motion.div>
                </div>
           </CardHeader>
            <motion.div initial={false} animate={{ height: openSections.patents ? 'auto' : 0, opacity: openSections.patents ? 1 : 0 }} transition={{ duration: 0.3, ease: "easeInOut" }} style={{ overflow: 'hidden' }}>
               <CardContent className="pt-4"><p className="text-gray-500 italic dark:text-gray-400">Patent editing not implemented yet.</p></CardContent>
            </motion.div>
        </Card>
-        <Card className="dark:bg-gray-800 dark:border-gray-700 overflow-hidden">
-          <CardHeader className="flex flex-row items-center justify-between cursor-pointer" onClick={() => toggleSection('academicServices')}>
-              <CardTitle className="dark:text-green-400">Academic Services</CardTitle>
-              <div>
-                 <Button size="sm" className="dark:bg-blue-600 dark:hover:bg-blue-700 dark:text-white mr-2" onClick={(e) => { e.stopPropagation(); handleOpenAddServiceModal(); }}>
+        <Card className='mb-6'>
+          <CardHeader className="flex flex-row items-center justify-between cursor-pointer bg-gray-50 dark:bg-gray-800/50 hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-colors p-3 rounded-t-lg border-b dark:border-gray-700" onClick={() => toggleSection('academicServices')}>
+              <CardTitle className="text-base font-medium">Academic Services</CardTitle>
+              <div className="flex items-center space-x-2">
+                 {/* Apply full blue style */} 
+                 <Button size="sm" className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 dark:text-white" onClick={(e) => { e.stopPropagation(); handleOpenAddServiceModal(); }}>
                     Add Service
                  </Button>
-                 <Button variant="ghost" size="icon" aria-label={openSections.academicServices ? "Collapse Academic Services" : "Expand Academic Services"}>
-                    {openSections.academicServices ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
-                 </Button>
+                 <motion.div animate={{ rotate: openSections.academicServices ? 180 : 0 }}>
+                   <ChevronDown className="h-4 w-4 text-gray-500" />
+                 </motion.div>
               </div>
           </CardHeader>
            <motion.div initial={false} animate={{ height: openSections.academicServices ? 'auto' : 0, opacity: openSections.academicServices ? 1 : 0 }} transition={{ duration: 0.3, ease: "easeInOut" }} style={{ overflow: 'hidden' }}>

@@ -179,16 +179,27 @@ export async function getAllMembersGrouped(): Promise<
  * 根据 ID 获取单个成员的完整档案信息。
  * 实现智能作者显示逻辑：合并 authors_full_string 和内部关联作者。
  * @param id - 成员的唯一 ID (string)
+ * @param forEditing - 可选，如果为 true，则不检查 is_profile_public 状态 (用于开发者编辑页)。默认为 false。
  * @returns 包含所有关联数据的成员对象 MemberProfileData，或 null
  */
 export async function getMemberProfileData(
   id: string,
+  forEditing: boolean = false // Add optional parameter
 ): Promise<MemberProfileData | null> {
-  console.log(`DB: 开始获取成员 ${id} 的完整档案`);
+  console.log(`DB: 开始获取成员 ${id} 的完整档案${forEditing ? ' (for editing)' : ' (for public view)'}`);
   try {
+    // --- Dynamically build the where clause --- 
+    const whereCondition: Prisma.MemberWhereUniqueInput = {
+      id: id,
+    };
+    if (!forEditing) {
+      whereCondition.is_profile_public = true;
+    }
+    console.log(`DB: Using where condition:`, whereCondition);
+
     // 1. 获取成员基本信息 + 简单直接关联 (导师/学生)
     const member = await prisma.member.findUnique({
-      where: { id: id, is_profile_public: true },
+      where: whereCondition, // Use the dynamically built condition
       include: {
         // 只 include 简单的直接关系或必要的 select
         supervisor: { select: { id: true, name_zh: true, name_en: true } },
@@ -206,7 +217,9 @@ export async function getMemberProfileData(
     });
 
     if (!member) {
-      console.log(`DB: 未找到 ID 为 ${id} 的公开成员档案`);
+      // Adjust log message based on context
+      const reason = forEditing ? `ID 为 ${id} 的成员不存在` : `ID 为 ${id} 的公开成员档案不存在`;
+      console.log(`DB: ${reason}`);
       return null;
     }
     console.log(`DB: 成功获取成员 ${id} 基础信息`);

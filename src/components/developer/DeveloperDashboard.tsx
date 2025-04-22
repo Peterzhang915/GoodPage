@@ -136,7 +136,8 @@ const DeveloperDashboard: React.FC<DeveloperDashboardProps> = ({
   // Helper to check permissions
   const hasPermission = useCallback(
     (perm?: string) => {
-      if (!perm) return true;
+      if (!perm) return true; // Tools without requiredPermission are always allowed
+      // Assuming isFullAccess is true for Admin/Root
       return isFullAccess || (permissions || []).includes(perm);
     },
     [permissions, isFullAccess],
@@ -146,11 +147,6 @@ const DeveloperDashboard: React.FC<DeveloperDashboardProps> = ({
   const currentToolConfig = activeTool
     ? availableTools.find((tool) => tool.id === activeTool)
     : null;
-
-  // Filter available tools based on permissions
-  const visibleTools = availableTools.filter((tool) =>
-    hasPermission(tool.requiredPermission),
-  );
 
   // --- Render Active Tool Logic (Simplified) ---
   const renderActiveTool = () => {
@@ -220,23 +216,38 @@ const DeveloperDashboard: React.FC<DeveloperDashboardProps> = ({
           transition={{ duration: 0.5, delay: 0.1 }}
           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8"
         >
-          {/* Dynamically render visible tools */}
-          {visibleTools.map((tool, index) => (
-            <ToolCard
-              key={tool.id}
-              title={tool.title}
-              description={tool.description}
-              buttonText={tool.buttonText}
-              icon={<tool.icon size={16} className="mr-2" />}
-              onButtonClick={
-                // Only attach handler if there's a component OR an external link (though external links are handled inside ToolCard now)
-                (tool.component || tool.externalLink) ? () => handleToolSelect(tool.id) : undefined
-              }
-              externalLink={tool.externalLink}
-              disabled={!tool.component && !tool.externalLink}
-              delay={0.1 + index * 0.05}
-            />
-          ))}
+          {/* Render ALL available tools, disabling based on permission */}
+          {availableTools.map((tool, index) => {
+            const canAccessTool = hasPermission(tool.requiredPermission);
+            
+            // Determine if the card should be disabled based on the user's goal:
+            // Disable if the user CANNOT access the tool AND the tool is NOT 'member'
+            const isDisabled = !canAccessTool && tool.id !== 'member';
+
+            // If the user is 'User' (approximated by !isFullAccess) and the tool is 'member',
+            // we still need the specific permission check for the 'member' tool itself.
+            // The overall `canAccessTool` already handles this based on `requiredPermission: 'manage_members'`. 
+            // So, if canAccessTool is false for the 'member' tool, it will also be disabled correctly.
+
+            return (
+              <ToolCard
+                key={tool.id}
+                title={tool.title}
+                description={tool.description}
+                buttonText={tool.buttonText}
+                icon={<tool.icon size={16} className="mr-2" />}
+                onButtonClick={
+                  // Only allow click if the tool is NOT disabled
+                  !isDisabled && (tool.component || tool.externalLink)
+                    ? () => handleToolSelect(tool.id)
+                    : undefined
+                }
+                externalLink={tool.externalLink}
+                disabled={isDisabled} // Pass the calculated disabled state
+                delay={0.1 + index * 0.05}
+              />
+            );
+          })}
         </motion.div>
       ) : (
         // --- Active Tool View ---

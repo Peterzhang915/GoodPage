@@ -47,7 +47,7 @@ export default async function MemberEditPage({ params }: MemberEditPageProps) {
   let memberData;
   try {
      // Use the dedicated function to fetch data
-     memberData = await getMemberProfileData(id);
+     memberData = await getMemberProfileData(id, true);
      if (!memberData) {
          // If data is null/undefined after fetching, it means member not found
          console.error(`Member data not found for ID: ${id} in edit page.`);
