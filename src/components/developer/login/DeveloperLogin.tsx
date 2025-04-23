@@ -79,6 +79,7 @@ const DeveloperLogin: React.FC = () => {
     // Get boot message state
     currentBootMessageIndex,
     bootMessages,
+    handleSkipAnimation, // Destructure the new skip handler
   } = useDeveloperLogin();
 
   // Determine which ASCII art to display
@@ -92,6 +93,7 @@ const DeveloperLogin: React.FC = () => {
       // Main container: full height, padding, flex column
       // Remove explicit background color to inherit from body
       className={`flex flex-col h-screen p-4 font-mono ${themeColors.devText ?? 'text-gray-200'}`}
+      onClick={handleSkipAnimation} // Add onClick handler here to call the skip function
     >
       {/* Section 1: ASCII Art (Dynamically changes) */}
       <motion.div 

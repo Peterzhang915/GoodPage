@@ -80,6 +80,7 @@ export interface UseDeveloperLoginReturn {
   bootMessages: string[];
   handleLogout: () => void;
   loggedInUsername: string | null;
+  handleSkipAnimation: () => void;
 }
 
 const MAX_LOGIN_ATTEMPTS = 5;
@@ -184,6 +185,11 @@ export const useDeveloperLogin = (): UseDeveloperLoginReturn => {
   const lockoutTimerRef = useRef<NodeJS.Timeout | null>(null);
   const motdTimerRef = useRef<NodeJS.Timeout | null>(null);
   const spinnerTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // --- Refs for timers to clear them on skip ---
+  const bootMessageIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const bootTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const welcomeKeyListenerRef = useRef<((event: KeyboardEvent) => void) | null>(null);
 
   // --- Derived State ---
   const attemptsRemaining = loginAttempts;
@@ -345,8 +351,28 @@ export const useDeveloperLogin = (): UseDeveloperLoginReturn => {
   // REMOVED zustandLogin from dependencies here
   }, [loginStage]); 
 
-  // --- Handlers ---
+  // --- Helper to finalize login (used by skip and welcome Enter) ---
+  const finalizeLogin = useCallback(() => {
+    if (tempAuthData) {
+      console.log("Finalizing login...");
+      // Persist auth details to localStorage
+      const authDataToPersist: PersistedAuthData = {
+          ...tempAuthData,
+          timestamp: Date.now(),
+      };
+      localStorage.setItem(AUTH_DETAILS_KEY, JSON.stringify(authDataToPersist));
 
+      // Update Zustand store with the temporarily stored auth data
+      zustandLogin(tempAuthData.username, tempAuthData.permissions, tempAuthData.isFullAccess);
+
+      setLoginStage("loginComplete"); // Mark login as fully complete
+      setTempAuthData(null); // Clear temporary data
+    } else {
+        console.warn("Attempted to finalize login without tempAuthData.");
+    }
+  }, [tempAuthData, zustandLogin]);
+
+  // --- MOTD Handlers (Keep them defined before they are used/returned) ---
   const handleMotdCompleteInternal = useCallback(() => {
     if (motdTimerRef.current) clearInterval(motdTimerRef.current);
     if (spinnerTimerRef.current) clearInterval(spinnerTimerRef.current);
@@ -364,7 +390,32 @@ export const useDeveloperLogin = (): UseDeveloperLoginReturn => {
     handleMotdCompleteInternal();
   }, [handleMotdCompleteInternal]);
 
-  // --- MODIFIED handleLogin Handler ---
+  // --- Skip Animation Handler ---
+  const handleSkipAnimation = useCallback(() => {
+    if ((loginStage === "unlocking" || loginStage === "welcome") && tempAuthData) {
+      console.log(`Skip requested during stage: ${loginStage}. Finalizing...`);
+
+      // Clear any running animation timers
+      if (bootMessageIntervalRef.current) {
+        clearInterval(bootMessageIntervalRef.current);
+        bootMessageIntervalRef.current = null;
+      }
+      if (bootTimeoutRef.current) {
+        clearTimeout(bootTimeoutRef.current);
+        bootTimeoutRef.current = null;
+      }
+       if (welcomeKeyListenerRef.current) {
+          window.removeEventListener("keydown", welcomeKeyListenerRef.current);
+          welcomeKeyListenerRef.current = null;
+      }
+
+      finalizeLogin();
+    } else {
+        console.log(`Skip ignored. Stage: ${loginStage}, TempAuthData: ${!!tempAuthData}`);
+    }
+  }, [loginStage, tempAuthData, finalizeLogin]);
+
+  // --- Login Handler ---
   const handleLogin = useCallback(
     async (event?: React.FormEvent<HTMLFormElement>) => {
       if (event) event.preventDefault();
@@ -407,26 +458,17 @@ export const useDeveloperLogin = (): UseDeveloperLoginReturn => {
 
         // --- Login Successful --- 
         if (data.success === true) {
-          // --- MODIFICATION START ---
-          // 1. Store successful auth data in TEMPORARY state
+          console.log("Login successful. API Response:", data);
           setTempAuthData({
-            // Use username from input field as it was validated
-            username: username, 
+            username: username,
             permissions: data.permissions,
             isFullAccess: data.isFullAccess,
           });
-          console.log("Auth details stored in temporary state.");
-
-          // 2. Reset login attempts/lockout (this is fine)
+          setError(null);
           setLoginAttempts(MAX_LOGIN_ATTEMPTS);
           setLockoutTime(null);
-          console.log("Attempts/Lockout reset.");
-
-          // 3. Transition to unlocking stage (animation starts)
-          console.log("Setting login stage to unlocking - animation should begin.");
-          setLoginStage("unlocking"); 
-          // DO NOT update Zustand or localStorage here.
-          // --- MODIFICATION END ---
+          setLoginStage("unlocking"); // Move to unlocking stage
+          console.log("Stage set to unlocking. Temp Auth Data:", { /* ... */ });
         }
       } catch (err: any) {
         console.error("Login fetch error:", err);
@@ -461,25 +503,22 @@ export const useDeveloperLogin = (): UseDeveloperLoginReturn => {
 
   // --- Implement Logout Logic --- 
   const handleLogout = useCallback(() => {
-    console.log("Logging out developer...");
-    // 1. Clear localStorage
-    localStorage.removeItem(AUTH_DETAILS_KEY);
-    // 2. Clear Zustand store (logout action already resets username)
-    zustandLogout();
-    // 3. Reset local state of the hook
-    setUsername("");
+    console.log("Handling logout...");
+    localStorage.removeItem(AUTH_DETAILS_KEY); // Clear persisted auth
+    zustandLogout(); // Reset Zustand state
+    setUsername(""); // Clear sensitive state if needed
     setPassword("");
-    setError(null);
-    setLoginAttempts(MAX_LOGIN_ATTEMPTS); // Reset attempts
-    setLockoutTime(null); // Clear lockout
-    setLoginStage("awaitingPassword"); // Go back to login prompt
-    setIsMotdComplete(false); // Re-enable MOTD for next login
+    setTempAuthData(null);
+    // Reset login stage, attempts, lockout etc.
+    setLoginStage("awaitingPassword");
+    setIsMotdComplete(false);
     setDisplayMotd(true);
     setMotdIndex(0);
-    setCurrentBootMessageIndex(-1); // Reset boot sequence
-    console.log("Developer logged out.");
-    // Optionally redirect, though often handled by consuming component
-    // router.push('/'); 
+    setError(null);
+    setLoginAttempts(MAX_LOGIN_ATTEMPTS);
+    setLockoutTime(null);
+    // Optionally redirect if needed, or let the page component handle it
+    // router.push('/'); // Example redirect
   }, [zustandLogout, setLoginAttempts, setLockoutTime]);
 
   // --- Konami Code Effect (Moved after handler definitions) --- 
@@ -537,66 +576,74 @@ export const useDeveloperLogin = (): UseDeveloperLoginReturn => {
     // Dependencies are correct now
   }, [loginStage, isLocked, skipMotd, isMotdComplete]);
 
-  // --- MODIFIED Effect for Enter Key Press (welcome stage) ---
+  // --- Effect to handle 'Enter' key press on Welcome screen ---
   useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Enter" && loginStage === "welcome") {
-        event.preventDefault();
-        console.log("Enter pressed in welcome stage, proceeding...");
-
-        // --- MODIFICATION START ---
-        // Now we commit the temporarily stored auth data
-        if (tempAuthData && tempAuthData.username) { // Ensure username exists
-          console.log("Committing auth data from temporary state...");
-          // 1. Update Zustand store - PASS USERNAME
-          zustandLogin(tempAuthData.username, tempAuthData.permissions, tempAuthData.isFullAccess);
-          
-          // 2. Save to permanent localStorage
-          // Use the PersistedAuthData type
-          const authDataToStore: PersistedAuthData = {
-            username: tempAuthData.username,
-            permissions: tempAuthData.permissions,
-            isFullAccess: tempAuthData.isFullAccess,
-            timestamp: Date.now()
-          };
-          localStorage.setItem(AUTH_DETAILS_KEY, JSON.stringify(authDataToStore));
-          console.log("Auth details saved permanently to localStorage.");
-
-          // 3. Clear the temporary state
-          setTempAuthData(null);
-
-          // 4. Transition to final stage
-          setLoginStage("loginComplete");
-          
-          // NOTE: No need for router.push here. The page component will react to 
-          // the zustandLogin call and render the dashboard automatically.
-          console.log("Login complete. Dashboard should now render.");
-
-        } else {
-          // This case indicates an error in the flow (temp data or username missing)
-          console.error("Temporary auth data or username was missing when Enter was pressed in welcome stage!", tempAuthData);
-          setError("An internal error occurred during login finalization. Please try again.");
-          // Trigger full logout/reset
-          handleLogout(); 
-        }
-        // --- MODIFICATION END ---
-      }
-    };
+    let specificListener: ((event: KeyboardEvent) => void) | undefined;
 
     if (loginStage === "welcome") {
-      document.addEventListener("keydown", handleKeyDown);
-      console.log("Welcome stage active, listening for Enter key...");
-    } else {
-      // Ensure listener is removed if stage changes away from welcome
-      document.removeEventListener("keydown", handleKeyDown);
+      specificListener = (event: KeyboardEvent) => {
+        if (event.key === "Enter") {
+           finalizeLogin();
+        }
+      };
+      welcomeKeyListenerRef.current = specificListener; // Store the listener
+      window.addEventListener("keydown", specificListener);
     }
 
-    // Cleanup listener
+    // Cleanup function for this specific effect
     return () => {
-      document.removeEventListener("keydown", handleKeyDown);
+      if (specificListener) {
+        window.removeEventListener("keydown", specificListener);
+        // Check if the ref still holds the listener we are cleaning up
+        if (welcomeKeyListenerRef.current === specificListener) {
+             welcomeKeyListenerRef.current = null; // Assign null on cleanup
+        }
+      }
     };
-  // Dependencies: loginStage, tempAuthData, zustandLogin, handleLogout
-  }, [loginStage, tempAuthData, zustandLogin, handleLogout]); 
+  }, [loginStage, finalizeLogin]);
+
+  // --- Effect to progress after unlocking animation (MODIFIED FOR SKIP) ---
+  useEffect(() => {
+    let cleanupFunc = () => {}; // Initialize empty cleanup
+
+    if (loginStage === "unlocking") {
+      // --- Key listener for early Enter skip during unlocking ---
+      const handleEarlyEnter = (event: KeyboardEvent) => {
+        if (event.key === "Enter") {
+           handleSkipAnimation();
+        }
+      };
+      window.addEventListener("keydown", handleEarlyEnter);
+      // --------------------------------------------------------
+
+      // Start showing boot messages
+      setCurrentBootMessageIndex(0);
+
+      bootMessageIntervalRef.current = setInterval(() => { // Store interval ID
+          // ... (boot message interval logic) ...
+      }, BOOT_MESSAGE_INTERVAL);
+
+
+      // Define cleanup for this effect
+      cleanupFunc = () => {
+        window.removeEventListener("keydown", handleEarlyEnter); // Remove early Enter listener
+        if (bootMessageIntervalRef.current) {
+          clearInterval(bootMessageIntervalRef.current);
+          bootMessageIntervalRef.current = null;
+        }
+        if (bootTimeoutRef.current) {
+          clearTimeout(bootTimeoutRef.current);
+          bootTimeoutRef.current = null;
+        }
+        setCurrentBootMessageIndex(-1); // Reset on cleanup
+      };
+    }
+
+    return cleanupFunc; // Return the specific cleanup function
+  }, [loginStage, handleSkipAnimation]); // Add handleSkipAnimation dependency
+
+  // --- MOTD Effects and other logic remain largely unchanged ---
+  // ... (useEffect for MOTD animation, etc.) ...
 
   // --- Return Values ---
   return {
@@ -625,5 +672,6 @@ export const useDeveloperLogin = (): UseDeveloperLoginReturn => {
     bootMessages,
     handleLogout,
     loggedInUsername: loggedInUsernameFromStore,
+    handleSkipAnimation,
   };
 };

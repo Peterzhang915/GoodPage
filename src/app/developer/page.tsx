@@ -28,6 +28,13 @@ const DeveloperPage: React.FC = () => {
   // Get the context setter function
   const { setIsDeveloperToolsUIVisible } = useDeveloperMode();
 
+  // --- Effect to Scroll to Top on Mount --- 
+  useEffect(() => {
+    // Ensure this runs only once when the page component mounts
+    console.log("DeveloperPage mounted, scrolling to top.");
+    window.scrollTo(0, 0);
+  }, []); // Empty dependency array ensures it runs only once on mount
+
   // Effect to sync showDeveloperTools with isAuthenticated
   // This controls the switch between Login and Dashboard views
   useEffect(() => {
