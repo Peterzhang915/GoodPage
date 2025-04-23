@@ -37,6 +37,7 @@ interface AddMemberRequestBody {
   github_username?: string;
   personal_website?: string;
   research_interests?: string;
+  avatar_url?: string | null;
 }
 
 // POST /api/members - Create a new member
@@ -83,6 +84,7 @@ export async function POST(request: Request) {
       github_username,
       personal_website,
       research_interests,
+      avatar_url,
     } = body;
 
     // Basic required field check (as before)
@@ -117,6 +119,16 @@ export async function POST(request: Request) {
         );
     }
 
+    // Optional: Add validation for avatar_url URL format (basic check)
+    if (avatar_url && !isValidHttpUrl(avatar_url) && !avatar_url.startsWith('/')) {
+        console.warn(`[API Post Member] Invalid avatar_url format: ${avatar_url}. Allowing relative paths starting with /.`) 
+        // Relaxed validation: Allow relative paths starting with / or valid URLs
+        // return NextResponse.json(
+        //     { success: false, error: `Invalid Avatar URL format. Must be a valid URL or a relative path starting with /.` },
+        //     { status: 400 }
+        // );
+    }
+
     // 4. Check for existing user/email
     const existingMember = await prisma.member.findFirst({
       where: { OR: [{ username }, { email }] },
@@ -132,7 +144,7 @@ export async function POST(request: Request) {
     }
 
     // 5. Create Member in Database
-    console.log('[API Post Member] Creating member in database (adjusting fields)...');
+    console.log('[API Post Member] Creating member in database (including avatar_url)...');
     try {
         const newMember = await prisma.member.create({
         data: {
@@ -151,6 +163,7 @@ export async function POST(request: Request) {
             github_username: github_username || null,
             personal_website: personal_website || null,
             research_interests: research_interests || null,
+            avatar_url: avatar_url || null,
         },
         select: { 
             id: true, username: true, name_en: true, name_zh: true, email: true,
@@ -159,6 +172,7 @@ export async function POST(request: Request) {
             github_username: true,
             personal_website: true,
             research_interests: true,
+            avatar_url: true,
         },
         });
         console.log('[API Post Member] Member created successfully:', newMember);

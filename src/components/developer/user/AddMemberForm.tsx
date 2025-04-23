@@ -19,6 +19,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label"; // Import Label for file input
 
 // Define available roles based on design.md (excluding Root)
 const availableRoles = [
@@ -56,6 +57,7 @@ interface AddMemberFormProps {
 
 export function AddMemberForm({ onSuccess, onCancel }: AddMemberFormProps) {
   const [isLoading, setIsLoading] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null); // State for the avatar file
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -77,53 +79,122 @@ export function AddMemberForm({ onSuccess, onCancel }: AddMemberFormProps) {
     },
   });
 
-  // Updated onSubmit function to call two APIs
+  // Handler for file input change
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files && event.target.files[0]) {
+      const file = event.target.files[0];
+      // Optional: Add validation for file type or size here
+      if (!file.type.startsWith("image/")) {
+          toast.error("Please select an image file.");
+          setSelectedFile(null);
+          event.target.value = ""; // Clear the input
+          return;
+      }
+      // Optional: Check file size (e.g., max 2MB)
+      // const maxSize = 2 * 1024 * 1024; // 2MB
+      // if (file.size > maxSize) {
+      //     toast.error("File size exceeds 2MB limit.");
+      //     setSelectedFile(null);
+      //     event.target.value = "";
+      //     return;
+      // }
+      setSelectedFile(file);
+    } else {
+      setSelectedFile(null);
+    }
+  };
+
+  // Updated onSubmit function to call two APIs and handle file upload
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
     const { password, ...memberData } = values; // Separate password from other data
 
-    console.log("Step 1: Creating member with data:", memberData);
+    let finalAvatarUrl: string | null = null; // Initialize avatar URL
+
+    // --- Handle File Upload Logic ---
+    if (selectedFile) {
+        console.log(`File selected: ${selectedFile.name}, Type: ${selectedFile.type}, Size: ${selectedFile.size}`);
+        toast.info("Avatar selected. Attempting upload..."); // More informative toast
+
+        // ---- Start Real Upload Logic ----
+        try {
+            const uploadFormData = new FormData();
+            uploadFormData.append("file", selectedFile); // Key must match backend ('file')
+            uploadFormData.append("username", values.username); // Key must match backend ('username')
+
+            toast.info(`Uploading ${selectedFile.name}...`); // Indicate upload start
+
+            const uploadResponse = await fetch("/api/avatar/upload", { // Call the new API
+               method: "POST",
+               body: uploadFormData,
+               // Note: Don't set Content-Type header when sending FormData;
+               // the browser will set it correctly with the boundary.
+            });
+
+            const uploadResult = await uploadResponse.json();
+
+            if (!uploadResponse.ok || !uploadResult.success) {
+               // Use error message from API response if available
+               throw new Error(uploadResult.error || "Failed to upload avatar.");
+            }
+
+            finalAvatarUrl = uploadResult.url; // Get the URL returned by the API
+            console.log(`Avatar uploaded successfully. URL: ${finalAvatarUrl}`);
+            toast.success("Avatar uploaded successfully!");
+
+        } catch (uploadError: any) {
+           console.error("Avatar upload error:", uploadError);
+           toast.error(`Avatar upload failed: ${uploadError.message}`);
+           setIsLoading(false);
+           return; // Stop the process if upload fails
+        }
+        // ---- End Real Upload Logic ----
+    } // End of if(selectedFile)
+    // --- End Handle File Upload Logic ---
+
+    console.log("Step 1: Creating member with data (including potential avatar URL):", { ...memberData, avatar_url: finalAvatarUrl });
     try {
-      // --- Step 1: Create Member (without password) --- 
+      // --- Step 1: Create Member (now including avatar_url) ---
       const createMemberResponse = await fetch("/api/members", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(memberData), // Send data without password
+        // Include finalAvatarUrl in the data sent
+        body: JSON.stringify({ ...memberData, avatar_url: finalAvatarUrl }),
       });
 
       const createMemberResult = await createMemberResponse.json();
 
       if (!createMemberResponse.ok || !createMemberResult.success) {
         console.error("Failed to create member:", createMemberResult);
-        // Use optional chaining for potentially nested error structure
         toast.error(`Failed to create member: ${createMemberResult.error?.message || createMemberResult.error || "Unknown error"}`);
         setIsLoading(false);
         return; // Stop if creation fails
       }
 
       console.log("Step 1 Success: Member created:", createMemberResult.data);
-      toast.info("Member created. Now setting password via script API...");
+      // Don't show password toast immediately if it might fail
+      // toast.info("Member created. Now setting password via script API...");
 
-      // --- Step 2: Set Password via Script API --- 
+      // --- Step 2: Set Password via Script API ---
       console.log(`Step 2: Setting password for username: ${values.username}`);
       const setPasswordResponse = await fetch("/api/admin/set-password", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ username: values.username, password: password }), // Send username and password
+          body: JSON.stringify({ username: values.username, password: password }), // Use password from original values
       });
 
       const setPasswordResult = await setPasswordResponse.json();
 
       if (!setPasswordResponse.ok || !setPasswordResult.success) {
           console.error("Failed to set password:", setPasswordResult);
-          // Inform user that member was created but password setting failed
-          toast.error(`Member created, but failed to set password: ${setPasswordResult.error || "Unknown error"}. Check server logs. Please set manually via script if needed.`);
-          // Optionally still call onSuccess to close dialog/refresh list, even if password fails
-          if (onSuccess) onSuccess(); 
+          toast.error(`Member created, but failed to set password: ${setPasswordResult.error || "Unknown error"}. Set manually.`);
+          // Still call onSuccess even if password fails, as member exists
+          if (onSuccess) onSuccess();
       } else {
           console.log("Step 2 Success: Password set via script API.");
           toast.success(`Member ${values.username} added and password set successfully!`);
           form.reset(); // Clear form on full success
+          setSelectedFile(null); // Clear selected file state as well
           if (onSuccess) {
             onSuccess(); // Call final success callback
           }
@@ -135,12 +206,12 @@ export function AddMemberForm({ onSuccess, onCancel }: AddMemberFormProps) {
     } finally {
       setIsLoading(false);
     }
-  }
+  } // End of onSubmit function
 
   return (
     <Form {...form}>
-      <form 
-        onSubmit={form.handleSubmit(onSubmit)} 
+      <form
+        onSubmit={form.handleSubmit(onSubmit)}
         className="add-member-form space-y-4 max-h-[70vh] overflow-y-auto pr-4"
       >
         {/* Username */}
@@ -245,30 +316,60 @@ export function AddMemberForm({ onSuccess, onCancel }: AddMemberFormProps) {
         />
 
         {/* Role */}
-        <FormField
-          control={form.control}
-          name="role_name"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Role*</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value as string | undefined}>
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select role" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {availableRoles.map((role) => (
-                    <SelectItem key={role.value} value={role.value}>
-                      {role.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+         <FormField
+           control={form.control}
+           name="role_name"
+           render={({ field }) => (
+             <FormItem>
+               <FormLabel>Role*</FormLabel>
+               <Select onValueChange={field.onChange} defaultValue={field.value}>
+                 <FormControl>
+                   <SelectTrigger>
+                     <SelectValue placeholder="Select member role" />
+                   </SelectTrigger>
+                 </FormControl>
+                 <SelectContent>
+                   {availableRoles.map((role) => (
+                     <SelectItem key={role.value} value={role.value}>
+                       {role.label}
+                     </SelectItem>
+                   ))}
+                 </SelectContent>
+               </Select>
+               <FormMessage />
+             </FormItem>
+           )}
+         />
+
+         {/* --- Avatar Upload Field --- */}
+         <FormItem>
+              <FormLabel htmlFor="avatarFile">Avatar Image (Optional)</FormLabel>
+              <FormControl>
+                 <Input
+                     id="avatarFile"
+                     type="file"
+                     accept="image/*"
+                     onChange={handleFileChange}
+                     className="block w-full text-sm text-gray-400 cursor-pointer rounded-md border border-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-blue-500 
+                                file:mr-4 file:py-1.5 file:px-4 file:rounded-md file:border-0 
+                                file:text-sm file:font-medium 
+                                file:bg-gray-700 file:text-gray-200 hover:file:bg-gray-600"
+                  />
+              </FormControl>
+              {/* Optional: Show preview of selected image */}
+              {selectedFile && (
+                  <div className="mt-2">
+                     <img
+                         src={URL.createObjectURL(selectedFile)}
+                         alt="Avatar preview"
+                         className="w-16 h-16 rounded-full object-cover border border-gray-600"
+                     />
+                  </div>
+              )}
+              {/* We don't have validation tied to react-hook-form here, so FormMessage might not be needed unless custom validation is added */}
+              {/* <FormMessage /> */}
+         </FormItem>
+         {/* --- End Avatar Upload Field --- */}
 
         {/* Enrollment Year */}
         <FormField
@@ -278,134 +379,121 @@ export function AddMemberForm({ onSuccess, onCancel }: AddMemberFormProps) {
             <FormItem>
               <FormLabel>Enrollment Year</FormLabel>
               <FormControl>
-                <Input type="number" placeholder="e.g., 2023" {...field} value={field.value ?? ''} />
+                <Input type="number" placeholder={`e.g., ${new Date().getFullYear()}`} {...field} value={field.value ?? ''}/>
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
 
-        {/* Title (English) */}
-        <FormField
-          control={form.control}
-          name="title_en"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Title (English)</FormLabel>
-              <FormControl>
-                <Input placeholder="e.g., PhD Student" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        {/* Title EN */}
+         <FormField
+           control={form.control}
+           name="title_en"
+           render={({ field }) => (
+             <FormItem>
+               <FormLabel>Title (English)</FormLabel>
+               <FormControl>
+                 <Input placeholder="e.g., Research Assistant" {...field} />
+               </FormControl>
+               <FormMessage />
+             </FormItem>
+           )}
+         />
 
-        {/* Title (Chinese) */}
-        <FormField
-          control={form.control}
-          name="title_zh"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Title (Chinese)</FormLabel>
-              <FormControl>
-                <Input placeholder="e.g., 博士生" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+         {/* Title ZH */}
+         <FormField
+           control={form.control}
+           name="title_zh"
+           render={({ field }) => (
+             <FormItem>
+               <FormLabel>Title (Chinese)</FormLabel>
+               <FormControl>
+                 <Input placeholder="e.g., 研究助理" {...field} />
+               </FormControl>
+               <FormMessage />
+             </FormItem>
+           )}
+         />
 
-        {/* Office Location */}
-        <FormField
-          control={form.control}
-          name="office_location"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Office Location</FormLabel>
-              <FormControl>
-                <Input placeholder="e.g., Room 501" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+         {/* Office Location */}
+         <FormField
+           control={form.control}
+           name="office_location"
+           render={({ field }) => (
+             <FormItem>
+               <FormLabel>Office Location</FormLabel>
+               <FormControl>
+                 <Input placeholder="e.g., Room 301" {...field} />
+               </FormControl>
+               <FormMessage />
+             </FormItem>
+           )}
+         />
 
-        {/* GitHub Username */}
-        <FormField
-          control={form.control}
-          name="github_username"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>GitHub Username</FormLabel>
-              <FormControl>
-                <Input placeholder="e.g., octocat" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+         {/* GitHub Username */}
+         <FormField
+           control={form.control}
+           name="github_username"
+           render={({ field }) => (
+             <FormItem>
+               <FormLabel>GitHub Username</FormLabel>
+               <FormControl>
+                 <Input placeholder="e.g., johndoe" {...field} />
+               </FormControl>
+               <FormMessage />
+             </FormItem>
+           )}
+         />
 
-        {/* Personal Website Field (ADDED) */}
-        <FormField
-          control={form.control}
-          name="personal_website"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Personal Website / Blog URL</FormLabel>
-              <FormControl>
-                <Input type="url" placeholder="https://your-blog.com" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+         {/* Personal Website */}
+         <FormField
+           control={form.control}
+           name="personal_website"
+           render={({ field }) => (
+             <FormItem>
+               <FormLabel>Personal Website</FormLabel>
+               <FormControl>
+                 <Input type="url" placeholder="e.g., https://johndoe.com" {...field} />
+               </FormControl>
+               <FormMessage />
+             </FormItem>
+           )}
+         />
 
-        {/* Research Interests */}
-        <FormField
-          control={form.control}
-          name="research_interests"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Research Interests</FormLabel>
-              <FormControl>
-                <Textarea
-                  placeholder="Briefly describe research interests..."
-                  className="resize-y min-h-[80px]"
-                  {...field}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+         {/* Research Interests */}
+         <FormField
+           control={form.control}
+           name="research_interests"
+           render={({ field }) => (
+             <FormItem>
+               <FormLabel>Research Interests</FormLabel>
+               <FormControl>
+                 <Textarea placeholder="e.g., Databases, AI, ..." {...field} />
+               </FormControl>
+               <FormMessage />
+             </FormItem>
+           )}
+         />
 
-        <div className="pt-4 mt-4 border-t border-gray-600">
-            <h3 className="text-lg font-medium text-gray-400 mb-4">Optional Information</h3>
-        </div>
 
-        <div className="flex justify-end space-x-2 pt-4 sticky bottom-0 bg-gray-800 pb-4 border-t border-gray-700 -mx-4 px-4"> 
-           {onCancel && (
-            <Button 
-              type="button" 
-              variant="default"
-              onClick={onCancel} 
-              disabled={isLoading}
-              className="bg-blue-600 hover:bg-blue-700 text-white focus-visible:ring-blue-500 disabled:opacity-50 disabled:bg-blue-800"
-            >
-              Cancel
-            </Button>
-          )}
+        <div className="flex justify-end space-x-2 pt-4">
           <Button 
-            type="submit" 
-            variant="default"
-            disabled={isLoading}
-            className="bg-blue-600 hover:bg-blue-700 text-white focus-visible:ring-blue-500 disabled:opacity-50 disabled:bg-blue-800"
-          >
-            {isLoading ? (
-              <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Processing...</>
-            ) : (
-              "Add Member & Set Password"
-            )}
+             type="button" 
+             variant="ghost" 
+             onClick={onCancel} 
+             disabled={isLoading}
+             className="text-blue-500 hover:text-blue-400 disabled:opacity-50"
+           >
+            Cancel
+          </Button>
+          <Button 
+             type="submit" 
+             disabled={isLoading}
+             className="bg-blue-600 hover:bg-blue-700 text-white focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-800 focus-visible:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-blue-800"
+           >
+            {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+            Add Member
           </Button>
         </div>
       </form>
