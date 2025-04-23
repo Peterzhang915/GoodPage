@@ -60,10 +60,10 @@ const images: GalleryImage[] = [
   // --- 添加更多图片 ---
   {
     id: 7,
-    src: "/images/gallery/placeholder1.jpg",
-    alt: "Competition 2",
-    caption: "黑客马拉松",
-    date: "2024.11.20",
+    src: "/images/gallery/Competition/ASC19-Traning.png",
+    alt: "ASC19训练",
+    caption: "ASC19训练",
+    date: "2019.12.18",
     category: "Competition",
   },
 ];
