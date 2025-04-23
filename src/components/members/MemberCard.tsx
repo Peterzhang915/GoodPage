@@ -136,7 +136,7 @@ export function MemberCard({ member, isEmojiEnabled }: MemberCardProps) {
             alt={`${member.name_en} avatar`}
             width={80}
             height={80}
-            className="object-cover w-full h-full"
+            className="object-cover object-[center_25%] w-full h-full"
             priority={member.status === MemberStatus.PROFESSOR}
             onError={(e: React.SyntheticEvent<HTMLImageElement, Event>) => {
               const target = e.target as HTMLImageElement;

@@ -41,7 +41,7 @@ export const MemberProfileImage: React.FC<MemberProfileImageProps> = ({
       alt={alt}
       width={width}
       height={height}
-      className={`object-cover w-full h-full ${className}`}
+      className={`object-cover object-[center_25%] w-full h-full ${className}`}
       priority // Optionally prioritize loading for key profile images
       // 在客户端组件中使用 onError 是允许的
       onError={() => {
