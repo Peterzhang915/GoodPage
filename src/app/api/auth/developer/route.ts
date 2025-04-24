@@ -9,7 +9,7 @@ import { NextRequest, NextResponse } from 'next/server';
 // } from '@/config/developerCredentials';
 
 // --- Import Prisma Client and bcrypt ---
-import { PrismaClient, Prisma } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcrypt';
 
 // Instantiate Prisma Client

@@ -1,8 +1,8 @@
 import React from 'react';
 import { getMemberProfileData } from '@/lib/members'; // Import the server-side fetch function
 import MemberProfileEditor from '@/components/developer/members/MemberProfileEditor'; // Import the editor component
-import { notFound, redirect } from 'next/navigation';
-import prisma from '@/lib/prisma'; // Prisma might not be directly needed here if getMemberProfileData handles it
+import { notFound } from 'next/navigation';
+// import prisma from '@/lib/prisma'; // Prisma might not be directly needed here if getMemberProfileData handles it
 import { Toaster } from 'sonner'; // Import Toaster for notifications
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';

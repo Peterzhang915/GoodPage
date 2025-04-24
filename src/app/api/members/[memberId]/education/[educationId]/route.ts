@@ -6,15 +6,11 @@ import {
 } from "@/lib/members";
 // TODO: Add authentication and authorization checks
 
-interface Params {
-    params: { 
-        memberId: string; 
-        educationId: string; // Route params are always strings
-    };
-}
-
 // GET handler for fetching a single education record
-export async function GET(request: NextRequest, { params }: Params) {
+export async function GET(
+    request: NextRequest, 
+    { params }: { params: { memberId: string; educationId: string } } // Define type directly
+) {
     // TODO: Check read permissions?
     const { educationId: educationIdStr } = params;
     const educationId = parseInt(educationIdStr, 10);
@@ -39,7 +35,10 @@ export async function GET(request: NextRequest, { params }: Params) {
 }
 
 // PATCH handler for updating an existing education record
-export async function PATCH(request: NextRequest, { params }: Params) {
+export async function PATCH(
+    request: NextRequest, 
+    { params }: { params: { memberId: string; educationId: string } } // Define type directly
+) {
     // TODO: Check update permissions
     const { educationId: educationIdStr } = params;
     const educationId = parseInt(educationIdStr, 10);
@@ -69,7 +68,10 @@ export async function PATCH(request: NextRequest, { params }: Params) {
 }
 
 // DELETE handler for deleting an education record
-export async function DELETE(request: NextRequest, { params }: Params) {
+export async function DELETE(
+    request: NextRequest, 
+    { params }: { params: { memberId: string; educationId: string } } // Define type directly
+) {
      // TODO: Check delete permissions
     const { educationId: educationIdStr } = params;
     const educationId = parseInt(educationIdStr, 10);

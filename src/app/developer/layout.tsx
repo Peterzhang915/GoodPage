@@ -1,6 +1,7 @@
 import React from "react"; // Add React import for JSX
 import { Metadata } from "next";
-import { themeColors } from "@/styles/theme";
+// Remove unused themeColors import
+// import { themeColors } from "@/styles/theme";
 import { Inter } from "next/font/google"; // Or use a preferred mono font like Fira Code, JetBrains Mono etc.
 
 // If using Inter, define subsets if needed

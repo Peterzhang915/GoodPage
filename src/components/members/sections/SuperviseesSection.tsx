@@ -3,7 +3,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { Users } from "lucide-react";
 import { themeColors } from "@/styles/theme";
-import { MemberStatus } from "@/lib/prisma"; // Import MemberStatus if needed for display logic
+import { MemberStatus } from "@prisma/client"; // Import MemberStatus if needed for display logic
 
 // Define the type for a single supervisee based on the select in getMemberProfileData
 type SuperviseeInfo = {

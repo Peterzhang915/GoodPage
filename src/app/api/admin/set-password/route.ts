@@ -8,7 +8,7 @@ interface SetPasswordRequestBody {
   password?: string; // Make password optional here, validation happens below
 }
 
-export async function POST(request: Request) {
+export async function POST(request: Request): Promise<NextResponse> {
   console.log('[API Set Password TS] Received request.');
 
   // 1. --- Permission Check (CRITICAL!) ---

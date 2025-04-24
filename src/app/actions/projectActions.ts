@@ -1,7 +1,7 @@
 'use server';
 
 import prisma from "@/lib/prisma";
-import { Prisma } from "@/lib/prisma"; // Use prisma namespace
+import { Prisma } from "@prisma/client"; // Use prisma namespace
 import { revalidatePath } from "next/cache";
 import { z } from 'zod'; // For validation
 
