@@ -11,6 +11,7 @@ const nextConfig: NextConfig = {
     // !! WARN !!: Dangerously allow production builds despite TypeScript errors.
     ignoreBuildErrors: true,
   },
+  //basePath: '/pagedemo',
 };
 
 export default nextConfig;
