@@ -157,7 +157,6 @@ export default function RootLayout({
       <html lang="en">
         {/* We'll add the class via useEffect below */}
         <body className={`dino-page-isolated-body`}>
-        <body className={`dino-page-isolated-body`}>
           {children}
         </body>
       </html>
@@ -167,7 +166,6 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`flex flex-col min-h-screen`}
         className={`flex flex-col min-h-screen`}
       >
         <ThemeProvider
