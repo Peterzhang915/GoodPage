@@ -14,7 +14,7 @@ async function main() {
     where: {
       role_name: null,
       username: null,
-      password_hash: null,
+
       // Removed name_en check here to avoid TS errors
     },
     select: {

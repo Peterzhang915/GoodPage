@@ -97,15 +97,16 @@ const availableTools: ToolConfig[] = [
     requiredPermission: "manage_settings",
     buttonText: "Open Prisma Studio",
   },
-  {
-    id: "logs",
-    title: "System Logs",
-    description: "View application and server logs.",
-    icon: LogIcon,
-    requiredPermission: "view_logs",
-    // component: SystemLogViewer, // TODO
-    buttonText: "View Logs (TBD)",
-  },
+  // Remove the System Logs tool configuration
+  // {
+  //   id: "logs",
+  //   title: "System Logs",
+  //   description: "View application and server logs.",
+  //   icon: LogIcon,
+  //   requiredPermission: "view_logs",
+  //   // component: SystemLogViewer, // TODO
+  //   buttonText: "View Logs (TBD)",
+  // },
 ];
 
 interface DeveloperDashboardProps {

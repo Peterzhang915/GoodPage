@@ -24,7 +24,9 @@ export default function DeveloperLayout({ children }: DeveloperLayoutProps) {
     // Apply developer-specific styles
     // Use flex-col and min-h-screen to ensure it fills height
     // Use direct Tailwind classes as placeholders for theme colors
+    // Remove inter.className
     <div
+      className={`font-mono min-h-screen flex flex-col bg-gray-900 text-gray-300`}
       className={`font-mono min-h-screen flex flex-col bg-gray-900 text-gray-300`}
     >
       {/* This layout intentionally does not include Navbar or Footer */}
