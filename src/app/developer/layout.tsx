@@ -2,10 +2,11 @@ import React from "react"; // Add React import for JSX
 import { Metadata } from "next";
 // Remove unused themeColors import
 // import { themeColors } from "@/styles/theme";
-import { Inter } from "next/font/google"; // Or use a preferred mono font like Fira Code, JetBrains Mono etc.
+// Remove Inter font import from next/font/google
+// import { Inter } from "next/font/google"; // Or use a preferred mono font like Fira Code, JetBrains Mono etc.
 
-// If using Inter, define subsets if needed
-const inter = Inter({ subsets: ["latin"] });
+// Remove Inter font instantiation
+// const inter = Inter({ subsets: ["latin"] });
 
 // Metadata for the developer section (can be defined here instead of page.tsx)
 export const metadata: Metadata = {
@@ -24,8 +25,9 @@ export default function DeveloperLayout({ children }: DeveloperLayoutProps) {
     // Apply developer-specific styles
     // Use flex-col and min-h-screen to ensure it fills height
     // Use direct Tailwind classes as placeholders for theme colors
+    // Remove inter.className
     <div
-      className={`${inter.className} font-mono min-h-screen flex flex-col bg-gray-900 text-gray-300`}
+      className={`font-mono min-h-screen flex flex-col bg-gray-900 text-gray-300`}
     >
       {/* This layout intentionally does not include Navbar or Footer */}
       {/* Remove container, mx-auto, and py-* to allow content to fill more space */}

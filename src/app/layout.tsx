@@ -2,7 +2,8 @@
 
 import React from 'react';
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+// Remove Inter font import from next/font/google
+// import { Inter } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
@@ -15,7 +16,8 @@ import { motion } from "framer-motion";
 import { useDeveloperMode } from "@/contexts/DeveloperModeContext";
 import { ThemeProvider, useTheme } from "next-themes";
 
-const inter = Inter({ subsets: ["latin"] });
+// Remove Inter font instantiation
+// const inter = Inter({ subsets: ["latin"] });
 
 // Define the Konami sequence string
 const konamiSequence =
@@ -156,7 +158,7 @@ export default function RootLayout({
     return (
       <html lang="en">
         {/* We'll add the class via useEffect below */}
-        <body className={`${inter.className} dino-page-isolated-body`}>
+        <body className={`dino-page-isolated-body`}>
           {children}
         </body>
       </html>
@@ -166,7 +168,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${inter.className} flex flex-col min-h-screen`}
+        className={`flex flex-col min-h-screen`}
       >
         <ThemeProvider
           attribute="class"
