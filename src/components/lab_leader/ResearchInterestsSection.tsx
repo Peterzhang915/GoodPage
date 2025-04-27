@@ -6,19 +6,13 @@ type ResearchInterestsSectionProps = {
 };
 
 const defaultInterestsText = `
-My research interests are primarily in the area of computing system design, 
-with a particular focus on operating systems, storage systems, computer architecture, 
-and their intersections. I am keen on building efficient, reliable, and scalable systems. 
-Specific topics include persistent memory, file systems, key-value stores, 
-virtualization, and system support for new hardware technologies. 
-I am also interested in applying system design principles to solve problems in 
-machine learning systems and high-performance computing.
+My research interests are primarily in the area of computing system design, with a particular focus on operating systems, storage systems, computer architecture, and their intersections. I am keen on building efficient, reliable, and scalable systems. Specific topics include persistent memory, file systems, key-value stores, virtualization, and system support for new hardware technologies. I am also interested in applying system design principles to solve problems in machine learning systems and high-performance computing.
 `; // Default static text
 
 const ResearchInterestsSection: React.FC<ResearchInterestsSectionProps> = ({
   interestsText,
 }) => {
-  const content = interestsText || defaultInterestsText;
+  const content = defaultInterestsText; // 临时修改，使用默认文本
 
   return (
     <section id="interests">

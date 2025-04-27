@@ -1,16 +1,5 @@
-// src/app/xuz/page.tsx
-import Link from "next/link";
-import Image from "next/image";
-import {
-  BookOpen,
-  Link as LinkIcon,
-  FileText as FileIcon,
-  Calendar,
-  Users,
-} from "lucide-react";
-import { notFound } from "next/navigation";
+// src/app/lab_leader/page.tsx
 
-// 【修改】导入获取 *所有* 论文的函数和类型
 import { getAllPublicationsFormatted } from "@/lib/publications";
 import type { PublicationInfo } from "@/lib/types";
 // Import Prisma types including Sponsorship
@@ -21,25 +10,9 @@ import type {
   Sponsorship,
 } from "@prisma/client";
 // Import the extracted component
-import PublicationItem from "@/components/publications/PublicationItem";
 import prisma from "@/lib/prisma"; // Import Prisma Client instance
-
-import { themeColors } from "@/styles/theme";
-
-// Import placeholder components (we will create these next)
-// import AcademicServicesSection from '@/components/lab_leader/AcademicServicesSection';
-// import AwardsSection from '@/components/lab_leader/AwardsSection';
-// import SponsorshipsSection from '@/components/lab_leader/SponsorshipsSection';
-// import LabLeaderHeader from '@/components/lab_leader/LabLeaderHeader';
-// import ResearchInterestsSection from '@/components/lab_leader/ResearchInterestsSection';
-// import PublicationsSection from '@/components/lab_leader/PublicationsSection';
-
-// Import the new client component that handles rendering and animation
 import LabLeaderPageContent from "@/components/lab_leader/LabLeaderPageContent";
 
-// --- 单个论文条目组件 ---
-// (保持不变，接收 PublicationInfo)
-// function PublicationItem({ pub }: { pub: PublicationInfo }) { ... } // REMOVED
 
 // --- 教授页面组件 (Server Component - Primarily for data fetching) ---
 export default async function ProfessorPage() {
@@ -86,7 +59,7 @@ export default async function ProfessorPage() {
       // Fetch Sponsorships
       sponsorships = await prisma.sponsorship.findMany({
         where: { member_id: professorId },
-        orderBy: { display_order: "asc" }, // Sorting here is okay, but also done in component
+        orderBy: { display_order: "asc" },
       });
     }
   } catch (err) {
@@ -103,14 +76,6 @@ export default async function ProfessorPage() {
   // Separate Sponsorships into featured and detailed
   const featuredSponsorships = sponsorships.filter((s) => s.isFeatured);
   const detailedSponsorships = sponsorships.filter((s) => !s.isFeatured);
-
-  // --- 移除硬编码数据 ---
-  // const academicServices = [ ... ]; // REMOVED
-  // const detailedServices = [ ... ]; // REMOVED
-  // const recentHighlights = [ ... ]; // REMOVED
-  // const researchGrants = [ ... ]; // REMOVED
-  // const detailedAwards = [ ... ]; // REMOVED
-  // -----------------------------------
 
   // TODO: Check if professor data itself needs to be fetched dynamically
   // For now, keeping the header static
@@ -131,32 +96,4 @@ export default async function ProfessorPage() {
     />
   );
 
-  // --- Old JSX structure removed ---
-  /*
-  return (
-    <div className={`${themeColors.themePageBg ?? 'bg-gray-50'} min-h-screen`}>
-      <LabLeaderHeader leaderData={professorData} />
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 md:py-12">
-        <div className="flex flex-col space-y-8 md:space-y-12">
-          <ResearchInterestsSection interestsText={professorData?.research_interests} />
-          <PublicationsSection publications={ccfAPubs} fetchError={pubError} />
-          <AcademicServicesSection
-              featuredServices={featuredServices}
-              detailedServices={detailedServices}
-              fetchError={dataError}
-          />
-          <AwardsSection
-              featuredAwards={featuredAwards}
-              detailedAwards={detailedAwardsData}
-              fetchError={dataError}
-          />
-          <SponsorshipsSection
-              featuredSponsorships={featuredSponsorships}
-              detailedSponsorships={detailedSponsorships}
-          />
-        </div>
-      </div>
-    </div>
-  );
-  */
 }
