@@ -226,15 +226,7 @@ const DeveloperDashboard: React.FC<DeveloperDashboardProps> = ({
           {/* Render ALL available tools, disabling based on permission */}
           {availableTools.map((tool, index) => {
             const canAccessTool = hasPermission(tool.requiredPermission);
-            
-            // Determine if the card should be disabled based on the user's goal:
-            // Disable if the user CANNOT access the tool AND the tool is NOT 'member'
-            const isDisabled = !canAccessTool && tool.id !== 'member';
-
-            // If the user is 'User' (approximated by !isFullAccess) and the tool is 'member',
-            // we still need the specific permission check for the 'member' tool itself.
-            // The overall `canAccessTool` already handles this based on `requiredPermission: 'manage_members'`. 
-            // So, if canAccessTool is false for the 'member' tool, it will also be disabled correctly.
+            const isDisabled = !canAccessTool;
 
             return (
               <ToolCard
@@ -244,15 +236,12 @@ const DeveloperDashboard: React.FC<DeveloperDashboardProps> = ({
                 buttonText={tool.buttonText}
                 icon={<tool.icon size={16} className="mr-2" />}
                 onButtonClick={
-                  // Only allow click if the tool is NOT disabled
-                  // Let handleToolSelect decide the action (open modal or set active tool)
-                  !isDisabled
-                    ? () => handleToolSelect(tool.id)
-                    : undefined
+                  isDisabled
+                    ? undefined 
+                    : () => handleToolSelect(tool.id)
                 }
                 externalLink={tool.externalLink}
-                disabled={isDisabled} // Pass the calculated disabled state
-                delay={0.1 + index * 0.05}
+                disabled={isDisabled}
               />
             );
           })}

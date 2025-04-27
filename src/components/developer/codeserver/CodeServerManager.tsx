@@ -163,7 +163,7 @@ const CodeServerManager: React.FC<CodeServerManagerProps> = ({ onClose }) => {
       <div className="flex justify-between items-center mb-6 border-b border-gray-700 pb-4">
         <h2 className="text-2xl font-semibold text-green-400 flex items-center gap-2">
           <Server size={24} />
-          Manage Code Servers
+          Manage Code Servers (Coming soon)
         </h2>
       </div>
 
