@@ -39,44 +39,86 @@ const ALLOWED_TEXT_FIELDS: ReadonlyArray<keyof Member> = [
   // 'is_profile_public', // 需要不同的处理方式 (Switch/Checkbox)
 ] as const; // 使用 as const 获得更精确的类型
 
+// --- 新增: 定义允许更新的数字字段列表 ---
+const ALLOWED_NUMBER_FIELDS: ReadonlyArray<keyof Member> = [
+    'enrollment_year',
+    'graduation_year',
+    // 可以添加其他数字字段, e.g., 'display_order' if needed directly
+] as const;
+
 // 从 Member 类型中挑选出允许更新的字段，形成一个类型
 type UpdatableMemberTextFields = Pick<Member, typeof ALLOWED_TEXT_FIELDS[number]>;
+// --- 新增: 允许更新的数字字段类型 ---
+type UpdatableMemberNumberFields = Pick<Member, typeof ALLOWED_NUMBER_FIELDS[number]>;
+// --- 新增: 联合类型，包含所有允许更新的字段名 ---
+type AllowedFieldNames = typeof ALLOWED_TEXT_FIELDS[number] | typeof ALLOWED_NUMBER_FIELDS[number];
 
 export async function updateMemberField(
   memberId: string,
-  fieldName: keyof UpdatableMemberTextFields, // 强制 fieldName 必须在允许的列表内
-  value: string | null,
+  fieldName: AllowedFieldNames, // 使用联合类型
+  value: string | number | null, // 接受字符串、数字或null
 ): Promise<{ success: boolean; error?: string }> {
-  console.log(`Action: Updating field '${String(fieldName)}' for member ${memberId} with value: "${value}"`);
+  console.log(`Action: Updating field '${String(fieldName)}' for member ${memberId} with value: "${value}" (type: ${typeof value})`);
 
   // --- 输入验证 ---
-  if (!ALLOWED_TEXT_FIELDS.includes(fieldName)) {
+  // 修改: 检查字段是否在文本或数字允许列表中
+  const isAllowedText = (ALLOWED_TEXT_FIELDS as ReadonlyArray<string>).includes(fieldName);
+  const isAllowedNumber = (ALLOWED_NUMBER_FIELDS as ReadonlyArray<string>).includes(fieldName);
+
+  if (!isAllowedText && !isAllowedNumber) {
      console.error(`Action Error: Attempted to update disallowed field '${String(fieldName)}' for member ${memberId}`);
      return { success: false, error: `Updating field '${String(fieldName)}' is not allowed through this action.` };
   }
    if (!memberId) {
      return { success: false, error: "Member ID is required." };
    }
-   // 可选：根据 fieldName 添加更具体的 value 验证 (e.g., email format)
 
-  // --- TODO: 权限检查 ---
-  // 在这里需要检查当前执行 Action 的用户是否有权限修改这个 memberId 的这个 fieldName
-  // const { getUser } = await import('@/lib/auth'); // 延迟导入 auth 相关函数
-  // const user = await getUser();
-  // if (!user) {
-  //   return { success: false, error: "Authentication required." };
-  // }
-  // if (!checkPermission(user, 'manage_members', memberId) && user.id !== memberId) { // 简化：管理员或自己才能改
-  //   return { success: false, error: "Permission denied." };
-  // }
-  console.warn(`Action Warning: Permission check is currently disabled in updateMemberField for member ${memberId}`);
+   // --- 新增: 根据字段类型进行值验证和处理 ---
+   let valueToUpdate: string | number | null = null;
+
+   if (isAllowedNumber) {
+       // 处理数字字段
+       if (value === null || value === undefined || value === '') {
+           valueToUpdate = null;
+       } else {
+           const numValue = Number(value);
+           if (isNaN(numValue) || !Number.isInteger(numValue)) { // 确保是整数
+                console.error(`Action Error: Invalid number value "${value}" for field '${String(fieldName)}'`);
+                return { success: false, error: `Field '${String(fieldName)}' requires a valid integer number.` };
+           }
+           // 可选: 添加范围检查 (e.g., year > 1900)
+           if ((fieldName === 'enrollment_year' || fieldName === 'graduation_year') && (numValue < 1900 || numValue > 2100)) {
+               console.error(`Action Error: Year value ${numValue} out of range for field '${String(fieldName)}'`);
+               return { success: false, error: `Field '${String(fieldName)}' must be a year between 1900 and 2100.` };
+           }
+           valueToUpdate = numValue;
+       }
+       console.log(`Action: Processed number value for '${String(fieldName)}':`, valueToUpdate);
+
+   } else if (isAllowedText) {
+       // 处理文本字段 (保持原有逻辑，将空字符串视为空值)
+       valueToUpdate = (value === '' || value === null || value === undefined) ? null : String(value);
+       console.log(`Action: Processed text value for '${String(fieldName)}':`, valueToUpdate);
+   }
+
+   // --- TODO: 权限检查 ---
+   // 在这里需要检查当前执行 Action 的用户是否有权限修改这个 memberId 的这个 fieldName
+   // const { getUser } = await import('@/lib/auth'); // 延迟导入 auth 相关函数
+   // const user = await getUser();
+   // if (!user) {
+   //   return { success: false, error: "Authentication required." };
+   // }
+   // if (!checkPermission(user, 'manage_members', memberId) && user.id !== memberId) { // 简化：管理员或自己才能改
+   //   return { success: false, error: "Permission denied." };
+   // }
+   console.warn(`Action Warning: Permission check is currently disabled in updateMemberField for member ${memberId}`);
 
 
   try {
     // 构建更新数据对象
     // 使用 [fieldName] 作为计算属性名
-    const dataToUpdate: Partial<UpdatableMemberTextFields> = {
-      [fieldName]: value === '' || value === null ? null : value, // 将空字符串视为空值 (null)
+    const dataToUpdate: Partial<Member> = {
+      [fieldName]: valueToUpdate, // 使用处理后的值
     };
 
     await prisma.member.update({
