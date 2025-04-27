@@ -1,6 +1,7 @@
 import React from "react";
 import ContentSection from "@/components/common/ContentSection";
 import { themeColors } from "@/styles/theme";
+import { AlertTriangle } from "lucide-react"; // Import icon for error display
 
 /**
  * 教学课程信息展示组件
@@ -24,36 +25,46 @@ import { themeColors } from "@/styles/theme";
  * - 与StudentInterestsSection形成互补，共同构成教学与招生信息体系
  * - 遵循项目的颜色主题系统，确保视觉一致性
  */
-const TeachingSection = () => {
+
+// Define the expected data structure for a single teaching item
+interface HomepageTeachingItem {
+  id: number;
+  course_title: string;
+  details: string | null;
+  // is_visible is handled server-side or during fetch
+}
+
+// Define the props for the TeachingSection component
+interface TeachingSectionProps {
+  items: HomepageTeachingItem[] | null;
+  error: string | null;
+}
+
+const TeachingSection: React.FC<TeachingSectionProps> = ({ items, error }) => {
   return (
     <ContentSection id="teaching" title="Teaching">
-      {/* 课程列表 - 按时间倒序排列 */}
-      <ul
-        className={`list-disc pl-5 sm:pl-6 space-y-3 text-sm md:text-base ${themeColors.textColorSecondary}`}
-      >
-        <li>
-          Introduction to Artificial Intelligence (Fall 2024, Fall 2023, Fall
-          2022, Spring 2021, 2020)
-        </li>
-        <li>
-          Discrete Mathematics (Fall 2024, Fall 2023, Fall 2022, Spring 2021,
-          2020)
-        </li>
-        <li>Operating Systems (Fall 2019)</li>
-        <li>Cloud Computing (Spring 2019)</li>
-        <li>Introduction to Cloud Computing (Fall 2018)</li>
-        <li>Network Protocol Analysis (Fall 2018)</li>
-        <li>
-          Aritificial Intelligent Computing Systems (Fall 2023, Fall 2022,
-          Spring 2021, Spring 2019, Summer 2018)
-        </li>
-        <li>Linux Programming (Spring 2018)</li>
-        <li>Data Structure (Fall 2017)</li>
-        <li>
-          Graduate Course Introduction to Combinatorics (Fall 2024, 2023, 2022,
-          2021, 2020, 2019, 2018, 2017)
-        </li>
-      </ul>
+      {/* Conditional Rendering based on error or items */}
+      {error ? (
+        <div className={`flex items-center space-x-2 text-red-600 dark:text-red-400`}>
+          <AlertTriangle className="h-5 w-5 flex-shrink-0" />
+          <span>Error loading teaching data: {error}</span>
+        </div>
+      ) : items && items.length > 0 ? (
+        <ul
+          className={`list-disc pl-5 sm:pl-6 space-y-3 text-sm md:text-base ${themeColors.textColorSecondary}`}
+        >
+          {items.map((item) => (
+            <li key={item.id}>
+              <span className="font-medium text-gray-800 dark:text-gray-200">{item.course_title}</span>
+              {item.details && <span className="ml-2 text-xs">({item.details})</span>}
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className={`${themeColors.textColorSecondary} text-sm md:text-base`}>
+          No teaching information available at the moment.
+        </p>
+      )}
     </ContentSection>
   );
 };

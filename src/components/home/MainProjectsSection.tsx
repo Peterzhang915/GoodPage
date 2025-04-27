@@ -2,180 +2,87 @@ import React from "react";
 import ContentSection from "@/components/common/ContentSection";
 import { themeColors } from "@/styles/theme";
 import Image from "next/image";
+import { AlertTriangle } from "lucide-react";
+import Link from "next/link";
+import { Link as LinkIcon } from "lucide-react";
 
-/**
- * 实验室主要研究项目展示区组件
- *
- * 负责展示当前实验室的三个核心研究方向及其研究成果
- */
-const MainProjectsSection = () => {
+enum ProjectType { MAIN = 'MAIN', FORMER = 'FORMER' }
+
+interface HomepageProjectItem {
+  id: number;
+  title: string;
+  description: string;
+  image_url: string | null;
+  project_url: string | null;
+  type: ProjectType;
+}
+
+interface MainProjectsSectionProps {
+  items: HomepageProjectItem[] | null;
+  error: string | null;
+}
+
+const MainProjectsSection: React.FC<MainProjectsSectionProps> = ({ items, error }) => {
   return (
     <ContentSection id="main-projects" title="Main Focus Projects">
-      <div className="space-y-8 md:space-y-10">
-        {/**
-         * 开源LLM模型优化项目
-         * 聚焦大型语言模型的运行时优化和性能提升
-         */}
-        <div>
-          <h3
-            className={`text-lg md:text-xl font-semibold mb-3 ${themeColors.textColorPrimary}`}
-          >
-            Open Sourced LLM Model Optimization
-          </h3>
-          <div className="md:flex md:gap-3 md:items-start">
-            <div className="md:flex-1">
-              <p
-                className={`text-sm md:text-base leading-relaxed ${themeColors.textColorSecondary}`}
+      {error ? (
+        <div className={`flex items-center space-x-2 text-red-600 dark:text-red-400`}>
+          <AlertTriangle className="h-5 w-5 flex-shrink-0" />
+          <span>Error loading main projects: {error}</span>
+        </div>
+      ) : items && items.length > 0 ? (
+        <div className="space-y-8 md:space-y-10">
+          {items.map((item) => (
+            <div key={item.id}>
+              <h3
+                className={`text-lg md:text-xl font-semibold mb-3 ${themeColors.textColorPrimary}`}
               >
-                We are interested in optimizing the runtime of any open-sourced
-                language models, Large or Small. We believe the memory wall and
-                energy issue still exists, as well as the scalability, in the
-                modern open sourced AI models. The two approach to make the
-                model better are (1) a deduplicated, and well-coded underlying
-                memory management; (2) a better scheduling to ensure the
-                balancing between the LM nodes. Meanwhile, it is worthwhile to
-                explore the means of building such systems in a small scale, on
-                the edge, as well as protected. This raises our interests on how
-                data driven approach applies to such system optimization design.
-              </p>
-            </div>
-            {/* 项目图片展示区 */}
-            <div className="md:w-1/5 mt-4 md:mt-0">
-              <div className="bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden shadow-sm">
-                <Image
-                  src="/images/llm-opt.png"
-                  alt="LLM Optimization Research"
-                  width={180}
-                  height={130}
-                  className="w-full h-auto object-cover"
-                />
-                <div className="p-1 text-xs text-center text-gray-600 dark:text-gray-300">
-                  性能优化图表
+                {item.title}
+              </h3>
+              <div className="md:flex md:gap-6 md:items-start">
+                <div className="md:flex-1">
+                  <p
+                    className={`text-sm md:text-base leading-relaxed ${themeColors.textColorSecondary} mb-4`}
+                    style={{ whiteSpace: 'pre-line' }}
+                  >
+                    {item.description}
+                  </p>
+                  {item.project_url && (
+                    <Link
+                      href={item.project_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={`inline-flex items-center text-sm font-medium ${themeColors.accentColor} hover:underline mt-2`}
+                    >
+                      <LinkIcon size={14} className="mr-1.5" />
+                      Learn More / View Project
+                    </Link>
+                  )}
                 </div>
+                {item.image_url && (
+                  <div className="md:w-1/4 lg:w-1/5 mt-4 md:mt-0 flex-shrink-0">
+                    <div className={`bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden shadow-md border ${themeColors.devBorder}`}>
+                      <Image
+                        src={item.image_url}
+                        alt={`Image for ${item.title}`}
+                        width={200}
+                        height={150}
+                        className="w-full h-auto object-cover aspect-[4/3]"
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
-          </div>
+          ))}
         </div>
-
-        {/**
-         * 数据库优化与正确性项目
-         * 关注新硬件下的数据库设计和正确性验证
-         */}
-        <div>
-          <h3
-            className={`text-lg md:text-xl font-semibold mb-3 ${themeColors.textColorPrimary}`}
-          >
-            Database Optimization and Correctness
-          </h3>
-          <div className="md:flex md:gap-3 md:items-start">
-            <div className="md:flex-1">
-              <p
-                className={`text-sm md:text-base leading-relaxed mb-4 ${themeColors.textColorSecondary}`}
-              >
-                We are interested in novel database design on new hardware. We
-                believe the storage as well as the processing are both the
-                bottleneck of the database services. We are calling help from
-                novel processing chips, like GPU and DCU, and new memory
-                architecture, such as phase change memory, to integrate with a
-                database design. As such, we are working towards building up
-                fast databases with a broader view of underlying systems.
-              </p>
-              <p
-                className={`text-sm md:text-base leading-relaxed ${themeColors.textColorSecondary}`}
-              >
-                Making a correct database is hard. No one can guarantee that a
-                database is correct all the time since it selects different
-                execution paths even for the same query. We would like to
-                further explore how we can guarantee the correctness of a
-                database building, processing, and outputing. Furthermore, we
-                would like to know that what we do is correct as well. For this,
-                we introduce database test with fuzzors. Based on a fuzzy
-                algebra, we can produce mutant samples of testing and
-                verification for novel systems as well as the AI platform.
-              </p>
-            </div>
-            {/* 项目图片展示区 */}
-            <div className="md:w-1/5 mt-4 md:mt-0">
-              <div className="bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden shadow-sm">
-                <Image
-                  src="/images/db-opt.png"
-                  alt="Database Optimization Research"
-                  width={180}
-                  height={130}
-                  className="w-full h-auto object-cover"
-                />
-                <div className="p-1 text-xs text-center text-gray-600 dark:text-gray-300">
-                  数据库测试架构
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/**
-         * 弹性一致性系统项目
-         * 扩展Raft协议到实际应用场景
-         */}
-        <div>
-          <h3
-            className={`text-lg md:text-xl font-semibold mb-3 ${themeColors.textColorPrimary}`}
-          >
-            An Elastic Consistency System
-          </h3>
-          <div className="md:flex md:gap-3 md:items-start">
-            <div className="md:flex-1">
-              <p
-                className={`text-sm md:text-base leading-relaxed mb-4 ${themeColors.textColorSecondary}`}
-              >
-                We are trying to extend the original raft into the practical
-                scenarios. That is providing scalable and cheap distributed
-                services within the Raft protocol. The main contribution of this
-                research is to extending the scope of a strong consensus
-                algorithm into a very unreliable platform and make it work
-                statistically in practice.
-              </p>
-              <p
-                className={`text-sm md:text-base leading-relaxed ${themeColors.textColorSecondary}`}
-              >
-                Here we promote our eRaft. eRaft is a high-performance C++ Raft
-                library. This project is mainly developed by graduates from our
-                GOOD lab. The Raft algorithm shall be accredited to Dr. Diego
-                Ongaro. At present, our project has been included in the
-                official distribution. We hope to explore the possibility of
-                optimizing the existing algorithms on the basis of realizing a
-                stable practical Raft library. If you are interested, please
-                join us. Anyone interested may refer project.
-              </p>
-            </div>
-            {/* 项目图片展示区 */}
-            <div className="md:w-1/5 mt-4 md:mt-0">
-              <div className="bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden shadow-sm">
-                <Image
-                  src="/images/eraft.png"
-                  alt="Elastic Raft System"
-                  width={180}
-                  height={130}
-                  className="w-full h-auto object-cover"
-                />
-                <div className="p-1 text-xs text-center text-gray-600 dark:text-gray-300">
-                  eRaft系统架构
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+      ) : (
+        <p className={`${themeColors.textColorSecondary} text-sm md:text-base`}>
+          Main project information is currently unavailable.
+        </p>
+      )}
     </ContentSection>
   );
 };
-
-/**
- * 模块化设计说明：
- * - 该组件是主页内容模块群的核心部分，展示实验室的主要研究重点
- * - 与FormerProjectsSection组件形成研究领域的完整展示体系
- * - 复用ContentSection作为容器组件，保持页面各板块的视觉一致性
- * - 图片展示使用Next.js的Image组件进行优化，确保加载性能
- * - 可独立部署和测试，不依赖全局状态或特定API调用
- */
 
 export default MainProjectsSection;

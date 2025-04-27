@@ -2,98 +2,90 @@ import React from "react";
 import ContentSection from "@/components/common/ContentSection";
 import { themeColors } from "@/styles/theme";
 import Image from "next/image";
+import { AlertTriangle } from "lucide-react";
+import Link from "next/link";
+import { Link as LinkIcon } from "lucide-react";
+
+enum ProjectType { MAIN = 'MAIN', FORMER = 'FORMER' }
+
+interface HomepageProjectItem {
+  id: number;
+  title: string;
+  description: string;
+  image_url: string | null;
+  project_url: string | null;
+  type: ProjectType;
+}
+
+interface FormerProjectsSectionProps {
+  items: HomepageProjectItem[] | null;
+  error: string | null;
+}
 
 /**
  * 实验室历史研究项目展示组件
  *
  * 展示实验室已完成或过渡性质的研究方向，但仍具有学术价值
  */
-const FormerProjectsSection = () => {
+const FormerProjectsSection: React.FC<FormerProjectsSectionProps> = ({ items, error }) => {
   return (
     <ContentSection id="former-projects" title="Former Projects">
-      <div className="space-y-10 md:space-y-12">
-        {/**
-         * 海洋数据库与时空特性项目
-         * 专注于建设高效处理海洋大数据的数据库系统
-         */}
-        <div>
-          <h3
-            className={`text-lg md:text-xl font-semibold mb-3 ${themeColors.textColorPrimary}`}
-          >
-            Ocean Database with Tempro-spatial Features
-          </h3>
-          <div className="md:flex md:gap-3 md:items-start">
-            <div className="md:flex-1">
-              <p
-                className={`text-sm md:text-base leading-relaxed ${themeColors.textColorSecondary}`}
+      {error ? (
+        <div className={`flex items-center space-x-2 text-red-600 dark:text-red-400`}>
+          <AlertTriangle className="h-5 w-5 flex-shrink-0" />
+          <span>Error loading former projects: {error}</span>
+        </div>
+      ) : items && items.length > 0 ? (
+        <div className="space-y-8 md:space-y-10">
+          {items.map((item) => (
+            <div key={item.id}>
+              <h3
+                className={`text-lg md:text-xl font-semibold mb-3 ${themeColors.textColorPrimary}`}
               >
-                We are interested in ocean data, which by no means are large,
-                versatile, and unpredictable. For this, we are going to build a
-                database for ocean data, in order to serve applications, such as
-                weather forecast, current prediction, etc. This is uniquely
-                interesting because there are so many things in the sea that we
-                have little knowledge about. As such, we tend to build the
-                knowledge on top of this and forward a underlying database to
-                serve fast queries, SQL and newSQL, to better improve the work.
-              </p>
-            </div>
-            <div className="md:w-1/5 mt-4 md:mt-0">
-              <div className="bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden shadow-sm">
-                <Image
-                  src="/images/placeholder-project.png"
-                  alt="Ocean Database Research Diagram"
-                  width={180}
-                  height={130}
-                  className="w-full h-auto object-cover"
-                />
-                <div className="p-1 text-xs text-center text-gray-600 dark:text-gray-300">
-                  项目示意图
+                {item.title}
+              </h3>
+              <div className="md:flex md:gap-6 md:items-start">
+                <div className="md:flex-1">
+                  <p
+                    className={`text-sm md:text-base leading-relaxed ${themeColors.textColorSecondary} mb-4`}
+                    style={{ whiteSpace: 'pre-line' }}
+                  >
+                    {item.description}
+                  </p>
+                  {item.project_url && (
+                     <Link
+                       href={item.project_url}
+                       target="_blank"
+                       rel="noopener noreferrer"
+                       className={`inline-flex items-center text-sm font-medium ${themeColors.accentColor} hover:underline mt-2`}
+                     >
+                       <LinkIcon size={14} className="mr-1.5" />
+                       Learn More / View Project
+                     </Link>
+                   )}
                 </div>
+                {item.image_url && (
+                  <div className="md:w-1/4 lg:w-1/5 mt-4 md:mt-0 flex-shrink-0">
+                     <div className={`bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden shadow-md border ${themeColors.devBorder}`}>
+                       <Image
+                         src={item.image_url}
+                         alt={`Image for ${item.title}`}
+                         width={200}
+                         height={150}
+                         className="w-full h-auto object-cover aspect-[4/3]"
+                       />
+                     </div>
+                  </div>
+                )}
               </div>
             </div>
-          </div>
+          ))}
         </div>
-
-        {/**
-         * 多目标系统优化项目
-         * 从多维度（性能、吞吐量、能耗、碳排放等）优化数据服务
-         */}
-        <div>
-          <h3
-            className={`text-lg md:text-xl font-semibold mb-3 ${themeColors.textColorPrimary}`}
-          >
-            System Optimizations with Multiple Objectives
-          </h3>
-          <div className="md:flex md:gap-3 md:items-start">
-            <div className="md:flex-1">
-              <p
-                className={`text-sm md:text-base leading-relaxed ${themeColors.textColorSecondary}`}
-              >
-                We are trying to optimize all data services with metrics that
-                are interesting, including but not limited to performance,
-                throughput, energy, carbon, etc. Modeling and representation can
-                help us better understand the world, as well as the data itself
-                is a mimic of our on-going life. For a database system, we would
-                like to shape it in a better way.
-              </p>
-            </div>
-            <div className="md:w-1/5 mt-4 md:mt-0">
-              <div className="bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden shadow-sm">
-                <Image
-                  src="/images/placeholder-project.png"
-                  alt="System Optimization Diagram"
-                  width={180}
-                  height={130}
-                  className="w-full h-auto object-cover"
-                />
-                <div className="p-1 text-xs text-center text-gray-600 dark:text-gray-300">
-                  项目示意图
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+      ) : (
+        <p className={`${themeColors.textColorSecondary} text-sm md:text-base`}>
+          Information on former projects is currently unavailable.
+        </p>
+      )}
     </ContentSection>
   );
 };

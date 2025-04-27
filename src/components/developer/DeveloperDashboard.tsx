@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useCallback, useState } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   Lock,
   Unlock,
@@ -19,7 +19,7 @@ import {
 } from "lucide-react";
 import { themeColors } from "@/styles/theme";
 import ToolCard from "./ToolCard";
-import NewsEditor from "./news/NewsEditor";
+import HomepageContentEditor from "./homepage/HomepageContentEditor";
 import CodeServerManager from "./codeserver/CodeServerManager";
 import PublicationManager from "./publication/PublicationManager";
 import PhotoManager from "./photo/PhotoManager";
@@ -45,12 +45,11 @@ interface ToolConfig {
 const availableTools: ToolConfig[] = [
   {
     id: "news",
-    title: "Manage News",
-    description: "Add, edit, or delete news items.",
+    title: "Manage Homepage",
+    description: "Edit news, interests, projects, teaching, and section settings.",
     icon: Edit,
     requiredPermission: "manage_news",
-    component: NewsEditor,
-    buttonText: "Manage News",
+    buttonText: "Manage Homepage",
   },
   {
     id: "publication",
@@ -119,11 +118,18 @@ const DeveloperDashboard: React.FC<DeveloperDashboardProps> = ({
   const { permissions, isFullAccess } = useAuthStore();
 
   const [activeTool, setActiveTool] = useState<string | null>(null);
+  const [isHomepageEditorOpen, setIsHomepageEditorOpen] = useState(false); // State for modal
   // --- REMOVED editingMemberId state ---
 
   // Handler to select a tool
   const handleToolSelect = (toolId: string) => {
-    setActiveTool(toolId);
+    if (toolId === 'news') {
+        // Open Homepage Editor as a modal
+        setIsHomepageEditorOpen(true);
+    } else {
+        // Set active tool for other components
+        setActiveTool(toolId);
+    }
   };
 
   // Handler to go back to the tool grid
@@ -239,7 +245,8 @@ const DeveloperDashboard: React.FC<DeveloperDashboardProps> = ({
                 icon={<tool.icon size={16} className="mr-2" />}
                 onButtonClick={
                   // Only allow click if the tool is NOT disabled
-                  !isDisabled && (tool.component || tool.externalLink)
+                  // Let handleToolSelect decide the action (open modal or set active tool)
+                  !isDisabled
                     ? () => handleToolSelect(tool.id)
                     : undefined
                 }
@@ -274,6 +281,13 @@ const DeveloperDashboard: React.FC<DeveloperDashboardProps> = ({
 
         </motion.div>
       )}
+
+       {/* --- Homepage Editor Modal --- */}
+       <AnimatePresence>
+         {isHomepageEditorOpen && (
+           <HomepageContentEditor onClose={() => setIsHomepageEditorOpen(false)} />
+         )}
+       </AnimatePresence>
     </div>
   );
 };

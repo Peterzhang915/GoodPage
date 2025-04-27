@@ -56,6 +56,12 @@ enum AwardLevel {
   OTHER // Default or unspecified
 }
 
+// --- 新增: 项目类型枚举 (用于主页项目展示) ---
+enum ProjectType {
+  MAIN   // 主要项目
+  FORMER // 过往项目
+}
+
 // --- 数据模型定义 (Data Model Definitions) ---
 
 // 成员模型 (代表实验室的每一个人)
@@ -131,6 +137,9 @@ model Member {
   academicServices     AcademicService[]   // 参与的学术服务列表
   newsMentions         News[]              // 提及该成员的新闻列表
   sponsorships         Sponsorship[]       // Add relation to Sponsorship
+
+  // --- 新增: 反向关联到该成员负责的主页项目 ---
+  ledHomepageProjects HomepageProject[] @relation("MemberLeadsHomepageProject")
 
   @@index([display_order])
   @@index([is_active])
@@ -430,4 +439,82 @@ model Sponsorship { // Includes Grants & Funding
 
   @@index([member_id])
   @@index([display_order])
+}
+
+// --- 新增: 主页板块元数据模型 ---
+// 用于存储各可编辑板块的通用信息，如标题、介绍文本等
+model HomepageSectionMeta {
+  section_id   String    @id // 板块的唯一标识符 (例如 "news", "student_interests", "main_projects", "teaching")
+  title        String    // 板块显示的标题 (例如 "News", "Students with Interests")
+  introduction String?   // 板块的介绍性文本 (例如新闻板块的招聘信息) (长文本，可选)
+  is_visible   Boolean   @default(true) // 控制该板块是否在主页显示
+  updatedAt    DateTime  @updatedAt // 最后更新时间
+
+  @@map("homepage_section_meta") // 指定数据库表名
+}
+
+// --- 新增: 主页新闻条目模型 ---
+model HomepageNews {
+  id            Int      @id @default(autoincrement()) // 自增 ID 主键
+  content       String   // 新闻内容 (单条新闻文本)
+  display_order Int      @default(0) // 显示顺序
+  is_visible    Boolean  @default(true) // 是否显示该条新闻
+  createdAt     DateTime @default(now()) // 创建时间
+  updatedAt     DateTime @updatedAt // 更新时间
+
+  @@index([display_order])
+  @@map("homepage_news") // 指定数据库表名
+}
+
+// --- 新增: 学生兴趣点模型 ---
+// 用于 "Students with Interests" 板块下的各个要点
+model InterestPoint {
+  id            Int      @id @default(autoincrement()) // 自增 ID 主键
+  title         String   // 兴趣点的子标题
+  description   String   // 兴趣点的描述文本 (长文本)
+  display_order Int      @default(0) // 显示顺序
+  is_visible    Boolean  @default(true) // 是否显示该兴趣点
+  createdAt     DateTime @default(now()) // 创建时间
+  updatedAt     DateTime @updatedAt // 更新时间
+
+  @@index([display_order])
+  @@map("interest_points") // 指定数据库表名
+}
+
+// --- 新增: 主页项目模型 ---
+// 用于 "Main Focus Projects" 和 "Former Projects" 板块
+model HomepageProject {
+  id            Int         @id @default(autoincrement()) // 自增 ID 主键
+  title         String      // 项目标题
+  description   String      // 项目描述 (长文本)
+  image_url     String?     // 项目图片 URL (可选)
+  project_url   String?     // 项目相关链接 (例如代码库、演示页面) (可选)
+  type          ProjectType @default(MAIN) // 项目类型 (主要项目 / 过往项目)
+  display_order Int         @default(0) // 显示顺序
+  is_visible    Boolean     @default(true) // 是否显示该项目
+  createdAt     DateTime    @default(now()) // 创建时间
+  updatedAt     DateTime    @updatedAt // 更新时间
+
+  // --- 新增: 关联到项目负责人 ---
+  leader        Member?     @relation("MemberLeadsHomepageProject", fields: [leader_id], references: [id], onDelete: SetNull, onUpdate: Cascade) // 指向负责人 (可选, Member 删除时设为 NULL)
+  leader_id     String?     // 外键, 关联到 Member 表的 id
+
+  @@index([type, display_order])
+  @@index([leader_id]) // 为负责人 ID 添加索引
+  @@map("homepage_projects") // 指定数据库表名
+}
+
+// --- 新增: 主页教学信息模型 ---
+// 用于 "Teaching" 板块
+model HomepageTeaching {
+  id            Int      @id @default(autoincrement()) // 自增 ID 主键
+  course_title  String   // 课程标题 (例如 "Introduction to Artificial Intelligence")
+  details       String?  // 教学详情 (例如 "Fall 2024, Fall 2023, Fall 2022...") (可选)
+  display_order Int      @default(0) // 显示顺序
+  is_visible    Boolean  @default(true) // 是否显示该教学信息
+  createdAt     DateTime @default(now()) // 创建时间
+  updatedAt     DateTime @updatedAt // 更新时间
+
+  @@index([display_order])
+  @@map("homepage_teaching") // 指定数据库表名
 }

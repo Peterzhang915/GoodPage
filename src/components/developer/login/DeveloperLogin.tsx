@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion"; // Import motion
 import { useDeveloperLogin } from "@/hooks/useDeveloperLogin";
 import MotdDisplay from "@/components/developer/login/MotdDisplay";
@@ -49,6 +49,8 @@ const Separator = () => (
 );
 
 const DeveloperLogin: React.FC = () => {
+  const [isMounted, setIsMounted] = useState(false);
+
   const {
     // State & Derived State from Hook
     username,
@@ -82,6 +84,10 @@ const DeveloperLogin: React.FC = () => {
     handleSkipAnimation, // Destructure the new skip handler
   } = useDeveloperLogin();
 
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
   // Determine which ASCII art to display
   const currentAsciiArt = 
     loginStage === "unlocking" ? SYSTEM_UNLOCKED_ASCII :
@@ -110,10 +116,10 @@ const DeveloperLogin: React.FC = () => {
       </motion.div>
 
       {/* Separator 1 - Only show before MOTD/Login Form */}
-      {(loginStage === "awaitingPassword" || loginStage === "validating") && <Separator />}
+      {isMounted && (loginStage === "awaitingPassword" || loginStage === "validating") && <Separator />}
 
       {/* Section 2: MOTD (Only shown in initial stages) */}
-      {(loginStage === "awaitingPassword" || loginStage === "validating") && (
+      {isMounted && (loginStage === "awaitingPassword" || loginStage === "validating") && (
         <div 
           className="overflow-y-auto flex-shrink-0" 
           style={{ maxHeight: '40vh' }} 
@@ -129,76 +135,80 @@ const DeveloperLogin: React.FC = () => {
 
       {/* Section 3: Login Form or Progress/Welcome Messages */}
       <div className="mt-4 flex-grow flex flex-col">
-        {/* Show Login Form only when awaiting password or validating */}
-        {(loginStage === "awaitingPassword" || loginStage === "validating") && isMotdComplete && (
-          <motion.div
-            key="login-form"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.5, delay: 0.1 }} 
-          >
-            {/* Separator *inside* the form section, only when form is visible */}
-            <Separator /> 
-            <LoginInputForm
-              usernameValue={username}
-              passwordValue={password}
-              onUsernameChange={handleUsernameChange}
-              onPasswordChange={handlePasswordChange}
-              onSubmit={handleLogin} 
-              loginStage={loginStage} // Pass loginStage
-              error={error}
-              attemptsRemaining={attemptsRemaining}
-              isLocked={isLocked}
-              lockoutMessage={lockoutMessage}
-              usernameInputRef={usernameInputRef} 
-              passwordInputRef={passwordInputRef} 
-            />
-          </motion.div>
-        )}
+        {/* Only render conditional content after mounting */}
+        {isMounted && (<>
+          {/* Show Login Form only when awaiting password or validating */}
+          {(loginStage === "awaitingPassword" || loginStage === "validating") && isMotdComplete && (
+            <motion.div
+              key="login-form"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.5, delay: 0.1 }} 
+            >
+              {/* Separator *inside* the form section, only when form is visible */}
+              <Separator /> 
+              <LoginInputForm
+                usernameValue={username}
+                passwordValue={password}
+                onUsernameChange={handleUsernameChange}
+                onPasswordChange={handlePasswordChange}
+                onSubmit={handleLogin} 
+                loginStage={loginStage} // Pass loginStage
+                error={error}
+                attemptsRemaining={attemptsRemaining}
+                isLocked={isLocked}
+                lockoutMessage={lockoutMessage}
+                usernameInputRef={usernameInputRef} 
+                passwordInputRef={passwordInputRef} 
+              />
+            </motion.div>
+          )}
 
-        {/* Show Unlocking Progress with Boot Messages */}
-        {loginStage === "unlocking" && (
-          <motion.div
-            key="unlocking-progress" 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.3 }}
-            className="mt-4 flex-grow flex flex-col pt-4" 
-          >
-            <div className="mb-4 space-y-1 text-sm text-yellow-400">
-              {bootMessages.slice(0, currentBootMessageIndex + 1).map((msg, index) => (
-                <div key={index}>{msg}</div>
-              ))}
-            </div>
-            <TextProgressBar total={30} interval={50} /> 
-          </motion.div>
-        )}
+          {/* Show Unlocking Progress with Boot Messages */}
+          {loginStage === "unlocking" && (
+            <motion.div
+              key="unlocking-progress" 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.3 }}
+              className="mt-4 flex-grow flex flex-col pt-4" 
+            >
+              <div className="mb-4 space-y-1 text-sm text-yellow-400">
+                {bootMessages.slice(0, currentBootMessageIndex + 1).map((msg, index) => (
+                  <div key={index}>{msg}</div>
+                ))}
+              </div>
+              <TextProgressBar total={30} interval={50} /> 
+            </motion.div>
+          )}
 
-        {/* Show Welcome Message */}
-        {loginStage === "welcome" && (
-          <motion.div
-            key="welcome-message"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.3 }}
-            // Adjust layout: remove justify-center, add pt-4
-            className="flex-grow flex flex-col items-start text-base text-green-400 font-mono pl-4 pt-4" 
-          >
-            {/* Render the multi-line welcome message */}
-            <div className="whitespace-pre-wrap">
-              {`> Wake up, ${username}...`}
-            </div>
-            <div className="whitespace-pre-wrap">
-              {`> The Matrix has you... Accessing the GOOD core.`}
-            </div>
-            <div className="whitespace-pre-wrap mt-1 text-gray-500">
-              {`> // Authentication sequence complete. GOOD Dev Terminal active.`}
-            </div>
-            <div className="mt-4 text-lg font-semibold">
-              [Press ENTER to engage]
-            </div>
-          </motion.div>
-        )}
+          {/* Show Welcome Message */}
+          {loginStage === "welcome" && (
+            <motion.div
+              key="welcome-message"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.3 }}
+              // Adjust layout: remove justify-center, add pt-4
+              className="flex-grow flex flex-col items-start text-base text-green-400 font-mono pl-4 pt-4" 
+            >
+              {/* Render the multi-line welcome message */}
+              <div className="whitespace-pre-wrap">
+                {`> Wake up, ${username}...`}
+              </div>
+              <div className="whitespace-pre-wrap">
+                {`> The Matrix has you... Accessing the GOOD core.`}
+              </div>
+              <div className="whitespace-pre-wrap mt-1 text-gray-500">
+                {`> // Authentication sequence complete. GOOD Dev Terminal active.`}
+              </div>
+              <div className="mt-4 text-lg font-semibold">
+                [Press ENTER to engage]
+              </div>
+            </motion.div>
+          )}
+        </>)}
+        {/* End of isMounted check */}
       </div>
 
       {/* Footer (Ensure mt-auto pushes it to the bottom) */}

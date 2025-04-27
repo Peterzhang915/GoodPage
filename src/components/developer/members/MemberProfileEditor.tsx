@@ -1182,7 +1182,7 @@ export default function MemberProfileEditor({ initialData }: MemberProfileEditor
            ) : (
                  <p className="text-gray-500 italic dark:text-gray-400">No education history added yet.</p>
            )}
-              </CardContent>
+        </CardContent>
             </motion.div>
           )}
         </AnimatePresence>
@@ -1205,7 +1205,7 @@ export default function MemberProfileEditor({ initialData }: MemberProfileEditor
                <ChevronDown className="h-4 w-4 text-gray-500" />
              </motion.div>
            </div>
-         </CardHeader>
+           </CardHeader>
          <AnimatePresence>
            {openSections.awards && (
              <motion.div
@@ -1281,7 +1281,7 @@ export default function MemberProfileEditor({ initialData }: MemberProfileEditor
                 ) : (
                        <p className="text-gray-500 italic dark:text-gray-400">No awards added yet.</p>
                 )}
-              </CardContent>
+           </CardContent>
             </motion.div>
           )}
         </AnimatePresence>
@@ -1332,7 +1332,7 @@ export default function MemberProfileEditor({ initialData }: MemberProfileEditor
                     </SortableContext>
                   </DndContext>
                 )}
-              </CardContent>
+        </CardContent>
               {editablePublications.length > 0 && (
                 <CardFooter className="border-t dark:border-gray-700 p-3">
                   <Button 

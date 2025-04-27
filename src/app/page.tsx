@@ -8,62 +8,50 @@ import MainProjectsSection from "@/components/home/MainProjectsSection";
 import FormerProjectsSection from "@/components/home/FormerProjectsSection";
 import TeachingSection from "@/components/home/TeachingSection";
 
-// 新闻 API 响应的接口定义
-interface NewsApiResponse {
-  title: string;
-  news: string[];
+// --- 数据类型定义 ---
+// (与数据库模型对应，只包含前端需要的字段)
+interface HomepageNewsItem {
+  id: number;
+  content: string;
+  is_visible: boolean;
 }
 
-// 主页组件定义为 async 函数，以便在内部使用 await 来获取数据
-export default async function Home() {
-  // 初始化新闻数据、错误状态和加载状态
-  let newsData: NewsApiResponse | null = null;
-  let fetchError: string | null = null;
-  let isLoading = true; // 初始假定正在加载
+interface InterestPointItem {
+  id: number;
+  title: string;
+  description: string;
+  is_visible: boolean;
+}
 
-  // --- 数据获取: 尝试从 API 加载最新新闻 ---
+enum ProjectType { MAIN = 'MAIN', FORMER = 'FORMER' }
+
+interface HomepageProjectItem {
+  id: number;
+  title: string;
+  description: string;
+  image_url: string | null;
+  project_url: string | null; // Renamed from link_url in editor to match schema?
+  type: ProjectType;
+  is_visible: boolean;
+}
+
+interface HomepageTeachingItem {
+  id: number;
+  course_title: string;
+  details: string | null;
+  is_visible: boolean;
+}
+
+// --- 通用数据获取函数 ---
+async function fetchSectionData<T>(
+  endpoint: string,
+): Promise<{ data: T[] | null; error: string | null }> {
+  const apiUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3000"}${endpoint}`;
   try {
-    // 从环境变量或默认值获取 API 地址
-    const apiUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3000"}/api/news`;
-    // 发起请求，禁用缓存以获取最新数据
     const res = await fetch(apiUrl, { cache: "no-store" });
-    isLoading = false; // 请求完成，设置 loading 为 false
-    if (res.ok) {
-      // 请求成功 (status 2xx)
-      const responsePayload = await res.json();
-      // 检查响应是否符合标准成功格式
-      if (
-        responsePayload &&
-        responsePayload.success === true &&
-        responsePayload.data
-      ) {
-        // 验证 data 部分的格式是否符合 NewsApiResponse
-        const newsResult = responsePayload.data;
-        if (
-          newsResult &&
-          typeof newsResult.title === "string" &&
-          Array.isArray(newsResult.news) &&
-          newsResult.news.every((item: unknown) => typeof item === "string")
-        ) {
-          newsData = newsResult as NewsApiResponse;
-        } else {
-          // data 部分格式不符合预期
-          console.error("从 API 收到的新闻数据 data 部分格式无效:", newsResult);
-          fetchError = "Failed to load news: Invalid data format received.";
-        }
-      } else {
-        // 响应格式不符合标准成功格式 (或 success 不为 true)
-        console.error("API 响应格式无效或指示失败:", responsePayload);
-        const errorMessage =
-          responsePayload?.error?.message ||
-          "Invalid response format from server.";
-        fetchError = `Failed to load news: ${errorMessage}`;
-      }
-    } else {
-      // 请求失败 (status 非 2xx)
+    if (!res.ok) {
       let errorMessage = `Server error (${res.status})`;
       try {
-        // 尝试解析错误响应体 (可能包含标准错误结构)
         const errorPayload = await res.json();
         if (
           errorPayload &&
@@ -74,20 +62,60 @@ export default async function Home() {
           errorMessage = errorPayload.error.message;
         }
       } catch (parseErr) {
-        // 解析错误响应体失败，使用原始状态文本
-        errorMessage = res.statusText || errorMessage;
+         errorMessage = res.statusText || errorMessage;
       }
-      console.error(`获取新闻失败: ${errorMessage}`);
-      fetchError = `Failed to load news: ${errorMessage}`; // Use the parsed or default error message
+      console.error(`Failed to fetch ${endpoint}: ${errorMessage}`);
+      return { data: null, error: `Failed to load data: ${errorMessage}` };
+    }
+    const payload = await res.json();
+    if (payload.success && Array.isArray(payload.data)) {
+      // 过滤掉 is_visible 为 false 的项 (在服务器端做更佳)
+       const visibleData = payload.data.filter((item: any) => item.is_visible !== false);
+      return { data: visibleData as T[], error: null };
+    } else {
+      const errorMessage = payload?.error?.message || "Invalid data format from server.";
+      console.error(`Invalid data format from ${endpoint}:`, payload);
+      return { data: null, error: `Failed to load data: ${errorMessage}` };
     }
   } catch (error: any) {
-    // 请求过程中发生网络或其他错误
-    isLoading = false; // 请求完成，设置 loading 为 false
-    console.error("获取新闻数据时出错:", error);
-    fetchError = `Failed to load news: Network or request error (${error.message || "Unknown error"}).`;
+    console.error(`Error fetching ${endpoint}:`, error.message);
+    return {
+      data: null,
+      error: `Network or request error (${error.message || "Unknown error"}).`,
+    };
   }
+}
 
-  // 招聘信息文本（通常是静态内容）
+// 主页组件定义为 async 函数
+export default async function Home() {
+  // 并行获取所有板块数据
+  const [
+    newsResult,
+    interestsResult,
+    mainProjectsResult,
+    formerProjectsResult,
+    teachingResult,
+  ] = await Promise.all([
+    fetchSectionData<HomepageNewsItem>("/api/homepage/news"),
+    fetchSectionData<InterestPointItem>("/api/homepage/interest-points"),
+    fetchSectionData<HomepageProjectItem>("/api/homepage/projects?type=MAIN"), // Fetch only MAIN projects
+    fetchSectionData<HomepageProjectItem>("/api/homepage/projects?type=FORMER"),// Fetch only FORMER projects
+    fetchSectionData<HomepageTeachingItem>("/api/homepage/teaching"),
+  ]);
+
+  // 提取数据和错误信息
+  const newsItems = newsResult.data;
+  const newsError = newsResult.error;
+  const interestPoints = interestsResult.data;
+  const interestsError = interestsResult.error;
+  const mainProjects = mainProjectsResult.data;
+  const mainProjectsError = mainProjectsResult.error;
+  const formerProjects = formerProjectsResult.data;
+  const formerProjectsError = formerProjectsResult.error;
+  const teachingItems = teachingResult.data;
+  const teachingError = teachingResult.error;
+
+  // 招聘信息 (可以考虑也做成可编辑)
   const recruitmentText =
     "We always look for self-motivated under/graduate students who are ready to take on ambitious challenges to join my research group (with financial support).";
 
@@ -122,21 +150,14 @@ export default async function Home() {
             <div className="border-t border-gray-200 dark:border-gray-700 my-6"></div>
 
             {/* 新闻内容的条件渲染区域 (保持不变) */}
-            {isLoading ? (
-              <div
-                className={`flex items-center space-x-2 ${themeColors.textColorSecondary}`}
-              >
-                <Loader className="animate-spin h-5 w-5" />
-                <span>Loading news...</span>
-              </div>
-            ) : fetchError ? (
+            {newsError ? (
               <div
                 className={`flex items-center space-x-2 text-red-600 dark:text-red-400`}
               >
                 <AlertTriangle className="h-5 w-5" />
-                <span>{fetchError}</span>
+                <span>{newsError}</span>
               </div>
-            ) : newsData && newsData.news.length > 0 ? (
+            ) : newsItems && newsItems.length > 0 ? (
               <div>
                 {/* 新闻列表: 调整响应式内边距和字体大小 */}
                 <ul
@@ -144,9 +165,9 @@ export default async function Home() {
                 >
                   {" "}
                   {/* 修改: pl-6 -> pl-5 sm:pl-6 */}
-                  {newsData.news.map((item, index) => (
-                    <li key={index} className="break-words">
-                      {item}
+                  {newsItems.map((item) => (
+                    <li key={item.id} className="break-words">
+                      {item.content}
                     </li>
                   ))}
                 </ul>
@@ -161,16 +182,16 @@ export default async function Home() {
           </ContentSection>
 
           {/* 学生兴趣板块 (提取到独立组件) */}
-          <StudentInterestsSection />
+          <StudentInterestsSection items={interestPoints} error={interestsError} />
 
           {/* 主要研究项目板块 (提取到独立组件) */}
-          <MainProjectsSection />
+          <MainProjectsSection items={mainProjects} error={mainProjectsError} />
 
           {/* 过往项目板块 (提取到独立组件) */}
-          <FormerProjectsSection />
+          <FormerProjectsSection items={formerProjects} error={formerProjectsError} />
 
           {/* 教学板块 (提取到独立组件) */}
-          <TeachingSection />
+          <TeachingSection items={teachingItems} error={teachingError} />
 
           {/* 用于导航的占位符区域: 添加响应式 scroll-margin-top */}
           <section
