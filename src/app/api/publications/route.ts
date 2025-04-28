@@ -58,6 +58,11 @@ export async function GET() {
       // TODO: Add pagination in the future (e.g., using take and skip)
     });
     
+    // --- TEMPORARY LOGGING --- 
+    const fetchedIds = publications.map(p => p.id);
+    console.log(`[API GET /api/publications] Fetched publication IDs:`, fetchedIds); 
+    // --- END TEMPORARY LOGGING ---
+
     console.log(`API: Fetched ${publications.length} publications.`);
     // We need to transform the nested structure slightly for easier frontend consumption if needed,
     // or return the Prisma structure directly. Let's return directly for now.

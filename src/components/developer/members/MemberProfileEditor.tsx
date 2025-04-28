@@ -1591,7 +1591,7 @@ export default function MemberProfileEditor({ initialData }: MemberProfileEditor
                       <p className="text-gray-500 italic dark:text-gray-400">No presentations added yet.</p>
                   )}
               </CardContent>
-            </motion.div>
+           </motion.div>
       </Card>
 
        {/* --- Section 9: Software & Datasets --- */}
@@ -1831,7 +1831,7 @@ export default function MemberProfileEditor({ initialData }: MemberProfileEditor
                   )}
               </CardContent>
             </motion.div>
-        </Card>
+       </Card>
 
       {/* Render the Education Modal */}
       <EducationFormModal

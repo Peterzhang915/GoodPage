@@ -164,18 +164,65 @@ const PublicationManager: React.FC<PublicationManagerProps> = ({ onClose }) => {
   };
 
   // Placeholder for Edit
-  const handleEdit = (pub: PublicationWithAuthors) => { 
+  const handleEdit = (pub: PublicationWithAuthors) => {
     console.log("Edit publication:", pub.id);
-    setEditingPublication(pub); // Set the publication to edit
+
+    // Prepare data for the form, ensuring 'type' is not null
+    const formDataForEdit: PublicationFormData = {
+        ...pub,
+        // Provide a default value if type is null
+        type: pub.type ?? 'OTHER', 
+        // Assuming PublicationFormData expects authors as a simple string
+        // or the form handles the relation array. If it expects a string:
+        // authors_string: formatAuthors(pub.authors), // Example if form needs simple string
+        // If PublicationForm handles the relation, no transformation needed here for authors
+    };
+
+    // Set the prepared data as the editing state
+    setEditingPublication(pub); // Still store the original object
     setIsFormOpen(true); // Open the same form dialog
+    
     // TODO: Implement PUT request logic in a separate handler or modify handleAddSubmit
+    toast.info("Edit functionality (saving changes) not yet implemented."); // Add temporary feedback
   };
 
-  // Placeholder for Delete
-  const handleDelete = async (id: number) => { 
-      console.log("Delete publication:", id);
-    // TODO: Implement API call DELETE /api/publications/[id]
-    toast.info("Delete functionality not yet implemented.");
+  // Implement Delete functionality
+  const handleDelete = async (id: number) => {
+    console.log("Attempting to delete publication:", id);
+    setActionStates(prev => ({ ...prev, [id]: true })); // Indicate loading/disabling for this specific row
+
+    const deletePromise = fetch(`/api/publications/${id}`, {
+        method: 'DELETE',
+    });
+
+    toast.promise(deletePromise, {
+        loading: 'Deleting publication...',
+        success: async (response) => {
+            if (!response.ok) {
+                // Try to parse error from response body
+                let errorMsg = `Failed to delete (Status: ${response.status})`;
+                try {
+                    const errorData = await response.json();
+                    errorMsg = errorData.error?.message || errorMsg;
+                } catch (e) { /* Ignore parsing error */ }
+                throw new Error(errorMsg); // Throw error to be caught by toast.error
+            }
+            // Success: Update local state
+            setPublications(prev => prev.filter(pub => pub.id !== id));
+            return 'Publication deleted successfully!';
+        },
+        error: (err: any) => {
+            // Handle errors thrown from success block or fetch failures
+            console.error("Delete failed:", err);
+            return `Error deleting publication: ${err.message || 'Unknown error'}`;
+        },
+        finally: () => {
+            // Reset loading/disabled state for the row regardless of outcome
+            setActionStates(prev => ({ ...prev, [id]: false }));
+        }
+    });
+
+    // We don't need to await here as toast.promise handles the lifecycle
   };
 
   return (
@@ -209,10 +256,10 @@ const PublicationManager: React.FC<PublicationManagerProps> = ({ onClose }) => {
                         {/* Render the form inside the dialog */}
                         <PublicationForm 
                             key={editingPublication?.id ?? 'add'} // Force re-render on mode change
-                            // Pass initialData only if editing
-                            initialData={editingPublication ? editingPublication : undefined} 
+                            // Pass initialData only if editing, ensuring type is not null
+                            initialData={editingPublication ? { ...editingPublication, type: editingPublication.type ?? 'OTHER' } : undefined} 
                             // Pass the correct submit handler based on mode (add for now)
-                            onSubmit={handleAddSubmit} 
+                            onSubmit={handleAddSubmit} // TODO: Needs to handle PUT for edit
                             onCancel={() => setIsFormOpen(false)} 
                             isLoading={isSubmitting}
                         />
