@@ -27,16 +27,46 @@ import type {
 // 注意：不再需要 memberProfileIncludeArgs 和其他 Payload 类型，因为我们简化了查询
 
 /**
- * Calculates a display-friendly status string for a member based on their status and enrollment year.
- * Example: "21 Grade Ph.D. Student", "Professor", "Alumni".
- * @param member - A member object containing at least status, enrollment_year, and title_zh.
- * @returns A display string or null.
+ * Calculates a display-friendly status string for a member, considering the academic year.
+ * Example: "23 Grade Undergraduate (Year 2)", "Professor", "Alumni".
+ * Assumes academic year starts in September (month index 8).
+ * @param member - A member object containing at least status and enrollment_year.
+ * @returns A display string.
  */
 export function calculateMemberGradeStatus(
-  member: Pick<Member, "status" | "enrollment_year" | "title_zh">
+  member: Pick<Member, "status" | "enrollment_year" | "title_zh"> // Keep title_zh for Professor
 ): string {
-  const currentYear = new Date().getFullYear();
-  const yearSuffix = member.enrollment_year ? String(member.enrollment_year).slice(-2) : null;
+  const now = new Date();
+  const currentYear = now.getFullYear();
+  const currentMonth = now.getMonth(); // 0 = January, 8 = September
+  const academicYearStartMonth = 8; // September
+
+  const yearSuffix = member.enrollment_year
+    ? String(member.enrollment_year).slice(-2)
+    : null;
+
+  let grade: number | null = null;
+  if (member.enrollment_year) {
+    const yearDiff = currentYear - member.enrollment_year;
+    if (currentMonth >= academicYearStartMonth) {
+      // If current month is Sep or later, we are in the next academic year relative to start
+      grade = yearDiff + 1;
+    } else {
+      // If current month is Jan-Aug, we are still in the academic year that started last year
+      grade = yearDiff; // Corrected logic
+    }
+    // Ensure grade is at least 1 if enrollment year is the current year and month is >= start month
+    if (grade <= 0 && currentYear === member.enrollment_year && currentMonth >= academicYearStartMonth) {
+        grade = 1;
+    }
+    // Ensure grade is at least 1 if enrollment year is the previous year and month is < start month
+     else if (grade <= 0 && currentYear === member.enrollment_year + 1 && currentMonth < academicYearStartMonth) {
+         grade = 1;
+     } else if (grade <= 0) {
+         grade = null; // Invalid enrollment year or future start?
+     }
+
+  }
 
   switch (member.status) {
     case MemberStatus.PROFESSOR:
@@ -44,20 +74,25 @@ export function calculateMemberGradeStatus(
     case MemberStatus.POSTDOC:
       return "Postdoc";
     case MemberStatus.PHD_STUDENT:
-      return yearSuffix ? `${yearSuffix} Grade Ph.D. Student` : "Ph.D. Student";
+      return yearSuffix && grade
+        ? `${yearSuffix} Grade Ph.D. (Year ${grade})`
+        : yearSuffix ? `${yearSuffix} Grade Ph.D.` : "Ph.D. Student";
     case MemberStatus.MASTER_STUDENT:
-      return yearSuffix ? `${yearSuffix} Grade Master Student` : "Master Student";
+      return yearSuffix && grade
+        ? `${yearSuffix} Grade Master (Year ${grade})`
+        : yearSuffix ? `${yearSuffix} Grade Master` : "Master Student";
     case MemberStatus.UNDERGRADUATE:
-       if (member.enrollment_year) {
-         const grade = currentYear - member.enrollment_year + 1;
-         if (grade >= 1 && grade <= 4) {
-           return `${yearSuffix} Grade Undergraduate (Year ${grade})`;
-         } else {
-           return `${yearSuffix} Grade Undergraduate`; // Graduated or special case
-         }
-       } else {
-           return "Undergraduate";
-       }
+      if (yearSuffix && grade) {
+        // Typically undergrad is 4 years, adjust range if needed
+        if (grade >= 1 && grade <= 4) { 
+          return `${yearSuffix} Grade Undergraduate (Year ${grade})`;
+        } else {
+          // Handle cases outside the typical 1-4 range (e.g., graduated, 5th year)
+          return `${yearSuffix} Grade Undergraduate`; 
+        }
+      } else {
+        return "Undergraduate";
+      }
     case MemberStatus.VISITING_SCHOLAR:
       return "Visiting Scholar";
     case MemberStatus.RESEARCH_STAFF:
@@ -66,11 +101,10 @@ export function calculateMemberGradeStatus(
       return "Alumni";
     case MemberStatus.OTHER:
     default:
-      // Ensure a non-null string is always returned
       const statusString = member.status
           ? member.status.replace(/_/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())
-          : "Member"; // Default if status is somehow null/undefined
-      return statusString || "Unknown Status"; // Final fallback
+          : "Member";
+      return statusString || "Unknown Status";
   }
 }
 

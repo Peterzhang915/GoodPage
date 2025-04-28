@@ -13,6 +13,8 @@ import type {
 import prisma from "@/lib/prisma"; // Import Prisma Client instance
 import LabLeaderPageContent from "@/components/lab_leader/LabLeaderPageContent";
 
+// Force dynamic rendering (SSR) for this page
+export const dynamic = 'force-dynamic';
 
 // --- 教授页面组件 (Server Component - Primarily for data fetching) ---
 export default async function ProfessorPage() {

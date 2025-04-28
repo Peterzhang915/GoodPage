@@ -7,6 +7,9 @@ import { MemberList } from "@/components/members/MemberList"; // 导入新的客
 import { themeColors } from "@/styles/theme";
 import { AlertTriangle } from "lucide-react"; // 用于错误显示
 
+// Force dynamic rendering (SSR) for this page
+export const dynamic = 'force-dynamic';
+
 // 定义分组标题 (保持不变)
 const statusTitles: Record<string, string> = {
   PROFESSOR: "Head of Lab",
