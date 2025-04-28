@@ -173,53 +173,64 @@ const PublicationManager: React.FC<PublicationManagerProps> = ({ onClose }) => {
 
     const publicationId = editingPublication.id;
     setIsSubmitting(true);
-    console.log(`Submitting updated publication data for ID ${publicationId}:`, data);
+    console.log(`[Frontend Update] Submitting updated data for ID ${publicationId}:`, data);
 
-    const updatePromise = fetch(`/api/publications/${publicationId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-    });
+    try {
+        toast.loading('Updating publication...'); 
+        console.log(`[Frontend Update] About to fetch PUT /api/publications/${publicationId}`); // Log before fetch
 
-    toast.promise(updatePromise, {
-        loading: 'Updating publication...',
-        success: async (response) => {
-            const result = await response.json(); // Always try to parse JSON
-            if (!response.ok || !result.success) {
-                const errorMsg = result.error?.message || `Failed with status: ${response.status}`;
-                let detailedErrors = '';
-                if (result.error?.details) {
-                   detailedErrors = Object.entries(result.error.details)
-                       .map(([field, errors]) => `${field}: ${(errors as string[]).join(', ')}`)
-                       .join('; ');
-                }
-                console.error(`API Error updating publication ${publicationId}:`, errorMsg, detailedErrors);
-                throw new Error(`${errorMsg}${detailedErrors ? ` (${detailedErrors})` : ''}`); // Throw combined error
+        const response = await fetch(`/api/publications/${publicationId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data),
+        });
+
+        console.log(`[Frontend Update] Fetch completed for ${publicationId}. Status: ${response.status}`); // Log after fetch
+
+        const result = await response.json(); // Try to parse JSON
+        console.log(`[Frontend Update] Parsed JSON response for ${publicationId}. Success flag: ${result?.success}`); // Log after JSON parsing
+
+        if (!response.ok || !result.success) {
+            const errorMsg = result.error?.message || `Failed with status: ${response.status}`;
+            let detailedErrors = '';
+            if (result.error?.details) {
+               detailedErrors = Object.entries(result.error.details)
+                   .map(([field, errors]) => `${field}: ${(errors as string[]).join(', ')}`)
+                   .join('; ');
             }
-
-            console.log(`Successfully updated publication ${publicationId}:`, result.data);
-            // --- Optimistic Update (or just update with returned data) ---
-            // Ensure result.data has the expected structure (PublicationWithAuthors)
-            // For simplicity, we'll assume the PUT returns the updated object matching PublicationWithAuthors
-            // If not, we might need to fetch the updated list or manually reconstruct.
-            const updatedPub = result.data as PublicationWithAuthors; // Assuming PUT returns compatible data
-            setPublications(prev => 
-                prev.map(pub => pub.id === publicationId ? { ...pub, ...updatedPub } : pub)
-            );
-            setIsFormOpen(false); // Close dialog on success
-            return 'Publication updated successfully!';
-        },
-        error: (err: any) => {
-            // Error message constructed and thrown in the success block if response not ok
-            console.error("Update failed:", err);
-            return `Error updating publication: ${err.message || 'Unknown error'}`;
-        },
-        finally: () => {
-            setIsSubmitting(false);
+            console.error(`[Frontend Update] API Error updating publication ${publicationId}:`, errorMsg, detailedErrors);
+            throw new Error(`${errorMsg}${detailedErrors ? ` (${detailedErrors})` : ''}`); 
         }
-    });
 
-    // No need to await here
+        // --- Success Path --- 
+        console.log(`[Frontend Update Success] Received updated data for ${publicationId}:`, result.data);
+        const updatedPub = result.data as PublicationWithAuthors; 
+        
+        console.log(`[Frontend Update Success] Attempting to update state for ${publicationId}...`);
+        setPublications(prev => 
+            prev.map(pub => pub.id === publicationId ? updatedPub : pub)
+        );
+        console.log(`[Frontend Update Success] State update called for ${publicationId}.`);
+
+        setIsFormOpen(false); // Close dialog on success
+        console.log(`[Frontend Update Success] Dialog closed for ${publicationId}.`);
+
+        toast.dismiss(); 
+        toast.success('Publication updated successfully!'); 
+
+    } catch (error: any) {
+        console.error(`[Frontend Update] Error caught during update process for ${publicationId}:`, error);
+        toast.dismiss();
+        // Check if the error is specifically a JSON parsing error
+        let errorMessage = error.message || 'Unknown error';
+        if (error instanceof SyntaxError) { // JSON.parse throws SyntaxError for invalid JSON
+            errorMessage = `Failed to parse server response. ${error.message}`;
+        } 
+        toast.error(`Error updating publication: ${errorMessage}`);
+    } finally {
+        setIsSubmitting(false);
+        console.log(`[Frontend Update] Finally block executed for ${publicationId}.`); // Log in finally
+    }
   };
 
   // Placeholder for Edit

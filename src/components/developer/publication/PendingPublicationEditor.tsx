@@ -35,8 +35,6 @@ interface PublicationFormData {
   title: string;
   year: number | null;
   venue: string | null;
-  raw_authors: string | null;
-  doi_url: string | null;
   pdf_url: string | null;
   abstract: string | null;
   keywords: string | null;
@@ -45,13 +43,14 @@ interface PublicationFormData {
 
 // Type for the data sent in the PUT request
 interface PublicationUpdatePayload
-  extends Omit<PublicationFormData, "raw_authors"> {
+  extends Omit<PublicationFormData, "raw_authors" | "doi_url"> {
   // Omit raw_authors if not sending it back
   authorIds: string[];
   status: string; // Explicitly set status
 }
 
-// --- Utility Function to Parse Authors (remains the same) ---
+// --- Utility Function to Parse Authors (REMOVE THIS IF NOT USED ELSEWHERE) ---
+/* 
 const parseAuthors = (rawAuthors: string | null): string[] => {
   if (!rawAuthors) return [];
   return rawAuthors
@@ -59,6 +58,7 @@ const parseAuthors = (rawAuthors: string | null): string[] => {
     .map((author) => author.trim())
     .filter(Boolean);
 };
+*/
 
 const PendingPublicationEditor: React.FC<PendingPublicationEditorProps> = ({
   publicationId,
@@ -109,14 +109,12 @@ const PendingPublicationEditor: React.FC<PendingPublicationEditorProps> = ({
         title: data.title,
         year: data.year ?? null,
         venue: data.venue ?? null,
-        raw_authors: data?.raw_authors ?? null,
-        doi_url: data?.doi_url ?? null,
         pdf_url: data?.pdf_url ?? null,
         abstract: data?.abstract ?? null,
         keywords: data?.keywords ?? null,
         ccf_rank: data?.ccf_rank ?? null,
       });
-      setInitialRawAuthors(data?.raw_authors ?? null);
+      // setInitialRawAuthors(data?.raw_authors ?? null); // <-- Remove this line
       // Pre-select authors based on the `authors` relation returned by the API
       // This assumes the API route is updated to include authors
       if (data.authors && memberOptions.length > 0) {
@@ -128,6 +126,7 @@ const PendingPublicationEditor: React.FC<PendingPublicationEditorProps> = ({
           "Pre-selected authors based on fetched relation:",
           preSelected,
         );
+      /* Remove the fallback logic based on raw_authors
       } else if (data?.raw_authors && memberOptions.length > 0) {
         // Fallback: Attempt pre-selection based on raw_authors if relation not present
         // (Keep existing logic or refine)
@@ -154,6 +153,7 @@ const PendingPublicationEditor: React.FC<PendingPublicationEditorProps> = ({
           "Pre-selected authors based on raw string (fallback):",
           preSelectedFallback,
         );
+      */
       } else {
         setSelectedAuthors([]); // Clear if no data or members
       }
@@ -424,6 +424,7 @@ const PendingPublicationEditor: React.FC<PendingPublicationEditorProps> = ({
           </div>
 
           {/* Authors (Raw) - Display Only */}
+          {/* 
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-1">
               Raw Authors (from BibTeX)
@@ -435,6 +436,7 @@ const PendingPublicationEditor: React.FC<PendingPublicationEditorProps> = ({
               Use the dropdown below to link authors to lab members.
             </p>
           </div>
+          */}
 
           {/* Author Selection Dropdown */}
           <div>
@@ -523,26 +525,6 @@ const PendingPublicationEditor: React.FC<PendingPublicationEditorProps> = ({
 
         {/* Column 2 */}
         <div className="space-y-4">
-          {/* DOI URL */}
-          <div>
-            <label
-              htmlFor="doi_url"
-              className="block text-sm font-medium text-gray-300 mb-1"
-            >
-              DOI URL (e.g., 10.1109/...){" "}
-              <ExternalLink size={12} className="inline ml-1 opacity-70" />
-            </label>
-            <input
-              type="text"
-              id="doi_url"
-              name="doi_url"
-              value={formData.doi_url || ""}
-              onChange={handleInputChange}
-              placeholder="Enter DOI link (without https://doi.org/)"
-              className="w-full p-2 border rounded-md shadow-sm bg-gray-700 border-gray-600 text-gray-100 focus:ring-indigo-500 focus:border-indigo-500"
-            />
-          </div>
-
           {/* PDF URL */}
           <div>
             <label
