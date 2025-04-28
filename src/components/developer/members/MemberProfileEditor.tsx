@@ -1498,7 +1498,6 @@ export default function MemberProfileEditor({ initialData }: MemberProfileEditor
 
       {/* --- Section 8: Presentations --- */}
       <Card className='mb-6 dark:bg-gray-800 overflow-hidden border-blue-500/50 dark:border-blue-400/40'>
-           {/* Change vertical padding to py-0 and fix duplicate header */}
            <CardHeader className="flex flex-row items-center justify-between cursor-pointer px-3 py-0" onClick={() => toggleSection('presentations')}>
                 <CardTitle className="text-lg flex items-center gap-2 text-blue-700 dark:text-blue-400">
                       <PresentationIcon className="h-5 w-5" /> Presentations
@@ -1509,19 +1508,94 @@ export default function MemberProfileEditor({ initialData }: MemberProfileEditor
                   </motion.div>
                 </Button>
             </CardHeader>
-            {/* Remove duplicated header line */}
-           {/* <CardHeader className="flex flex-row items-center justify-between cursor-pointer px-3 py-1" onClick={() => toggleSection('presentations')}>
-              {/* ... CardTitle ... */}
-               {/* ... Button ... */}
-           {/* </CardHeader> */}
-           <motion.div initial={false} animate={{ height: openSections.presentations ? 'auto' : 0, opacity: openSections.presentations ? 1 : 0 }} transition={{ duration: 0.3, ease: "easeInOut" }} style={{ overflow: 'hidden' }}>
-              {/* ... CardContent ... */}
-           </motion.div>
+           {/* Apply identical motion.div structure from Basic Info */}
+           <motion.div
+              initial={false}
+              animate={{
+                  height: openSections.presentations ? 'auto' : 0,
+                  opacity: openSections.presentations ? 1 : 0,
+              }}
+              transition={{ duration: 0.3, ease: "easeInOut" }}
+              style={{ overflow: 'hidden' }}
+            >
+              <CardContent className="p-4 pt-4">
+                  {/* Move Add button here */}
+                  <Button
+                      onClick={handleOpenAddPresentationModal}
+                      size="sm"
+                      className="mb-4 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 dark:text-white"
+                  >
+                      Add Presentation
+                  </Button>
+                  {presentationList.length > 0 ? (
+                      <ul className="space-y-3">
+                          {[...presentationList].sort((a, b) => (b.year ?? 0) - (a.year ?? 0)).map(pres => (
+                              <li key={pres.id} className="border-b dark:border-gray-700 pb-3 flex justify-between items-start group">
+                                  <div className="flex-grow mr-4">
+                                      <p className="font-semibold dark:text-gray-200">{pres.title}</p>
+                                      {/* Use event_name instead of conference */}
+                                      <p className="text-sm text-gray-500 dark:text-gray-400">{pres.event_name || 'N/A'} ({pres.year})</p>
+                                      {pres.location && <p className="text-xs text-gray-500 dark:text-gray-400 italic">{pres.location}</p>}
+                                      {pres.url && 
+                                          <a href={pres.url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-500 hover:underline dark:text-blue-400 block mt-1">
+                                              Link
+                                          </a>
+                                      }
+                                  </div>
+                                  <div className="space-x-1 flex-shrink-0 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
+                                      {/* Edit Button */}
+                                      <Button
+                                          variant="outline"
+                                          size="icon"
+                                          className="h-7 w-7 dark:border-gray-600 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-indigo-400"
+                                          aria-label="Edit presentation record"
+                                          onClick={() => handleOpenEditPresentationModal(pres)}
+                                      >
+                                          <Pencil className="h-3.5 w-3.5" />
+                                      </Button>
+                                      {/* Delete Button */}
+                                       <AlertDialog>
+                                           <AlertDialogTrigger asChild>
+                                               <Button
+                                                   variant="destructive"
+                                                   size="icon"
+                                                   className="h-7 w-7 dark:bg-red-700 dark:hover:bg-red-600 dark:text-white"
+                                                   aria-label="Delete presentation record"
+                                               >
+                                                   <X className="h-3.5 w-3.5" />
+                                               </Button>
+                                           </AlertDialogTrigger>
+                                           <AlertDialogContent className="dark:bg-gray-850 dark:border-gray-700">
+                                               <AlertDialogHeader>
+                                                   <AlertDialogTitle className="dark:text-red-400">Confirm Deletion</AlertDialogTitle>
+                                                   <AlertDialogDescription className="dark:text-gray-400">
+                                                       This action will permanently delete this presentation record.
+                                                   </AlertDialogDescription>
+                                               </AlertDialogHeader>
+                                               <AlertDialogFooter>
+                                                   <AlertDialogCancel className="dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700">Cancel</AlertDialogCancel>
+                                                   <AlertDialogAction
+                                                       onClick={() => handleDeletePresentation(pres.id)}
+                                                       className="dark:bg-red-600 dark:hover:bg-red-700 dark:text-white"
+                                                   >
+                                                       Delete
+                                                   </AlertDialogAction>
+                                               </AlertDialogFooter>
+                                           </AlertDialogContent>
+                                       </AlertDialog>
+                                  </div>
+                              </li>
+                          ))}
+                      </ul>
+                  ) : (
+                      <p className="text-gray-500 italic dark:text-gray-400">No presentations added yet.</p>
+                  )}
+              </CardContent>
+            </motion.div>
       </Card>
 
        {/* --- Section 9: Software & Datasets --- */}
        <Card className='mb-6 dark:bg-gray-800 overflow-hidden border-blue-500/50 dark:border-blue-400/40'>
-          {/* Restore header content and ensure padding is px-3 py-0 */}
           <CardHeader className="flex flex-row items-center justify-between cursor-pointer px-3 py-0" onClick={() => toggleSection('softwareDatasets')}>
               <CardTitle className="text-lg flex items-center gap-2 text-blue-700 dark:text-blue-400">
                   <Database className="h-5 w-5" /> Software & Datasets
@@ -1532,12 +1606,102 @@ export default function MemberProfileEditor({ initialData }: MemberProfileEditor
                   </motion.div>
               </Button>
           </CardHeader>
-           {/* ... motion.div content ... */}
+           {/* Apply identical motion.div structure from Basic Info */}
+           <motion.div
+              initial={false}
+              animate={{
+                  height: openSections.softwareDatasets ? 'auto' : 0,
+                  opacity: openSections.softwareDatasets ? 1 : 0,
+              }}
+              transition={{ duration: 0.3, ease: "easeInOut" }}
+              style={{ overflow: 'hidden' }}
+            >
+              <CardContent className="p-4 pt-4">
+                  {/* Move Add button here */}
+                  <Button
+                      onClick={handleOpenAddSoftwareDatasetModal}
+                      size="sm"
+                      className="mb-4 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 dark:text-white"
+                  >
+                      Add Software/Dataset
+                  </Button>
+                  {softwareAndDatasetsList.length > 0 ? (
+                       <ul className="space-y-3">
+                          {/* Remove sorting by year */}
+                          {[...softwareAndDatasetsList].map(record => (
+                              <li key={record.id} className="border-b dark:border-gray-700 pb-3 flex justify-between items-start group">
+                                  <div className="flex-grow mr-4">
+                                      <p className="font-semibold dark:text-gray-200">{record.title}</p>
+                                      {/* Remove year display */}
+                                      <p className="text-sm text-gray-500 dark:text-gray-400">{record.type}</p>
+                                      {record.description && <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{record.description}</p>}
+                                      {/* Use repository_url instead of url */}
+                                      {record.repository_url &&
+                                          <a href={record.repository_url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-500 hover:underline dark:text-blue-400 block mt-1">
+                                              Repository Link
+                                          </a>
+                                      }
+                                      {/* Also check for project_url as a fallback or secondary link */}
+                                      {record.project_url &&
+                                          <a href={record.project_url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-500 hover:underline dark:text-blue-400 block mt-1">
+                                              Project Link
+                                          </a>
+                                      }
+                                  </div>
+                                  <div className="space-x-1 flex-shrink-0 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
+                                      {/* Edit Button */}
+                                      <Button
+                                          variant="outline"
+                                          size="icon"
+                                          className="h-7 w-7 dark:border-gray-600 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-indigo-400"
+                                          aria-label="Edit software/dataset record"
+                                          onClick={() => handleOpenEditSoftwareDatasetModal(record)}
+                                      >
+                                          <Pencil className="h-3.5 w-3.5" />
+                                      </Button>
+                                      {/* Delete Button */}
+                                       <AlertDialog>
+                                           <AlertDialogTrigger asChild>
+                                               <Button
+                                                   variant="destructive"
+                                                   size="icon"
+                                                   className="h-7 w-7 dark:bg-red-700 dark:hover:bg-red-600 dark:text-white"
+                                                   aria-label="Delete software/dataset record"
+                                               >
+                                                   <X className="h-3.5 w-3.5" />
+                                               </Button>
+                                           </AlertDialogTrigger>
+                                           <AlertDialogContent className="dark:bg-gray-850 dark:border-gray-700">
+                                               <AlertDialogHeader>
+                                                   <AlertDialogTitle className="dark:text-red-400">Confirm Deletion</AlertDialogTitle>
+                                                   <AlertDialogDescription className="dark:text-gray-400">
+                                                       This action will permanently delete this software/dataset record.
+                                                   </AlertDialogDescription>
+                                               </AlertDialogHeader>
+                                               <AlertDialogFooter>
+                                                   <AlertDialogCancel className="dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700">Cancel</AlertDialogCancel>
+                                                   <AlertDialogAction
+                                                       onClick={() => handleDeleteSoftwareDataset(record.id)}
+                                                       className="dark:bg-red-600 dark:hover:bg-red-700 dark:text-white"
+                                                   >
+                                                       Delete
+                                                   </AlertDialogAction>
+                                               </AlertDialogFooter>
+                                           </AlertDialogContent>
+                                       </AlertDialog>
+                                  </div>
+                              </li>
+                          ))}
+                       </ul>
+                  ) : (
+                      <p className="text-gray-500 italic dark:text-gray-400">No software or datasets added yet.</p>
+                  )}
+              </CardContent>
+            </motion.div>
        </Card>
 
        {/* --- Section 10: Patents --- */}
        <Card className='mb-6 dark:bg-gray-800 overflow-hidden border-blue-500/50 dark:border-blue-400/40'>
-          {/* Restore header content and ensure padding is px-3 py-0 */}
           <CardHeader className="flex flex-row items-center justify-between cursor-pointer px-3 py-0" onClick={() => toggleSection('patents')}>
               <CardTitle className="text-lg flex items-center gap-2 text-blue-700 dark:text-blue-400">
                   <ScrollText className="h-5 w-5" /> Patents
@@ -1548,12 +1712,36 @@ export default function MemberProfileEditor({ initialData }: MemberProfileEditor
                  </motion.div>
                </Button>
           </CardHeader>
-           {/* ... motion.div content ... */}
+           {/* Apply identical motion.div structure from Basic Info (fixing previous mistake) */}
+           <motion.div
+              initial={false}
+              animate={{
+                  height: openSections.patents ? 'auto' : 0,
+                  opacity: openSections.patents ? 1 : 0,
+              }}
+              transition={{ duration: 0.3, ease: "easeInOut" }}
+              style={{ overflow: 'hidden' }}
+            >
+              <CardContent className="p-4 pt-4">
+                {/* TODO: Implement Patents list and Add/Edit functionality */}
+                <p className="text-gray-500 dark:text-gray-400 italic">
+                  Patent management functionality is not yet implemented.
+                </p>
+                {/* Example Add Button (disabled for now) */}
+                {/* <Button
+                  variant="outline"
+                  size="sm"
+                  className="mt-4"
+                  disabled // Enable when functionality is ready
+                  // onClick={handleOpenAddPatentModal}
+                >\n                  Add Patent
+                </Button> */}
+              </CardContent>
+            </motion.div>
        </Card>
 
         {/* --- Section 11: Academic Services --- */}
         <Card className='mb-6 dark:bg-gray-800 overflow-hidden border-blue-500/50 dark:border-blue-400/40'>
-          {/* Restore header content and ensure padding is px-3 py-0 */}
           <CardHeader className="flex flex-row items-center justify-between cursor-pointer px-3 py-0" onClick={() => toggleSection('academicServices')}>
               <CardTitle className="text-lg flex items-center gap-2 text-blue-700 dark:text-blue-400">
                   <Users className="h-5 w-5" /> Academic Services
@@ -1564,8 +1752,86 @@ export default function MemberProfileEditor({ initialData }: MemberProfileEditor
                  </motion.div>
                </Button>
           </CardHeader>
-           {/* ... motion.div content ... */}
-       </Card>
+           {/* Apply identical motion.div structure from Basic Info */}
+           <motion.div
+              initial={false}
+              animate={{
+                  height: openSections.academicServices ? 'auto' : 0,
+                  opacity: openSections.academicServices ? 1 : 0,
+              }}
+              transition={{ duration: 0.3, ease: "easeInOut" }}
+              style={{ overflow: 'hidden' }}
+            >
+              <CardContent className="p-4 pt-4">
+                  {/* Move Add button here */}
+                  <Button
+                      onClick={handleOpenAddServiceModal}
+                      size="sm"
+                      className="mb-4 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 dark:text-white"
+                  >
+                      Add Service
+                  </Button>
+                  {academicServicesList.length > 0 ? (
+                      <ul className="space-y-3">
+                          {[...academicServicesList].sort((a, b) => (b.start_year ?? 0) - (a.start_year ?? 0)).map(service => (
+                              <li key={service.id} className="border-b dark:border-gray-700 pb-3 flex justify-between items-start group">
+                                  <div className="flex-grow mr-4">
+                                      <p className="font-semibold dark:text-gray-200">{service.role}</p>
+                                      <p className="text-sm text-gray-500 dark:text-gray-400">{service.organization}</p>
+                                      <p className="text-sm text-gray-500 dark:text-gray-400">{service.start_year} - {service.end_year || 'Present'}</p>
+                                      {service.description && <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{service.description}</p>}
+                                  </div>
+                                  <div className="space-x-1 flex-shrink-0 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
+                                      {/* Edit Button */}
+                                      <Button
+                                          variant="outline"
+                                          size="icon"
+                                          className="h-7 w-7 dark:border-gray-600 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-indigo-400"
+                                          aria-label="Edit academic service record"
+                                          onClick={() => handleOpenEditServiceModal(service)}
+                                      >
+                                          <Pencil className="h-3.5 w-3.5" />
+                                      </Button>
+                                      {/* Delete Button */}
+                                      <AlertDialog>
+                                          <AlertDialogTrigger asChild>
+                                              <Button
+                                                  variant="destructive"
+                                                  size="icon"
+                                                  className="h-7 w-7 dark:bg-red-700 dark:hover:bg-red-600 dark:text-white"
+                                                  aria-label="Delete academic service record"
+                                              >
+                                                  <X className="h-3.5 w-3.5" />
+                                              </Button>
+                                          </AlertDialogTrigger>
+                                          <AlertDialogContent className="dark:bg-gray-850 dark:border-gray-700">
+                                              <AlertDialogHeader>
+                                                  <AlertDialogTitle className="dark:text-red-400">Confirm Deletion</AlertDialogTitle>
+                                                  <AlertDialogDescription className="dark:text-gray-400">
+                                                      This action will permanently delete this academic service record.
+                                                  </AlertDialogDescription>
+                                              </AlertDialogHeader>
+                                              <AlertDialogFooter>
+                                                  <AlertDialogCancel className="dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700">Cancel</AlertDialogCancel>
+                                                  <AlertDialogAction
+                                                      onClick={() => handleDeleteAcademicService(service.id)}
+                                                      className="dark:bg-red-600 dark:hover:bg-red-700 dark:text-white"
+                                                  >
+                                                      Delete
+                                                  </AlertDialogAction>
+                                              </AlertDialogFooter>
+                                          </AlertDialogContent>
+                                      </AlertDialog>
+                                  </div>
+                              </li>
+                          ))}
+                      </ul>
+                  ) : (
+                      <p className="text-gray-500 italic dark:text-gray-400">No academic services added yet.</p>
+                  )}
+              </CardContent>
+            </motion.div>
+        </Card>
 
       {/* Render the Education Modal */}
       <EducationFormModal
