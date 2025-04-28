@@ -163,6 +163,65 @@ const PublicationManager: React.FC<PublicationManagerProps> = ({ onClose }) => {
     }
   };
 
+  // Handler for submitting the Edit form
+  const handleUpdateSubmit = async (data: PublicationFormData) => {
+    if (!editingPublication) {
+        toast.error("Cannot update: No publication selected for editing.");
+        console.error("handleUpdateSubmit called without editingPublication set.");
+        return;
+    }
+
+    const publicationId = editingPublication.id;
+    setIsSubmitting(true);
+    console.log(`Submitting updated publication data for ID ${publicationId}:`, data);
+
+    const updatePromise = fetch(`/api/publications/${publicationId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+    });
+
+    toast.promise(updatePromise, {
+        loading: 'Updating publication...',
+        success: async (response) => {
+            const result = await response.json(); // Always try to parse JSON
+            if (!response.ok || !result.success) {
+                const errorMsg = result.error?.message || `Failed with status: ${response.status}`;
+                let detailedErrors = '';
+                if (result.error?.details) {
+                   detailedErrors = Object.entries(result.error.details)
+                       .map(([field, errors]) => `${field}: ${(errors as string[]).join(', ')}`)
+                       .join('; ');
+                }
+                console.error(`API Error updating publication ${publicationId}:`, errorMsg, detailedErrors);
+                throw new Error(`${errorMsg}${detailedErrors ? ` (${detailedErrors})` : ''}`); // Throw combined error
+            }
+
+            console.log(`Successfully updated publication ${publicationId}:`, result.data);
+            // --- Optimistic Update (or just update with returned data) ---
+            // Ensure result.data has the expected structure (PublicationWithAuthors)
+            // For simplicity, we'll assume the PUT returns the updated object matching PublicationWithAuthors
+            // If not, we might need to fetch the updated list or manually reconstruct.
+            const updatedPub = result.data as PublicationWithAuthors; // Assuming PUT returns compatible data
+            setPublications(prev => 
+                prev.map(pub => pub.id === publicationId ? { ...pub, ...updatedPub } : pub)
+            );
+            setIsFormOpen(false); // Close dialog on success
+            return 'Publication updated successfully!';
+        },
+        error: (err: any) => {
+            // Error message constructed and thrown in the success block if response not ok
+            console.error("Update failed:", err);
+            return `Error updating publication: ${err.message || 'Unknown error'}`;
+        },
+        finally: () => {
+            setIsSubmitting(false);
+        }
+    });
+
+    // No need to await here
+  };
+
   // Placeholder for Edit
   const handleEdit = (pub: PublicationWithAuthors) => {
     console.log("Edit publication:", pub.id);
@@ -258,8 +317,8 @@ const PublicationManager: React.FC<PublicationManagerProps> = ({ onClose }) => {
                             key={editingPublication?.id ?? 'add'} // Force re-render on mode change
                             // Pass initialData only if editing, ensuring type is not null
                             initialData={editingPublication ? { ...editingPublication, type: editingPublication.type ?? 'OTHER' } : undefined} 
-                            // Pass the correct submit handler based on mode (add for now)
-                            onSubmit={handleAddSubmit} // TODO: Needs to handle PUT for edit
+                            // Conditionally set the onSubmit handler
+                            onSubmit={editingPublication ? handleUpdateSubmit : handleAddSubmit} 
                             onCancel={() => setIsFormOpen(false)} 
                             isLoading={isSubmitting}
                         />
