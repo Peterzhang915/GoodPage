@@ -8,14 +8,6 @@ import { motion } from "framer-motion";
 import { themeColors } from "@/styles/theme";
 import type { MemberForCard } from "@/lib/types";
 import { MemberStatus } from "@prisma/client"; // 直接从 @prisma/client 导入枚举
-import { MemberProfileImage } from "@/components/members/MemberProfileImage"; // 确保路径正确
-import {
-  GraduationCap,
-  UserCircle,
-  MapPin,
-  BookOpen,
-  Mail,
-} from "lucide-react";
 
 // 默认头像和 Emojis
 const placeholderAvatar = "/avatars/placeholder.png";

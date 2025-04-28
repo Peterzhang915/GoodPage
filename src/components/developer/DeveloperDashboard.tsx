@@ -65,7 +65,6 @@ const availableTools: ToolConfig[] = [
     title: "Manage Members",
     description: "View and manage lab member information.", // Updated description
     icon: Users,
-    requiredPermission: "manage_members",
     component: MemberManager, // The component rendered is the list manager
     buttonText: "Manage Members",
   },
