@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import prisma from '@/lib/prisma';
-import { Prisma } from '@prisma/client'; // Import Prisma namespace for types
+import { Prisma, PublicationType } from '@prisma/client'; // Ensure PublicationType is imported
 import * as z from 'zod'; // Import zod for input validation
 // import { checkPermission, getCurrentUser } from '@/lib/auth'; // Placeholder for actual auth functions
 
@@ -89,11 +89,10 @@ const createPublicationSchema = z.object({
     .int()
     .min(1900, { message: 'Year must be 1900 or later.' })
     .max(new Date().getFullYear() + 5, { message: 'Year seems too far in the future.' }),
-  // Add other fields here as the form grows, ensure they match form data
-  // venue: z.string().nullable().optional(),
-  // type: z.nativeEnum(PublicationType).optional(),
-  // pdf_url: z.string().url().nullable().optional(),
-  // ... etc
+  venue: z.string().nullable().optional().transform(val => val === '' ? null : val),
+  authors_full_string: z.string().nullable().optional().transform(val => val === '' ? null : val),
+  pdf_url: z.string().url({ message: "Please enter a valid URL." }).nullable().optional().transform(val => val === '' ? null : val),
+  type: z.nativeEnum(PublicationType).optional(), // PublicationType should be available here
 });
 
 // --- POST Handler --- 
@@ -121,7 +120,7 @@ export async function POST(request: Request) {
     // 2. Validate input data
     const validationResult = createPublicationSchema.safeParse(body);
     if (!validationResult.success) {
-      console.log("API: Invalid input for creating publication:", validationResult.error.errors);
+      console.log("API: Invalid input for creating publication:", validationResult.error.formErrors.fieldErrors); // Log detailed errors
       return NextResponse.json(
         {
           success: false,
@@ -135,22 +134,27 @@ export async function POST(request: Request) {
       );
     }
 
-    const { title, year } = validationResult.data;
-    // Destructure other validated fields here as they are added
-    // const { venue, type, pdf_url, ... } = validationResult.data;
+    // Ensure data types are correct after validation
+    const { 
+      title, 
+      year, 
+      venue, 
+      authors_full_string, 
+      pdf_url, 
+      type 
+    } = validationResult.data;
 
-    console.log(`API: Creating publication with Title: ${title}, Year: ${year}`);
+    console.log(`API: Creating publication with Title: ${title}, Year: ${year}, Venue: ${venue}, Authors: ${authors_full_string}, PDF: ${pdf_url}, Type: ${type}`);
 
     // 3. Create publication in database
     const newPublication = await prisma.publication.create({
       data: {
-        title,
-        year,
-        // Add other fields here based on validationResult.data
-        // venue,
-        // type,
-        // pdf_url, 
-        // ...etc
+        title: title, // Explicitly typed
+        year: year,   // Explicitly typed
+        venue: venue, // Explicitly typed
+        authors_full_string: authors_full_string, // Explicitly typed
+        pdf_url: pdf_url, // Explicitly typed
+        type: type,   // Explicitly typed
         // NOTE: Optional fields not provided will default to null or their DB default
       },
       // Optionally include authors if needed in the response (unlikely for create)
