@@ -48,3 +48,6 @@ package-lock.json
 # cursor
 /.cursor/
 
+pnpm-workspace.yaml
+pnpm-lock.yaml
+GOODPage后续安排.md

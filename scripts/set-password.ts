@@ -1,7 +1,9 @@
-import { PrismaClient } from "@prisma/client";
-import bcrypt from "bcrypt";
-import { exit } from "process"; // Import exit explicitly
-
+// import { PrismaClient } from "@prisma/client";
+// import bcrypt from "bcrypt";
+// import { exit } from "process"; // Import exit explicitly
+const { PrismaClient } = require("@prisma/client");
+const bcrypt = require("bcrypt");
+const { exit } = require("process");
 const prisma = new PrismaClient();
 const saltRounds = 10; // Standard salt rounds for bcrypt
 
