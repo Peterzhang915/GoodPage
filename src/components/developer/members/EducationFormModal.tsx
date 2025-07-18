@@ -23,31 +23,58 @@ import type { Education } from '@/lib/prisma';
 import type { EducationFormData } from '@/app/actions/educationActions'; // Import the form data type
 
 // --- Zod Schema for Validation ---
+// 用于表单输入的schema（全部string）
+const educationStringSchema = z.object({
+  school: z.string().min(1, "School name is required"),
+  degree: z.string().min(1, "Degree is required"),
+  field: z.string().optional(),
+  start_year: z.union([
+    z.string().min(1, "Start year is required"),
+    z.number().int().min(1900, "Invalid year").max(new Date().getFullYear() + 10, "Invalid year")
+  ]),
+  end_year: z.string().optional(),
+  thesis_title: z.string().optional(),
+  description: z.string().optional(),
+});
+// 用于校验和转换的schema
 const educationSchema = z.object({
   school: z.string().min(1, "School name is required"),
   degree: z.string().min(1, "Degree is required"),
   field: z.string().optional().nullable(),
-  start_year: z.number({ invalid_type_error: "Start year must be a number" })
-                .int()
-                .min(1900, "Invalid year")
-                .max(new Date().getFullYear() + 10, "Invalid year"), // Required via form logic
-  end_year: z.number({ invalid_type_error: "End year must be a number" })
-                .int()
-                .min(1900, "Invalid year")
-                .max(new Date().getFullYear() + 20, "Invalid year")
-                .optional()
-                .nullable(), // Optional
+  start_year: z.preprocess(
+    (val) => val === '' ? undefined : Number(val),
+    z.number({ invalid_type_error: "Start year must be a number" })
+      .int()
+      .min(1900, "Invalid year")
+      .max(new Date().getFullYear() + 10, "Invalid year")
+  ),
+  end_year: z.preprocess(
+    (val) => val === '' ? null : Number(val),
+    z.number({ invalid_type_error: "End year must be a number" })
+      .int()
+      .min(1900, "Invalid year")
+      .max(new Date().getFullYear() + 20, "Invalid year")
+      .nullable()
+      .optional()
+  ),
   thesis_title: z.string().optional().nullable(),
   description: z.string().optional().nullable(),
-  // Note: display_order is often managed separately (e.g., via drag-and-drop or up/down buttons)
-  // display_order: z.number().int().optional().nullable(),
 }).refine(data => !data.end_year || data.end_year >= data.start_year, {
     message: "End year cannot be earlier than start year",
     path: ["end_year"],
 });
 
 // --- Infer type from Zod schema ---
-type EducationFormValues = z.infer<typeof educationSchema>;
+// --- 表单输入类型，start_year和end_year为string ---
+type EducationFormValues = {
+  school: string;
+  degree: string;
+  field?: string;
+  start_year: string | number;
+  end_year?: string;
+  thesis_title?: string;
+  description?: string;
+};
 
 // --- Component Props ---
 interface EducationFormModalProps {
@@ -76,15 +103,15 @@ export function EducationFormModal({
     reset,
     formState: { errors, isSubmitting },
   } = useForm<EducationFormValues>({
-    resolver: zodResolver(educationSchema),
+    resolver: zodResolver(educationStringSchema),
     defaultValues: {
       school: initialData?.school ?? '',
       degree: initialData?.degree ?? '',
-      field: initialData?.field ?? null,
-      start_year: initialData?.start_year ?? undefined,
-      end_year: initialData?.end_year ?? undefined,
-      thesis_title: initialData?.thesis_title ?? null,
-      description: initialData?.description ?? null,
+      field: initialData?.field ?? '',
+      start_year: initialData?.start_year ?? '',
+      end_year: initialData?.end_year?.toString() ?? '',
+      thesis_title: initialData?.thesis_title ?? '',
+      description: initialData?.description ?? '',
     },
   });
 
@@ -94,11 +121,11 @@ export function EducationFormModal({
         reset({
             school: initialData?.school ?? '',
             degree: initialData?.degree ?? '',
-            field: initialData?.field ?? null,
-            start_year: initialData?.start_year ?? undefined,
-            end_year: initialData?.end_year ?? undefined,
-            thesis_title: initialData?.thesis_title ?? null,
-            description: initialData?.description ?? null,
+            field: initialData?.field ?? '',
+            start_year: initialData?.start_year ?? '',
+            end_year: initialData?.end_year?.toString() ?? '',
+            thesis_title: initialData?.thesis_title ?? '',
+            description: initialData?.description ?? '',
         });
     } else {
          // Optionally reset to empty when closed if desired,
@@ -109,27 +136,24 @@ export function EducationFormModal({
 
   // --- Form Submission Handler ---
   const handleFormSubmit: SubmitHandler<EducationFormValues> = async (data) => {
-    console.log("Form Data Submitted (from Zod):", data);
-
-    // The 'data' here is already processed by Zod according to the schema
-    // (e.g., years are numbers or undefined/null).
-    // We need to ensure it matches the EducationFormData expected by the action.
-    // Since EducationFormData is Omit<Education, 'id' | 'member_id'> and our
-    // Zod schema doesn't include display_order, they should align now
-    // assuming display_order isn't strictly required by the action's type implicitly.
-    // Let's pass the Zod-validated data, ensuring years are null if undefined/NaN.
+    // 先用zod校验转换
+    const parsed = educationSchema.safeParse(data);
+    if (!parsed.success) {
+      toast.error(parsed.error.errors.map(e => e.message).join(', '));
+      return;
+    }
+    const zodData = parsed.data;
+    // The 'zodData' here is已经处理为number/null/undefined
     const processedData: EducationFormData = {
-        school: data.school,
-        degree: data.degree,
-        field: data.field ?? null,
-        start_year: data.start_year ? Number(data.start_year) : null,
-        end_year: data.end_year ? Number(data.end_year) : null,
-        thesis_title: data.thesis_title ?? null,
-        description: data.description ?? null,
+        school: zodData.school,
+        degree: zodData.degree,
+        field: zodData.field ?? null,
+        start_year: zodData.start_year ? Number(zodData.start_year) : null,
+        end_year: zodData.end_year ? Number(zodData.end_year) : null,
+        thesis_title: zodData.thesis_title ?? null,
+        description: zodData.description ?? null,
         display_order: 0, // Add default display_order
     };
-
-    console.log("Data passed to onSubmit:", processedData);
     await onSubmit(processedData, initialData?.id); // Pass ID if editing
   };
 
@@ -150,96 +174,109 @@ export function EducationFormModal({
         {/* --- Form --- */}
         <form onSubmit={handleSubmit(handleFormSubmit)} className="grid gap-4 py-4">
             {/* School (Required) */}
-            <div className="grid grid-cols-4 items-center gap-4">
+            <div>
+              <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="school" className="text-right dark:text-gray-300">
-                    School <span className="text-red-500">*</span>
+                  School <span className="text-red-500">*</span>
                 </Label>
                 <Input
-                    id="school"
-                    {...register("school")}
-                    className="col-span-3 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
-                    disabled={isSubmitting}
+                  id="school"
+                  {...register("school")}
+                  className="col-span-3 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
+                  disabled={isSubmitting}
                 />
+              </div>
+              {errors.school && <p className="text-sm text-red-500 dark:text-red-400 mt-1 min-h-[1.25em] leading-tight break-all whitespace-normal">{errors.school.message}</p>}
             </div>
-            {errors.school && <p className="col-start-2 col-span-3 text-sm text-red-500 dark:text-red-400">{errors.school.message}</p>}
 
             {/* Degree (Required) */}
-             <div className="grid grid-cols-4 items-center gap-4">
-                 <Label htmlFor="degree" className="text-right dark:text-gray-300">
-                    Degree <span className="text-red-500">*</span>
-                 </Label>
-                 <Input
-                    id="degree"
-                    {...register("degree")}
-                    className="col-span-3 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
-                    disabled={isSubmitting}
-                 />
-             </div>
-             {errors.degree && <p className="col-start-2 col-span-3 text-sm text-red-500 dark:text-red-400">{errors.degree.message}</p>}
+            <div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="degree" className="text-right dark:text-gray-300">
+                  Degree <span className="text-red-500">*</span>
+                </Label>
+                <Input
+                  id="degree"
+                  {...register("degree")}
+                  className="col-span-3 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
+                  disabled={isSubmitting}
+                />
+              </div>
+              {errors.degree && <p className="text-sm text-red-500 dark:text-red-400 mt-1 min-h-[1.25em] leading-tight break-all whitespace-normal">{errors.degree.message}</p>}
+            </div>
 
-             {/* Field (Optional) */}
-             <div className="grid grid-cols-4 items-center gap-4">
-                 <Label htmlFor="field" className="text-right dark:text-gray-300">Field</Label>
-                 <Input
-                    id="field"
-                    {...register("field")}
-                    className="col-span-3 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
-                    disabled={isSubmitting}
-                 />
-             </div>
-             {/* No error message needed for optional field unless specific validation added */}
+            {/* Field (Optional) */}
+            <div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="field" className="text-right dark:text-gray-300">Field</Label>
+                <Input
+                  id="field"
+                  {...register("field")}
+                  className="col-span-3 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
+                  disabled={isSubmitting}
+                />
+              </div>
+            </div>
 
-             {/* Start Year (Required) */}
-            <div className="grid grid-cols-4 items-center gap-4">
-                 <Label htmlFor="start_year" className="text-right dark:text-gray-300">
-                     Start Year <span className="text-red-500">*</span>
-                 </Label>
-                 <Input
-                     id="start_year"
-                     type="number" // Use number input
-                     {...register("start_year")}
-                     className="col-span-3 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
-                     disabled={isSubmitting}
-                     placeholder="YYYY"
-                 />
-             </div>
-             {errors.start_year && <p className="col-start-2 col-span-3 text-sm text-red-500 dark:text-red-400">{errors.start_year.message}</p>}
+            {/* Start Year (Required) */}
+            <div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="start_year" className="text-right dark:text-gray-300">
+                  Start Year <span className="text-red-500">*</span>
+                </Label>
+                <Input
+                  id="start_year"
+                  type="number"
+                  {...register("start_year", { valueAsNumber: true })}
+                  className="col-span-3 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
+                  disabled={isSubmitting}
+                  placeholder="YYYY"
+                />
+              </div>
+              {errors.start_year && <p className="text-sm text-red-500 dark:text-red-400 mt-1 min-h-[1.25em] leading-tight break-all whitespace-normal">{errors.start_year.message}</p>}
+            </div>
 
-             {/* End Year (Optional) */}
-             <div className="grid grid-cols-4 items-center gap-4">
-                 <Label htmlFor="end_year" className="text-right dark:text-gray-300">End Year</Label>
-                 <Input
-                     id="end_year"
-                     type="number"
-                     {...register("end_year")}
-                     className="col-span-3 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
-                     disabled={isSubmitting}
-                     placeholder="YYYY or leave blank if ongoing"
-                 />
-             </div>
-             {errors.end_year && <p className="col-start-2 col-span-3 text-sm text-red-500 dark:text-red-400">{errors.end_year.message}</p>}
+            {/* End Year (Optional) */}
+            <div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="end_year" className="text-right dark:text-gray-300">End Year</Label>
+                <Input
+                  id="end_year"
+                  type="number"
+                  {...register("end_year")}
+                  className="col-span-3 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
+                  disabled={isSubmitting}
+                  placeholder="YYYY or leave blank if ongoing"
+                />
+              </div>
+              {errors.end_year && <p className="text-sm text-red-500 dark:text-red-400 mt-1 min-h-[1.25em] leading-tight break-all whitespace-normal">{errors.end_year.message}</p>}
+            </div>
 
-             {/* Thesis Title (Optional) */}
-             <div className="grid grid-cols-4 items-center gap-4">
-                 <Label htmlFor="thesis_title" className="text-right dark:text-gray-300">Thesis Title</Label>
-                 <Input
-                    id="thesis_title"
-                    {...register("thesis_title")}
-                    className="col-span-3 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
-                    disabled={isSubmitting}
-                 />
-             </div>
+            {/* Thesis Title (Optional) */}
+            <div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="thesis_title" className="text-right dark:text-gray-300">Thesis Title</Label>
+                <Input
+                  id="thesis_title"
+                  {...register("thesis_title")}
+                  className="col-span-3 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
+                  disabled={isSubmitting}
+                />
+              </div>
+            </div>
 
-             {/* Description (Optional) */}
-            <div className="grid grid-cols-4 items-center gap-4">
+            {/* Description (Optional) */}
+            <div>
+              <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="description" className="text-right dark:text-gray-300">Description</Label>
                 <Textarea
-                    id="description"
-                    {...register("description")}
-                    className="col-span-3 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
-                    rows={3}
-                    disabled={isSubmitting}
+                  id="description"
+                  {...register("description")}
+                  className="col-span-3 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
+                  rows={3}
+                  disabled={isSubmitting}
                 />
+              </div>
             </div>
 
             {/* --- Footer with Buttons --- */}

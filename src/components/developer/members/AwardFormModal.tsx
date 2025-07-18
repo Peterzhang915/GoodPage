@@ -42,7 +42,7 @@ const awardSchema = z.object({
             .nullable(),
   // Use nativeEnum for level
   level: z.nativeEnum(AwardLevel).optional().nullable(), // Allow null initially, map to default later if needed
-  link_url: z.string().url("Invalid URL format").optional().nullable(),
+  link_url: z.string().url("Invalid URL format").optional().or(z.literal('')).nullable(), // 允许空字符串或有效URL
   // display_order remains number, allow null/undefined from form
   display_order: z.number().int().optional().nullable(),
   isFeatured: z.boolean().optional(),
@@ -165,7 +165,7 @@ export function AwardFormModal({
                     placeholder="e.g., Best Paper Award, National Scholarship"
                 />
             </div>
-            {errors.content && <p className="col-start-2 col-span-3 text-sm text-red-500 dark:text-red-400">{errors.content.message}</p>}
+            {errors.content && <p className="text-sm text-red-500 dark:text-red-400 mt-1 min-h-[1.25em] leading-tight break-all whitespace-normal">{errors.content.message}</p>}
 
              {/* Year (Optional) */}
              <div className="grid grid-cols-4 items-center gap-4">
@@ -179,7 +179,7 @@ export function AwardFormModal({
                      placeholder="YYYY (Optional)"
                  />
              </div>
-             {errors.year && <p className="col-start-2 col-span-3 text-sm text-red-500 dark:text-red-400">{errors.year.message}</p>}
+             {errors.year && <p className="text-sm text-red-500 dark:text-red-400 mt-1 min-h-[1.25em] leading-tight break-all whitespace-normal">{errors.year.message}</p>}
 
             {/* Level (Optional Enum) */}
             <div className="grid grid-cols-4 items-center gap-4">
@@ -209,7 +209,7 @@ export function AwardFormModal({
                     )}
                 />
             </div>
-            {errors.level && <p className="col-start-2 col-span-3 text-sm text-red-500 dark:text-red-400">{errors.level.message}</p>}
+            {errors.level && <p className="text-sm text-red-500 dark:text-red-400 mt-1 min-h-[1.25em] leading-tight break-all whitespace-normal">{errors.level.message}</p>}
 
              {/* Link URL (Optional) */}
              <div className="grid grid-cols-4 items-center gap-4">
@@ -223,7 +223,7 @@ export function AwardFormModal({
                      placeholder="https://example.com (Optional)"
                  />
              </div>
-             {errors.link_url && <p className="col-start-2 col-span-3 text-sm text-red-500 dark:text-red-400">{errors.link_url.message}</p>}
+             {errors.link_url && <p className="text-sm text-red-500 dark:text-red-400 mt-1 min-h-[1.25em] leading-tight break-all whitespace-normal">{errors.link_url.message}</p>}
 
              {/* Display Order (Optional - Maybe hide this initially?) */}
              {/* Consider if this should be editable via drag-and-drop in the main list instead */}
@@ -258,7 +258,7 @@ export function AwardFormModal({
                      )}
                  />
              </div>
-             {errors.isFeatured && <p className="col-start-2 col-span-3 text-sm text-red-500 dark:text-red-400">{errors.isFeatured.message}</p>}
+             {errors.isFeatured && <p className="text-sm text-red-500 dark:text-red-400 mt-1 min-h-[1.25em] leading-tight break-all whitespace-normal">{errors.isFeatured.message}</p>}
 
             <DialogFooter className="mt-4">
                 <DialogClose asChild>
