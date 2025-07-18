@@ -8,10 +8,10 @@ import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSo
 import { CSS } from '@dnd-kit/utilities';
 import { themeColors } from "@/styles/theme";
 
-// Define the type for an interest point based on Prisma schema
+// 定义兴趣点类型，基于Prisma schema
 interface InterestPoint {
     id: number;
-    title: string; // Renamed from text
+    title: string; // 从text重命名
     description: string;
     display_order: number;
     is_visible: boolean;
@@ -19,7 +19,7 @@ interface InterestPoint {
     updatedAt: string;
 }
 
-// Reusable API fetch function (consider moving to utils)
+// 可复用的API调用函数（考虑移至utils）
 async function fetchApi(url: string, options: RequestInit = {}) {
     try {
         const res = await fetch(url, {
@@ -41,21 +41,21 @@ const InterestPointsEditor: React.FC = () => {
     const [interestPoints, setInterestPoints] = useState<InterestPoint[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    // State for adding new item
+    // 添加新项目的状态
     const [newItemTitle, setNewItemTitle] = useState('');
     const [newItemDescription, setNewItemDescription] = useState('');
     const [isAdding, setIsAdding] = useState(false);
-    // State for inline editing
+    // 内联编辑状态
     const [editingItemId, setEditingItemId] = useState<number | null>(null);
     const [editingItemTitle, setEditingItemTitle] = useState('');
     const [editingItemDescription, setEditingItemDescription] = useState('');
     const [isSavingEdit, setIsSavingEdit] = useState(false);
     const [isSavingOrder, setIsSavingOrder] = useState(false);
-    const [isAddFormOpen, setIsAddFormOpen] = useState(true); // State for add form collapse
+    const [isAddFormOpen, setIsAddFormOpen] = useState(true); // 添加表单折叠状态
 
-    const apiBaseUrl = '/api/homepage/interest-points'; // Base URL for this editor's API
+    const apiBaseUrl = '/api/homepage/interest-points'; // 此编辑器的API基础URL
 
-    // Fetch items
+    // 加载项目
     const loadItems = useCallback(async () => {
         setIsLoading(true);
         setError(null);
@@ -73,7 +73,7 @@ const InterestPointsEditor: React.FC = () => {
         loadItems();
     }, [loadItems]);
 
-    // Add item
+    // 添加项目
     const handleAddItem = async () => {
         if (!newItemTitle.trim()) return;
         setIsAdding(true);
@@ -93,7 +93,7 @@ const InterestPointsEditor: React.FC = () => {
         }
     };
 
-    // Delete item
+    // 删除项目
     const handleDeleteItem = async (id: number) => {
         if (!window.confirm('Are you sure you want to delete this interest point?')) return;
         const originalItems = [...interestPoints];
@@ -104,16 +104,16 @@ const InterestPointsEditor: React.FC = () => {
         } catch (err: any) { setError(`Failed to delete item: ${err.message}`); setInterestPoints(originalItems); }
     };
 
-    // Start Edit
+    // 开始编辑
     const handleEditItem = (id: number) => {
         const item = interestPoints.find(i => i.id === id);
         if (item) { setEditingItemId(id); setEditingItemTitle(item.title); setEditingItemDescription(item.description); setError(null); setIsSavingEdit(false); }
     };
 
-    // Cancel Edit
+    // 取消编辑
     const handleCancelEdit = () => { setEditingItemId(null); setEditingItemTitle(''); setEditingItemDescription(''); };
 
-    // Save Edit
+    // 保存编辑
     const handleSaveEdit = async () => {
         if (!editingItemId || !editingItemTitle.trim() || !editingItemDescription.trim()) return;
         const originalItem = interestPoints.find(i => i.id === editingItemId);
@@ -131,7 +131,7 @@ const InterestPointsEditor: React.FC = () => {
         finally { setIsSavingEdit(false); }
     };
 
-    // Toggle Visibility
+    // 切换可见性
     const handleToggleVisibility = async (id: number, currentVisibility: boolean) => {
         const newVisibility = !currentVisibility;
         const originalItems = interestPoints.map(i => ({...i}));
@@ -145,44 +145,44 @@ const InterestPointsEditor: React.FC = () => {
         } catch (err: any) { setError(`Failed to update visibility: ${err.message}`); setInterestPoints(originalItems); }
     };
 
-    // Dnd Sensors
+    // Dnd传感器
     const sensors = useSensors(useSensor(PointerSensor), useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }));
 
-    // Dnd Drag End
+    // Dnd拖拽结束
     const handleDragEnd = async (event: DragEndEvent) => {
         const { active, over } = event;
         if (over && active.id !== over.id) {
-            // Find original indices before state update
+            // 在状态更新前找到原始索引
             const oldIndex = interestPoints.findIndex(i => i.id.toString() === active.id);
             const newIndex = interestPoints.findIndex(i => i.id.toString() === over.id);
             if (oldIndex === -1 || newIndex === -1) return;
 
             const reordered = arrayMove(interestPoints, oldIndex, newIndex);
             setInterestPoints(reordered);
-            // Add explicit types for item and index
+            // 为项目和索引添加显式类型
             const updates = reordered.map((item: InterestPoint, index: number) => ({ id: item.id, display_order: index }));
             setIsSavingOrder(true); setError(null);
             try {
-                await fetchApi(`${apiBaseUrl}/reorder`, { // Needs endpoint /api/homepage/interest-points/reorder
+                await fetchApi(`${apiBaseUrl}/reorder`, { // 需要端点 /api/homepage/interest-points/reorder
                     method: 'PUT',
                     body: JSON.stringify({ items: updates }),
                 });
                 setInterestPoints(reordered.map((item, index) => ({ ...item, display_order: index })));
-            } catch (err: any) { setError(`Failed to save order: ${err.message}`); /* Keep reordered state on error */ }
+            } catch (err: any) { setError(`Failed to save order: ${err.message}`); /* 保留reordered状态在错误时 */ }
             finally { setIsSavingOrder(false); }
         }
     };
 
     return (
         <div className="p-6 h-full flex flex-col">
-            {/* Error Display */}
+            {/* 错误显示 */}
             {error && (
                 <div className={`${themeColors.errorBg} ${themeColors.errorText} p-3 rounded-md mb-4 flex items-center`}>
                     <AlertTriangle size={18} className="mr-2" /><span>{error}</span>
                 </div>
             )}
 
-            {/* Add Form - Apply the container styling here */}
+            {/* 添加表单 - 在此应用容器样式 */}
             <div className={`mb-6 border rounded-md ${themeColors.devBorder} ${themeColors.devMutedBg}`}>
                 <div
                     className={`flex items-center justify-between p-4 cursor-pointer`}
@@ -202,15 +202,15 @@ const InterestPointsEditor: React.FC = () => {
                             initial={{ opacity: 0, height: 0 }}
                             animate={{ opacity: 1, height: "auto", transition: { duration: 0.3, ease: "easeInOut" } }}
                             exit={{ opacity: 0, height: 0, transition: { duration: 0.2, ease: "easeInOut" } }}
-                            className="overflow-hidden" // Important for height animation
+                            className="overflow-hidden" // 重要用于高度动画
                         >
-                            <div className="p-4 pt-0 space-y-3"> {/* Removed outer padding, add padding here */}
+                            <div className="p-4 pt-0 space-y-3"> {/* 移除外部填充，在此添加填充 */}
                                 <input type="text" value={newItemTitle} onChange={(e) => setNewItemTitle(e.target.value)} placeholder="Enter new interest point title..."
                                     className={`w-full px-3 py-2 ${themeColors.devCardBg} border ${themeColors.devBorder} rounded-md shadow-sm ${themeColors.devText} placeholder:${themeColors.devDescText} focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent sm:text-sm disabled:opacity-50`}
                                     disabled={isAdding || isLoading || !!editingItemId || isSavingOrder}
                                 />
                                 <textarea value={newItemDescription} onChange={(e) => setNewItemDescription(e.target.value)} placeholder="Enter new interest point description..."
-                                    rows={3} // Use textarea for description, make it larger
+                                    rows={3} // 使用textarea描述，使其更大
                                     className={`w-full px-3 py-2 ${themeColors.devCardBg} border ${themeColors.devBorder} rounded-md shadow-sm ${themeColors.devText} placeholder:${themeColors.devDescText} focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent sm:text-sm disabled:opacity-50 resize-y`}
                                     disabled={isAdding || isLoading || !!editingItemId || isSavingOrder}
                                 />
@@ -225,7 +225,7 @@ const InterestPointsEditor: React.FC = () => {
                 </AnimatePresence>
             </div>
 
-            {/* List - Apply CSS scrollbar hiding trick */}
+            {/* 列表 - 应用CSS滚动条隐藏技巧 */}
             <div className={`flex-1 overflow-y-auto pr-4 -mr-4`}>
                 {isLoading ? <div className="flex justify-center items-center h-full"><Loader2 className={`h-8 w-8 ${themeColors.devAccent} animate-spin`} /></div>
                  : interestPoints.length === 0 ? <div className={`${themeColors.devText} text-center py-10`}>No interest points found.</div>
@@ -254,7 +254,7 @@ const InterestPointsEditor: React.FC = () => {
     );
 };
 
-// --- Sortable Item Component ---
+// --- 可排序项目组件 ---
 interface SortableInterestPointItemProps {
     item: InterestPoint;
     isEditing: boolean; isSavingEdit: boolean; editingTitle: string; editingDescription: string;
@@ -275,14 +275,14 @@ function SortableInterestPointItem({ item, isEditing, isSavingEdit, editingTitle
             initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.2 }}
             className={`flex items-start p-3 rounded-md ${themeColors.devMutedBg} border ${themeColors.devBorder} relative`}
         >
-            {/* Drag Handle */}
+            {/* 拖拽手柄 */}
             <div {...attributes} {...listeners} className={`${themeColors.devDescText} mr-3 cursor-grab touch-none ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`} aria-label="Drag to reorder"><GripVertical size={18} /></div>
 
-            {/* Main Content Area (Title + Description) */}
+            {/* 主要内容区域 (标题 + 描述) */}
             <div className="flex-grow flex flex-col mr-4 space-y-1">
-                {/* Content */}
-                {isEditing ? ( // Editing State: Stacked inputs
-                    // Editing State: Input fields
+                {/* 内容 */}
+                {isEditing ? ( // 编辑状态：堆叠输入框
+                    // 编辑状态：输入框
                     <>
                         <input
                             type="text"
@@ -298,14 +298,14 @@ function SortableInterestPointItem({ item, isEditing, isSavingEdit, editingTitle
                             value={editingDescription}
                             onChange={(e) => onEditChangeDescription(e.target.value)}
                             placeholder="Description"
-                            rows={2} // Adjust rows as needed
+                            rows={2} // 根据需要调整行数
                             disabled={isSavingEdit}
                             onKeyDown={(e) => { if (e.key === 'Escape') onEditCancel(); }}
                             className={`w-full px-2 py-1 ${themeColors.devCardBg} border ${themeColors.devBorder} rounded shadow-sm ${themeColors.devText} focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-transparent text-sm disabled:opacity-50 resize-y min-h-[40px]`}
                         />
                     </>
-                ) : ( // Display State: Title and Description (already stacked)
-                    // Display State: Title and Description
+                ) : ( // 显示状态：标题和描述（已堆叠）
+                    // 显示状态：标题和描述
                     <>
                         <span className={`font-semibold ${item.is_visible ? themeColors.devText : themeColors.devDisabledText} text-sm`}>{item.title}</span>
                         <p className={`${item.is_visible ? themeColors.devDescText : themeColors.devDisabledText} text-xs`}>{item.description}</p>
@@ -313,8 +313,8 @@ function SortableInterestPointItem({ item, isEditing, isSavingEdit, editingTitle
                 )}
             </div>
 
-            {/* Action Buttons */}
-            <div className="flex flex-col space-y-1 ml-2 self-start"> { /* Changed to flex-col and adjusted spacing */}
+            {/* 操作按钮 */}
+            <div className="flex flex-col space-y-1 ml-2 self-start"> { /* 改为flex-col并调整间距 */}
                 {isEditing ? (
                     <>
                         <button onClick={onEditSave} disabled={isSavingEdit || !editingTitle.trim() || !editingDescription.trim()} title="Save Changes" className={`${themeColors.devDescText} hover:text-green-500 transition-colors disabled:opacity-50`}>{isSavingEdit ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}</button>

@@ -3,19 +3,19 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Newspaper, // Icon for News
-  Sparkles, // Icon for Student Interests
-  FolderKanban, // Icon for Main Projects
-  Archive, // Icon for Former Projects
-  BookOpenCheck, // Icon for Teaching
-  Settings2, // Icon for Section Settings
-  Loader2, // Icon for Loading
-  X, // Icon for Close
-  AlertTriangle, // Icon for Error
+  Newspaper, // 新闻图标
+  Sparkles, // 学生兴趣图标
+  FolderKanban, // 主要项目图标
+  Archive, // 过往项目图标
+  BookOpenCheck, // 教学图标
+  Settings2, // 部分设置图标
+  Loader2, // 加载图标
+  X, // 关闭图标
+  AlertTriangle, // 错误图标
 } from "lucide-react";
 import { themeColors } from "@/styles/theme";
 
-// Define the types for editable sections
+// 定义可编辑部分的类型
 type EditableSection =
   | "news"
   | "interests"
@@ -26,55 +26,55 @@ interface SectionConfig {
   id: EditableSection;
   title: string;
   icon: React.ElementType;
-  // Placeholder for the actual editor component
-  editorComponent: React.FC<any>; // Replace 'any' with specific props later
+  // 实际编辑器组件的占位符
+  editorComponent: React.FC<any>; // 稍后替换为具体的props
 }
 
-// --- Placeholder Editor Components (Define actual editors later) ---
+// --- 占位符编辑器组件 (稍后定义实际编辑器) ---
 const PlaceholderEditor: React.FC<{ sectionTitle: string }> = ({ sectionTitle }) => (
   <div className="p-6 text-gray-400">
     Editing UI for <span className="font-semibold text-gray-200">{sectionTitle}</span> will be here.
   </div>
 );
 
-// Import the actual Editor components
+// 导入实际的编辑器组件
 import NewsListEditor from './NewsListEditor';
 import InterestPointsEditor from './InterestPointsEditor';
-import ProjectsEditor from './ProjectsEditor'; // Import the actual ProjectsEditor
-import TeachingEditor from './TeachingEditor'; // Import the actual TeachingEditor
+import ProjectsEditor from './ProjectsEditor'; // 导入实际的ProjectsEditor
+import TeachingEditor from './TeachingEditor'; // 导入实际的TeachingEditor
 
-// Remove the local placeholder definition for ProjectsEditor
+// 移除ProjectsEditor的本地占位符定义
 // const ProjectsEditor = ({ isFormer }: { isFormer: boolean }) => (
 //   <PlaceholderEditor sectionTitle={isFormer ? "Former Projects" : "Main Projects"} />
 // );
 
-// Remove placeholder for TeachingEditor
+// 移除TeachingEditor的占位符
 // const TeachingEditor = () => <PlaceholderEditor sectionTitle="Teaching" />;
-// Remove SectionMetaEditor placeholder as the section is removed
+// 移除SectionMetaEditor占位符，因为该部分已移除
 // const SectionMetaEditor = () => <PlaceholderEditor sectionTitle="Section Settings" />;
-// --- End Placeholder Editor Components ---
+// --- 结束占位符编辑器组件 ---
 
 
 const sectionConfigurations: SectionConfig[] = [
   { id: "news", title: "News", icon: Newspaper, editorComponent: NewsListEditor },
   { id: "interests", title: "Student Interests", icon: Sparkles, editorComponent: InterestPointsEditor },
-  // Use the imported ProjectsEditor directly, remove isFormer prop logic for now
+  // 直接使用导入的ProjectsEditor，暂时移除isFormer属性逻辑
   { id: "mainProjects", title: "Projects", icon: FolderKanban, editorComponent: ProjectsEditor },
-  // Remove Former Projects section, handled within ProjectsEditor now
-  // { id: "formerProjects", title: "Former Projects", icon: Archive, editorComponent: () => <ProjectsEditor /> }, // Needs prop handling if kept
+  // 移除过往项目部分，已在ProjectsEditor中处理
+  // { id: "formerProjects", title: "Former Projects", icon: Archive, editorComponent: () => <ProjectsEditor /> }, // 需要prop处理如果保留
   { id: "teaching", title: "Teaching", icon: BookOpenCheck, editorComponent: TeachingEditor },
-  // Remove Section Settings section
+  // 移除部分设置部分
   // { id: "sectionMeta", title: "Section Settings", icon: Settings2, editorComponent: SectionMetaEditor },
 ];
 
 interface HomepageContentEditorProps {
-  onClose?: () => void; // Optional close handler
+  onClose?: () => void; // 可选的关闭处理函数
 }
 
 const HomepageContentEditor: React.FC<HomepageContentEditorProps> = ({ onClose }) => {
   const [selectedSection, setSelectedSection] = useState<EditableSection>("news");
-  const [isLoading, setIsLoading] = useState(false); // Global loading state? Maybe per section later.
-  const [error, setError] = useState<string | null>(null); // Global error state?
+  const [isLoading, setIsLoading] = useState(false); // 全局加载状态？可能每个部分单独处理
+  const [error, setError] = useState<string | null>(null); // 全局错误状态？
 
   const CurrentEditor = sectionConfigurations.find(s => s.id === selectedSection)?.editorComponent || (() => <div>Invalid Section</div>);
 
@@ -86,7 +86,7 @@ const HomepageContentEditor: React.FC<HomepageContentEditorProps> = ({ onClose }
         exit={{ opacity: 0, scale: 0.9 }}
         className={`${themeColors.devCardBg} ${themeColors.devText} rounded-lg border ${themeColors.devBorder} shadow-xl w-full max-w-6xl h-[90vh] flex overflow-hidden`}
       >
-        {/* Sidebar Navigation */}
+        {/* 侧边栏导航 */}
         <aside className={`w-64 ${themeColors.devMutedBg} border-r ${themeColors.devBorder} p-4 flex flex-col`}>
           <h2 className={`text-xl font-semibold ${themeColors.devAccent} mb-6 px-2`}>Homepage Editor</h2>
           <nav className="flex-grow space-y-1">
@@ -116,17 +116,17 @@ const HomepageContentEditor: React.FC<HomepageContentEditorProps> = ({ onClose }
             )}
         </aside>
 
-        {/* Main Content Area */}
+        {/* 主内容区域 */}
         <main className="flex-1 flex flex-col overflow-hidden">
-          {/* Header (Optional - Can add Save buttons etc. here later) */}
+          {/* 标题（可选 - 稍后可以在此处添加保存按钮等） */}
            <div className={`${themeColors.devMutedBg} border-b ${themeColors.devBorder} px-6 py-3 flex justify-between items-center`}>
              <h3 className={`text-lg font-medium ${themeColors.devText}`}>
                {sectionConfigurations.find(s => s.id === selectedSection)?.title || 'Editor'}
              </h3>
-             {/* Placeholder for potential global save/status indicators */}
+             {/* 占位符，用于潜在的全局保存/状态指示器 */}
            </div>
 
-          {/* Editor Content */}
+          {/* 编辑器内容 */}
           <div className="flex-1 overflow-y-auto relative">
             {isLoading && (
               <div className={`${themeColors.devCardBg} bg-opacity-75 absolute inset-0 flex justify-center items-center z-10`}>
@@ -144,12 +144,12 @@ const HomepageContentEditor: React.FC<HomepageContentEditorProps> = ({ onClose }
             {!isLoading && !error && (
                 <AnimatePresence mode="wait">
                     <motion.div
-                        key={selectedSection} // Change key to trigger animation on section change
+                        key={selectedSection} // 更改key以触发动画，当部分改变时
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -10 }}
                         transition={{ duration: 0.2 }}
-                        className="h-full" // Ensure motion div takes full height if needed
+                        className="h-full" // 确保motion div占据全高
                     >
                         <CurrentEditor />
                     </motion.div>

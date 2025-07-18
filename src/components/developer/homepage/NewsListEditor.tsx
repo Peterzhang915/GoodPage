@@ -8,17 +8,17 @@ import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSo
 import { CSS } from '@dnd-kit/utilities';
 import { themeColors } from "@/styles/theme";
 
-// Define the type for a news item based on our Prisma schema
+// 定义新闻项的类型，基于我们的 Prisma 模式
 interface NewsItem {
     id: number;
     content: string;
     display_order: number;
     is_visible: boolean;
-    createdAt: string; // Assuming string representation from JSON
+    createdAt: string; // 假设从 JSON 表示为字符串
     updatedAt: string;
 }
 
-// Function to make API calls (could be moved to a dedicated api client later)
+// 函数用于调用 API（可以稍后移至专门的 API 客户端）
 async function fetchApi(url: string, options: RequestInit = {}) {
     try {
         const res = await fetch(url, {
@@ -47,14 +47,14 @@ const NewsListEditor: React.FC = () => {
     const [newItemContent, setNewItemContent] = useState('');
     const [isAdding, setIsAdding] = useState(false);
 
-    // State for inline editing
+    // 内联编辑状态
     const [editingItemId, setEditingItemId] = useState<number | null>(null);
     const [editingItemContent, setEditingItemContent] = useState('');
     const [isSavingEdit, setIsSavingEdit] = useState(false);
-    const [isSavingOrder, setIsSavingOrder] = useState(false); // State for saving order
-    const [isAddFormOpen, setIsAddFormOpen] = useState(true); // State for add form collapse
+    const [isSavingOrder, setIsSavingOrder] = useState(false); // 保存顺序状态
+    const [isAddFormOpen, setIsAddFormOpen] = useState(true); // 添加表单折叠状态
 
-    // Fetch news items
+    // 获取新闻项
     const loadNews = useCallback(async () => {
         setIsLoading(true);
         setError(null);
@@ -72,9 +72,9 @@ const NewsListEditor: React.FC = () => {
         loadNews();
     }, [loadNews]);
 
-    // Handle adding a new item
+    // 添加新项
     const handleAddItem = async () => {
-        if (!newItemContent.trim()) return; // Don't add empty items
+        if (!newItemContent.trim()) return; // 不要添加空项
         setIsAdding(true);
         setError(null);
         try {
@@ -82,8 +82,8 @@ const NewsListEditor: React.FC = () => {
                 method: 'POST',
                 body: JSON.stringify({ content: newItemContent.trim() }),
             });
-            setNewsItems(prevItems => [...prevItems, newItem]); // Add to the end for now
-            setNewItemContent(''); // Clear input
+            setNewsItems(prevItems => [...prevItems, newItem]); // 添加到末尾
+            setNewItemContent(''); // 清除输入
         } catch (err: any) {
             setError(`Failed to add item: ${err.message}`);
         } finally {
@@ -93,31 +93,31 @@ const NewsListEditor: React.FC = () => {
 
     // TODO: Implement Delete
     const handleDeleteItem = async (id: number) => {
-        // Optimistic UI update: Remove immediately and add back on error?
-        // For simplicity, let's remove after successful API call first.
+        // 乐观 UI 更新：立即删除并添加回错误？
+        // 为简单起见，让我们先删除成功 API 调用后。
 
-        // Prevent accidental deletion (optional but recommended)
+        // 防止意外删除（可选但推荐）
         if (!window.confirm('Are you sure you want to delete this news item?')) {
             return;
         }
 
-        // Find the item to potentially add back on error (or just use ID)
+        // 查找项以在错误时添加回（或仅使用 ID）
         // const itemToDelete = newsItems.find(item => item.id === id);
 
-        // Update state immediately for responsiveness (Optimistic Update)
+        // 立即更新状态以获得响应性（乐观更新）
         const originalItems = [...newsItems];
         setNewsItems(prevItems => prevItems.filter(item => item.id !== id));
-        setError(null); // Clear previous errors
+        setError(null); // 清除之前的错误
 
         try {
             await fetchApi(`/api/homepage/news/${id}`, {
                 method: 'DELETE',
             });
-            // If API succeeds, state is already updated.
+            // 如果 API 成功，状态已更新。
         } catch (err: any) {
             console.error("Delete failed:", err);
             setError(`Failed to delete item: ${err.message}`);
-            // Rollback UI on error
+            // 在错误时回滚 UI
             setNewsItems(originalItems);
         }
     };
@@ -128,8 +128,8 @@ const NewsListEditor: React.FC = () => {
         if (itemToEdit) {
             setEditingItemId(id);
             setEditingItemContent(itemToEdit.content);
-            setError(null); // Clear errors when starting edit
-            setIsSavingEdit(false); // Reset saving state
+            setError(null); // 开始编辑时清除错误
+            setIsSavingEdit(false); // 重置保存状态
         }
     };
 
@@ -143,7 +143,7 @@ const NewsListEditor: React.FC = () => {
 
         const originalContent = newsItems.find(item => item.id === editingItemId)?.content;
         if (originalContent === editingItemContent.trim()) {
-            // No change, just cancel edit
+            // 没有变化，只取消编辑
             handleCancelEdit();
             return;
         }
@@ -151,7 +151,7 @@ const NewsListEditor: React.FC = () => {
         setIsSavingEdit(true);
         setError(null);
 
-        // Optimistic Update
+        // 乐观更新
         const originalItems = newsItems.map(item => ({ ...item }));
         setNewsItems(prevItems =>
             prevItems.map(item =>
@@ -164,16 +164,16 @@ const NewsListEditor: React.FC = () => {
                 method: 'PUT',
                 body: JSON.stringify({ content: editingItemContent.trim() }),
             });
-            // Success, clear editing state
+            // 成功，清除编辑状态
             handleCancelEdit();
         } catch (err: any) {
             console.error("Save edit failed:", err);
             setError(`Failed to save changes: ${err.message}`);
-            // Rollback UI on error
+            // 在错误时回滚 UI
             setNewsItems(originalItems);
-            // Keep editing mode open on error to allow retry/cancel
-            // setEditingItemId(editingItemId); // Already set
-            // setEditingItemContent(editingItemContent); // Already set
+            // 在错误时保持编辑模式打开以允许重试/取消
+            // setEditingItemId(editingItemId); // 已设置
+            // setEditingItemContent(editingItemContent); // 已设置
         } finally {
             setIsSavingEdit(false);
         }
@@ -183,8 +183,8 @@ const NewsListEditor: React.FC = () => {
     const handleToggleVisibility = async (id: number, currentVisibility: boolean) => {
         const newVisibility = !currentVisibility;
 
-        // Optimistic Update
-        const originalItems = newsItems.map(item => ({ ...item })); // Deep copy for potential rollback
+        // 乐观更新
+        const originalItems = newsItems.map(item => ({ ...item })); // 深拷贝以进行回滚
         setNewsItems(prevItems =>
             prevItems.map(item =>
                 item.id === id ? { ...item, is_visible: newVisibility } : item
@@ -197,18 +197,18 @@ const NewsListEditor: React.FC = () => {
                 method: 'PUT',
                 body: JSON.stringify({ is_visible: newVisibility }),
             });
-            // API call successful, state is already updated
+            // API 调用成功，状态已更新
         } catch (err: any) {
             console.error("Toggle visibility failed:", err);
             setError(`Failed to update visibility: ${err.message}`);
-            // Rollback UI on error
+            // 在错误时回滚 UI
             setNewsItems(originalItems);
         }
     };
 
     // TODO: Implement Reordering (Drag & Drop)
 
-    // --- @dnd-kit Sensor setup ---
+    // --- @dnd-kit 传感器设置 ---
     const sensors = useSensors(
         useSensor(PointerSensor),
         useSensor(KeyboardSensor, {
@@ -216,7 +216,7 @@ const NewsListEditor: React.FC = () => {
         })
     );
 
-    // --- @dnd-kit Drag End Handler ---
+    // --- @dnd-kit 拖拽结束处理程序 ---
     const handleDragEnd = async (event: DragEndEvent) => {
         const { active, over } = event;
 
@@ -228,32 +228,32 @@ const NewsListEditor: React.FC = () => {
 
             const reorderedItems = arrayMove(newsItems, oldIndex, newIndex);
 
-            // Update local state immediately for smooth UI
+            // 立即更新本地状态以获得平滑 UI
             setNewsItems(reorderedItems);
 
-            // Prepare data for API: array of { id, display_order }
+            // 准备 API 数据：{ id, display_order } 数组
             const orderUpdates = reorderedItems.map((item, index) => ({
                 id: item.id,
-                display_order: index, // New order based on array index
+                display_order: index, // 基于数组索引的新顺序
             }));
 
-            // Call API to save the new order
+            // 调用 API 保存新顺序
             setIsSavingOrder(true);
             setError(null);
             try {
-                // We need a new API endpoint for batch updating order
-                await fetchApi('/api/homepage/news/reorder', { // Assuming this endpoint exists
+                // 我们需要一个新的 API 端点来批量更新顺序
+                await fetchApi('/api/homepage/news/reorder', { // 假设此端点存在
                     method: 'PUT',
                     body: JSON.stringify({ items: orderUpdates }),
                 });
-                // Update the display_order in the local state to match the saved order
+                // 更新本地状态中的 display_order 以匹配保存的顺序
                 setNewsItems(reorderedItems.map((item, index) => ({ ...item, display_order: index })));
             } catch (err: any) {
                 console.error("Failed to save new order:", err);
                 setError(`Failed to save order: ${err.message}`);
-                // Rollback to original order before drag if API fails?
-                // Or potentially keep the reordered state and show error?
-                // For now, keep reordered state and show error.
+                // 在拖拽前回滚到原始顺序？
+                // 或者潜在地保持重新排序的状态并显示错误？
+                // 目前，保持重新排序的状态并显示错误。
             } finally {
                 setIsSavingOrder(false);
             }
@@ -262,14 +262,14 @@ const NewsListEditor: React.FC = () => {
 
     return (
         <div className="p-6 h-full flex flex-col">
-            {/* Error Display */}
+            {/* 错误显示 */}
             {error && (
                 <div className={`${themeColors.errorBg} ${themeColors.errorText} p-3 rounded-md mb-4 flex items-center`}>
                     <AlertTriangle size={18} className="mr-2" /><span>{error}</span>
                 </div>
             )}
 
-            {/* Add Form - Ensure consistent container styling */}
+            {/* 添加表单 - 确保一致的容器样式 */}
             <div className={`mb-6 border rounded-md ${themeColors.devBorder} ${themeColors.devMutedBg}`}>
                  <div
                      className={`flex items-center justify-between p-4 cursor-pointer`}
@@ -289,16 +289,16 @@ const NewsListEditor: React.FC = () => {
                              initial={{ opacity: 0, height: 0 }}
                              animate={{ opacity: 1, height: "auto", transition: { duration: 0.3, ease: "easeInOut" } }}
                              exit={{ opacity: 0, height: 0, transition: { duration: 0.2, ease: "easeInOut" } }}
-                             className="overflow-hidden" // Important for height animation
+                             className="overflow-hidden" // 重要用于高度动画
                          >
-                             <div className="p-4 pt-0 space-y-3"> {/* Removed outer padding, add padding here */}
+                             <div className="p-4 pt-0 space-y-3"> {/* 移除外部填充，在此处添加填充 */}
                                 <div className="flex space-x-2">
                                     <input
                                         type="text"
                                         value={newItemContent}
                                         onChange={(e) => setNewItemContent(e.target.value)}
                                         placeholder="Enter news content..."
-                                        // Apply theme colors to input
+                                        // 应用主题颜色到输入框
                                         className={`flex-grow px-3 py-2 ${themeColors.devCardBg} border ${themeColors.devBorder} rounded-md shadow-sm ${themeColors.devText} placeholder:${themeColors.devDescText} focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent sm:text-sm disabled:opacity-50`}
                                         disabled={isAdding || isLoading || !!editingItemId || isSavingOrder}
                                         onKeyDown={(e) => { if (e.key === 'Enter' && !isAdding) handleAddItem(); }}
@@ -307,7 +307,7 @@ const NewsListEditor: React.FC = () => {
                                         onClick={handleAddItem}
                                         disabled={isAdding || isLoading || !newItemContent.trim() || !!editingItemId || isSavingOrder}
                                         title="Add Item"
-                                        // Apply theme colors to button
+                                        // 应用主题颜色到按钮
                                         className={`inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium ${themeColors.devButtonText} ${themeColors.devButtonBg} hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed transition-opacity`}
                                     >
                                         {isAdding ? <Loader2 size={16} className="animate-spin" /> : <Plus size={16} />}
@@ -319,7 +319,7 @@ const NewsListEditor: React.FC = () => {
                  </AnimatePresence>
             </div>
 
-            {/* News List - Apply CSS scrollbar hiding trick */}
+            {/* 新闻列表 - 应用 CSS 滚动条隐藏技巧 */}
             <div className={`flex-1 overflow-y-auto pr-4 -mr-4`}>
                 {isLoading ? (
                     <div className="flex justify-center items-center h-full">
@@ -334,7 +334,7 @@ const NewsListEditor: React.FC = () => {
                         onDragEnd={handleDragEnd}
                     >
                         <SortableContext
-                            items={newsItems.map(item => item.id.toString())} // Use string IDs for dnd-kit
+                            items={newsItems.map(item => item.id.toString())} // 使用字符串 ID 进行 dnd-kit
                             strategy={verticalListSortingStrategy}
                         >
                             <ul className="space-y-3">
@@ -365,7 +365,7 @@ const NewsListEditor: React.FC = () => {
     );
 };
 
-// --- Sortable Item Component ---
+// --- 可排序项组件 ---
 interface SortableNewsItemProps {
     item: NewsItem;
     isEditing: boolean;
@@ -377,7 +377,7 @@ interface SortableNewsItemProps {
     onEditCancel: () => void;
     onDelete: (id: number) => void;
     onToggleVisibility: (id: number, currentVisibility: boolean) => void;
-    disabled: boolean; // Disable actions if another item is being edited or order is saving
+    disabled: boolean; // 如果另一个项正在编辑或正在保存顺序，则禁用操作
 }
 
 function SortableNewsItem({ item, isEditing, isSavingEdit, editingContent, onEditStart, onEditChange, onEditSave, onEditCancel, onDelete, onToggleVisibility, disabled }: SortableNewsItemProps) {
@@ -394,19 +394,19 @@ function SortableNewsItem({ item, isEditing, isSavingEdit, editingContent, onEdi
         <motion.li
             ref={setNodeRef}
             style={style}
-            layoutId={`news-item-${item.id}`} // Use layoutId for potential animation across drag/edit
+            layoutId={`news-item-${item.id}`} // 使用 layoutId 进行拖拽/编辑动画
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, x: -20 }}
             transition={{ duration: 0.2 }}
             className={`flex items-center p-3 rounded-md ${themeColors.devMutedBg} border ${themeColors.devBorder} relative`}
         >
-            {/* Drag Handle */}
+            {/* 拖拽手柄 */}
             <div {...attributes} {...listeners} className={`${themeColors.devDescText} mr-3 cursor-grab touch-none ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`} aria-label="Drag to reorder">
                 <GripVertical size={18} />
             </div>
 
-            {/* Content */}
+            {/* 内容 */}
             {isEditing ? (
                 <input
                     type="text"
@@ -426,7 +426,7 @@ function SortableNewsItem({ item, isEditing, isSavingEdit, editingContent, onEdi
                 </span>
             )}
 
-            {/* Action Buttons */}
+            {/* 操作按钮 */}
             <div className="flex items-center space-x-2 ml-4">
                 {isEditing ? (
                     <>

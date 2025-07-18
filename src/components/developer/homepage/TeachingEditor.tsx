@@ -8,18 +8,18 @@ import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSo
 import { CSS } from '@dnd-kit/utilities';
 import { themeColors } from "@/styles/theme";
 
-// Define the type for a teaching item based on Prisma schema
+// 定义一个教学项目类型，基于 Prisma 模式
 interface TeachingItem {
     id: number;
     course_title: string;
-    details: string | null; // Details can be optional
+    details: string | null; // 详情可以为空
     display_order: number;
     is_visible: boolean;
     createdAt: string;
     updatedAt: string;
 }
 
-// Reusable API fetch function (consider moving to utils)
+// 可复用的 API 调用函数（考虑移至 utils）
 async function fetchApi(url: string, options: RequestInit = {}) {
     try {
         const res = await fetch(url, {
@@ -41,21 +41,21 @@ const TeachingEditor: React.FC = () => {
     const [teachingItems, setTeachingItems] = useState<TeachingItem[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    // State for adding new item
+    // 添加新项目的状态
     const [newItemTitle, setNewItemTitle] = useState('');
     const [newItemDetails, setNewItemDetails] = useState('');
     const [isAdding, setIsAdding] = useState(false);
-    // State for inline editing
+    // 内联编辑状态
     const [editingItemId, setEditingItemId] = useState<number | null>(null);
     const [editingItemTitle, setEditingItemTitle] = useState('');
     const [editingItemDetails, setEditingItemDetails] = useState('');
     const [isSavingEdit, setIsSavingEdit] = useState(false);
     const [isSavingOrder, setIsSavingOrder] = useState(false);
-    const [isAddFormOpen, setIsAddFormOpen] = useState(true); // State for add form collapse
+    const [isAddFormOpen, setIsAddFormOpen] = useState(true); // 添加表单折叠状态
 
-    const apiBaseUrl = '/api/homepage/teaching'; // API endpoint for teaching items
+    const apiBaseUrl = '/api/homepage/teaching'; // API 端点，用于教学项目
 
-    // Fetch items
+    // 加载项目
     const loadItems = useCallback(async () => {
         setIsLoading(true);
         setError(null);
@@ -73,9 +73,9 @@ const TeachingEditor: React.FC = () => {
         loadItems();
     }, [loadItems]);
 
-    // Add item
+    // 添加项目
     const handleAddItem = async () => {
-        if (!newItemTitle.trim()) return; // Require at least a title
+        if (!newItemTitle.trim()) return; // 需要至少一个标题
         setIsAdding(true);
         setError(null);
         try {
@@ -83,7 +83,7 @@ const TeachingEditor: React.FC = () => {
                 method: 'POST',
                 body: JSON.stringify({
                     course_title: newItemTitle.trim(),
-                    details: newItemDetails.trim() || null // Send null if details are empty
+                    details: newItemDetails.trim() || null // 如果详情为空则发送 null
                 }),
             });
             setTeachingItems(prev => [...prev, newItem]);
@@ -96,7 +96,7 @@ const TeachingEditor: React.FC = () => {
         }
     };
 
-    // Delete item
+    // 删除项目
     const handleDeleteItem = async (id: number) => {
         if (!window.confirm('Are you sure you want to delete this teaching item?')) return;
         const originalItems = [...teachingItems];
@@ -107,30 +107,30 @@ const TeachingEditor: React.FC = () => {
         } catch (err: any) { setError(`Failed to delete teaching item: ${err.message}`); setTeachingItems(originalItems); }
     };
 
-    // Start Edit
+    // 开始编辑
     const handleEditItem = (id: number) => {
         const item = teachingItems.find(i => i.id === id);
         if (item) {
             setEditingItemId(id);
             setEditingItemTitle(item.course_title);
-            setEditingItemDetails(item.details || ''); // Handle null details
+            setEditingItemDetails(item.details || ''); // 处理空详情
             setError(null);
             setIsSavingEdit(false);
         }
     };
 
-    // Cancel Edit
+    // 取消编辑
     const handleCancelEdit = () => {
         setEditingItemId(null);
         setEditingItemTitle('');
         setEditingItemDetails('');
     };
 
-    // Save Edit
+    // 保存编辑
     const handleSaveEdit = async () => {
-        if (!editingItemId || !editingItemTitle.trim()) return; // Title is required
+        if (!editingItemId || !editingItemTitle.trim()) return; // 标题是必需的
         const originalItem = teachingItems.find(i => i.id === editingItemId);
-        const trimmedDetails = editingItemDetails.trim() || null; // Ensure null for empty string
+        const trimmedDetails = editingItemDetails.trim() || null; // 确保空字符串为 null
 
         if (originalItem?.course_title === editingItemTitle.trim() && originalItem?.details === trimmedDetails) {
             handleCancelEdit();
@@ -158,7 +158,7 @@ const TeachingEditor: React.FC = () => {
         finally { setIsSavingEdit(false); }
     };
 
-    // Toggle Visibility
+    // 切换可见性
     const handleToggleVisibility = async (id: number, currentVisibility: boolean) => {
         const newVisibility = !currentVisibility;
         const originalItems = teachingItems.map(i => ({...i}));
@@ -172,10 +172,10 @@ const TeachingEditor: React.FC = () => {
         } catch (err: any) { setError(`Failed to update visibility: ${err.message}`); setTeachingItems(originalItems); }
     };
 
-    // Dnd Sensors
+    // Dnd 传感器
     const sensors = useSensors(useSensor(PointerSensor), useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }));
 
-    // Dnd Drag End
+    // Dnd 拖拽结束
     const handleDragEnd = async (event: DragEndEvent) => {
         const { active, over } = event;
         if (over && active.id !== over.id) {
@@ -188,7 +188,7 @@ const TeachingEditor: React.FC = () => {
             const updates = reordered.map((item: TeachingItem, index: number) => ({ id: item.id, display_order: index }));
             setIsSavingOrder(true); setError(null);
             try {
-                await fetchApi(`${apiBaseUrl}/reorder`, { // Needs endpoint /api/homepage/teaching/reorder
+                await fetchApi(`${apiBaseUrl}/reorder`, { // 需要端点 /api/homepage/teaching/reorder
                     method: 'PUT',
                     body: JSON.stringify({ items: updates }),
                 });
@@ -200,14 +200,14 @@ const TeachingEditor: React.FC = () => {
 
     return (
         <div className="p-6 h-full flex flex-col">
-            {/* Error Display */}
+            {/* 错误显示 */}
             {error && (
                 <div className={`${themeColors.errorBg} ${themeColors.errorText} p-3 rounded-md mb-4 flex items-center`}>
                     <AlertTriangle size={18} className="mr-2" /><span>{error}</span>
                 </div>
             )}
 
-            {/* Add Form */}
+            {/* 添加表单 */}
             <div className={`mb-6 border rounded-md ${themeColors.devBorder} ${themeColors.devMutedBg}`}>
                 <div
                     className={`flex items-center justify-between p-4 cursor-pointer`}
@@ -250,7 +250,7 @@ const TeachingEditor: React.FC = () => {
                 </AnimatePresence>
             </div>
 
-            {/* List */}
+            {/* 列表 */}
             <div className={`flex-1 overflow-y-auto pr-4 -mr-4`}>
                 {isLoading ? <div className="flex justify-center items-center h-full"><Loader2 className={`h-8 w-8 ${themeColors.devAccent} animate-spin`} /></div>
                  : teachingItems.length === 0 ? <div className={`${themeColors.devText} text-center py-10`}>No teaching items found.</div>
@@ -281,7 +281,7 @@ const TeachingEditor: React.FC = () => {
     );
 };
 
-// --- Sortable Item Component ---
+// --- 可排序项目组件 ---
 interface SortableTeachingItemProps {
     item: TeachingItem;
     isEditing: boolean; isSavingEdit: boolean;
@@ -309,13 +309,13 @@ function SortableTeachingItem({
             initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.2 }}
             className={`flex items-start p-3 rounded-md ${themeColors.devMutedBg} border ${themeColors.devBorder} relative ${isEditing ? 'ring-2 ring-indigo-500' : ''} ${disabled && !isEditing ? 'opacity-60' : ''}`}
         >
-            {/* Drag Handle */}
+            {/* 拖拽手柄 */}
            {!isEditing && (
              <div {...attributes} {...listeners} className={`${themeColors.devDescText} mr-3 mt-1 cursor-grab touch-none ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`} aria-label="Drag to reorder"><GripVertical size={18} /></div>
            )}
            {isEditing && <div className={`${themeColors.devDescText} mr-3 mt-1 opacity-50 cursor-not-allowed`}><GripVertical size={18} /></div>}
 
-            {/* Main Content Area (Title + Details) */}
+            {/* 主要内容区域（标题 + 详情） */}
             <div className="flex-grow flex flex-col mr-4 space-y-1">
                 {isEditing ? (
                     <>
@@ -340,7 +340,7 @@ function SortableTeachingItem({
                 )}
             </div>
 
-            {/* Action Buttons */}
+            {/* 操作按钮 */}
             <div className="flex flex-col space-y-1 ml-2 self-start flex-shrink-0">
                 {isEditing ? (
                     <>
