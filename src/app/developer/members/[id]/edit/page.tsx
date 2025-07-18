@@ -17,7 +17,7 @@ type MemberEditPageProps = {
 
 // This is a Server Component by default in App Router
 export default async function MemberEditPage({ params }: MemberEditPageProps) {
-  const id = params.id;
+  const { id } = await params;
 
   // --- Auth & Permission Check (Keep commented for now) ---
   /*
