@@ -210,13 +210,19 @@ const TeachingEditor: React.FC = () => {
             {/* 添加表单 */}
             <div className={`mb-6 border rounded-md ${themeColors.devBorder} ${themeColors.devMutedBg}`}>
                 <div
-                    className={`flex items-center justify-between p-4 cursor-pointer`}
-                    onClick={() => setIsAddFormOpen(!isAddFormOpen)}
-                    aria-expanded={isAddFormOpen}
-                    aria-controls="add-teaching-form-content"
+                    className={`flex items-center justify-between p-4`}
                 >
                     <h3 className={`text-lg font-medium ${themeColors.devText}`}>Add Teaching Item</h3>
-                    {isAddFormOpen ? <ChevronUp size={20} className={themeColors.devDescText} /> : <ChevronDown size={20} className={themeColors.devDescText} />}
+                    <button
+                        type="button"
+                        className="ml-2"
+                        onClick={() => setIsAddFormOpen(!isAddFormOpen)}
+                        aria-label={isAddFormOpen ? "Collapse" : "Expand"}
+                        tabIndex={0}
+                        style={{ background: "none", border: "none", padding: 0, cursor: "pointer" }}
+                    >
+                        {isAddFormOpen ? <ChevronUp size={20} className={themeColors.devDescText} /> : <ChevronDown size={20} className={themeColors.devDescText} />}
+                    </button>
                 </div>
 
                 <AnimatePresence initial={false}>
@@ -229,7 +235,7 @@ const TeachingEditor: React.FC = () => {
                             exit={{ opacity: 0, height: 0, transition: { duration: 0.2, ease: "easeInOut" } }}
                             className="overflow-hidden"
                         >
-                            <div className="p-4 pt-0 space-y-3">
+                            <div className="p-4 pt-2 space-y-3"> {/* 增加pt-2，保证输入框与标题有间距 */}
                                 <input type="text" value={newItemTitle} onChange={(e) => setNewItemTitle(e.target.value)} placeholder="Course title..."
                                        className={`w-full px-3 py-2 ${themeColors.devCardBg} border ${themeColors.devBorder} rounded-md shadow-sm ${themeColors.devText} placeholder:${themeColors.devDescText} focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent sm:text-sm disabled:opacity-50`}
                                        disabled={isAdding || isLoading || !!editingItemId || isSavingOrder}

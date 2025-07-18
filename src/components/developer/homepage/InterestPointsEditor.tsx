@@ -185,13 +185,19 @@ const InterestPointsEditor: React.FC = () => {
             {/* 添加表单 - 在此应用容器样式 */}
             <div className={`mb-6 border rounded-md ${themeColors.devBorder} ${themeColors.devMutedBg}`}>
                 <div
-                    className={`flex items-center justify-between p-4 cursor-pointer`}
-                    onClick={() => setIsAddFormOpen(!isAddFormOpen)}
-                    aria-expanded={isAddFormOpen}
-                    aria-controls="add-interest-form-content"
+                    className={`flex items-center justify-between p-4`}
                 >
                     <h3 className={`text-lg font-medium ${themeColors.devText}`}>Add Interest Point</h3>
-                    {isAddFormOpen ? <ChevronUp size={20} className={themeColors.devDescText} /> : <ChevronDown size={20} className={themeColors.devDescText} />}
+                    <button
+                        type="button"
+                        className="ml-2"
+                        onClick={() => setIsAddFormOpen(!isAddFormOpen)}
+                        aria-label={isAddFormOpen ? "Collapse" : "Expand"}
+                        tabIndex={0}
+                        style={{ background: "none", border: "none", padding: 0, cursor: "pointer" }}
+                    >
+                        {isAddFormOpen ? <ChevronUp size={20} className={themeColors.devDescText} /> : <ChevronDown size={20} className={themeColors.devDescText} />}
+                    </button>
                 </div>
 
                 <AnimatePresence initial={false}>
@@ -202,9 +208,9 @@ const InterestPointsEditor: React.FC = () => {
                             initial={{ opacity: 0, height: 0 }}
                             animate={{ opacity: 1, height: "auto", transition: { duration: 0.3, ease: "easeInOut" } }}
                             exit={{ opacity: 0, height: 0, transition: { duration: 0.2, ease: "easeInOut" } }}
-                            className="overflow-hidden" // 重要用于高度动画
+                            className="overflow-hidden"
                         >
-                            <div className="p-4 pt-0 space-y-3"> {/* 移除外部填充，在此添加填充 */}
+                            <div className="p-4 pt-2 space-y-3"> {/* 增加pt-2，保证输入框与标题有间距 */}
                                 <input type="text" value={newItemTitle} onChange={(e) => setNewItemTitle(e.target.value)} placeholder="Enter new interest point title..."
                                     className={`w-full px-3 py-2 ${themeColors.devCardBg} border ${themeColors.devBorder} rounded-md shadow-sm ${themeColors.devText} placeholder:${themeColors.devDescText} focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent sm:text-sm disabled:opacity-50`}
                                     disabled={isAdding || isLoading || !!editingItemId || isSavingOrder}
