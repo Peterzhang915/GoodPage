@@ -221,7 +221,7 @@ const TeachingEditor: React.FC = () => {
                         tabIndex={0}
                         style={{ background: "none", border: "none", padding: 0, cursor: "pointer" }}
                     >
-                        {isAddFormOpen ? <ChevronUp size={20} className={themeColors.devDescText} /> : <ChevronDown size={20} className={themeColors.devDescText} />}
+                    {isAddFormOpen ? <ChevronUp size={20} className={themeColors.devDescText} /> : <ChevronDown size={20} className={themeColors.devDescText} />}
                     </button>
                 </div>
 

@@ -169,14 +169,13 @@ export type MemberProfileData = MemberPayload & {
 
 // --- 新增：照片墙相关类型 ---
 
-/**
- * Defines the structure for an image object used in the photo gallery.
- */
-export type GalleryImage = {
-  id: string | number; // Unique identifier for the image (string or number)
-  src: string; // Source URL of the image
-  alt: string; // Alternative text for accessibility
-  category: string; // Category the image belongs to
-  caption?: string; // Optional caption for the image
-  date?: string; // Optional date associated with the image
-};
+export interface GalleryImage {
+  id: string;
+  src: string;
+  alt: string;
+  category: string;
+  caption: string | null;
+  date: string | null;
+  is_visible: boolean;
+  display_order: number;
+}
