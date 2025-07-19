@@ -11,78 +11,39 @@ import Modal from "./Modal";
 import WaterfallView from "./WaterfallView";
 import { themeColors } from "@/styles/theme";
 import type { GalleryImage } from "@/lib/types";
+import { Loader2 } from "lucide-react";
 
 // 视图类型定义
 type GalleryView = "highlight" | "waterfall";
 
+// 新增：支持外部传入 images 和 loading
+interface PhotoGalleryProps {
+  images?: GalleryImage[];
+  loading?: boolean;
+}
+
 // 示例图片数据 (扩展)
-const images: GalleryImage[] = [
-  {
-    id: 2,
-    src: "/images/gallery/Meetings/CCF/CCF_Sys.png",
-    alt: "CCF会议",
-    caption: "CCF会议",
-    date: "2023.9.30",
-    category: "Meetings",
-  },
-  {
-    id: 3,
-    src: "/images/gallery/Graduation/2024.6/1.jpg",
-    alt: "毕业合影",
-    caption: "毕业合影",
-    date: "2024.06.10",
-    category: "Graduation",
-  },
-  {
-    id: 4,
-    src: "/images/gallery/Events/groupbuild/Picnic.jpg",
-    alt: "Picnic",
-    caption: "Picnic",
-    date: "2024.08.20",
-    category: "Team Building",
-  },
-  {
-    id: 5,
-    src: "/images/gallery/Sports/badminton/20241030.jpg",
-    alt: "羽毛球周常",
-    caption: "羽毛球周常",
-    date: "2025.03.10",
-    category: "Sports",
-  },
-  {
-    id: 6,
-    src: "/images/gallery/Graduation/2024.6/Member-2023-2.jpg",
-    alt: "合照",
-    caption: "合照",
-    date: "2025.01.02",
-    category: "Lab Life",
-  },
-  // --- 添加更多图片 ---
-  {
-    id: 7,
-    src: "/images/gallery/Competition/ASC19-Traning.png",
-    alt: "ASC19训练",
-    caption: "ASC19训练",
-    date: "2019.12.18",
-    category: "Competition",
-  },
-];
+const images: GalleryImage[] = []; // 移除硬编码的图片数据
 
 // 从图片数据中提取唯一的类别
-const uniqueCategories = Array.from(
-  new Set(images.map((img) => img.category).filter(Boolean)),
-) as string[];
+const CATEGORIES = [
+  "Meetings",
+  "Graduation",
+  "Team Building",
+  "Sports",
+  "Lab Life",
+  "Competition"
+];
 
-// 类别与其对应的 Emoji 图标的映射关系 (添加新类别)
+// 类别与其对应的 Emoji 图标的映射关系
 const categoryEmojis: { [key: string]: string } = {
-  Events: "🎉",
   Meetings: "🤝",
   Graduation: "🎓",
   "Team Building": "🚀",
   Sports: "🏸",
-  "Lab Life": "🔬", // 新类别的 Emoji
-  Competition: "🏆", // 比赛类别的 Emoji
-  Default: "🖼️", // 如果类别没有对应图标，使用此默认图标
+  "Lab Life": "🔬",
+  Competition: "🏆",
+  Default: "🖼️"
 };
 
 // --- Framer Motion 动画变体定义 ---
@@ -116,12 +77,57 @@ const waterfallViewVariants = {
 };
 
 // 照片墙主组件
-const PhotoGallery: React.FC = () => {
+const PhotoGallery: React.FC<PhotoGalleryProps> = ({ images: albumImages = [], loading: albumLoading }) => {
   // --- 组件状态管理 ---
   const [currentView, setCurrentView] = useState<GalleryView>("highlight"); // 当前显示的视图 ('highlight' 或 'waterfall')
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null); // 用户选择的图片类别
   const [selectedImage, setSelectedImage] = useState<GalleryImage | null>(null); // 用户点击放大的图片 (用于 Modal)
   const [originRect, setOriginRect] = useState<DOMRect | null>(null); // 新增: 存储点击按钮的矩形信息
+  
+  // 新增：分类图片的状态管理
+  const [categoryImages, setCategoryImages] = useState<GalleryImage[]>([]);
+  const [categoryLoading, setCategoryLoading] = useState(false);
+
+  // 加载图片数据
+  useEffect(() => {
+    async function fetchImages() {
+      // 只有在没有外部图片时才加载
+      if (!albumImages) {
+        setCategoryLoading(true);
+        try {
+          const res = await fetch('/api/gallery/photos');
+          const data = await res.json();
+          if (data.success) {
+            setCategoryImages(data.data);
+          }
+        } catch (error) {
+          console.error('Failed to fetch gallery images:', error);
+        }
+        setCategoryLoading(false);
+      }
+    }
+    fetchImages();
+  }, [albumImages]); // 依赖 albumImages 变化时重新加载
+
+  // 加载分类图片
+  useEffect(() => {
+    async function fetchCategoryImages() {
+      if (currentView === "waterfall" && selectedCategory) {
+        setCategoryLoading(true);
+        try {
+          const res = await fetch(`/api/gallery/photos?category=${selectedCategory}&include_hidden=false`);
+          const data = await res.json();
+          if (data.success) {
+            setCategoryImages(data.data);
+          }
+        } catch (error) {
+          console.error('Failed to fetch category images:', error);
+        }
+        setCategoryLoading(false);
+      }
+    }
+    fetchCategoryImages();
+  }, [currentView, selectedCategory]);
 
   // --- Refs 用于高亮滚动流的交互 ---
   const containerRef = useRef<HTMLDivElement>(null); // 指向高亮流滚动容器的引用
@@ -148,10 +154,10 @@ const PhotoGallery: React.FC = () => {
   // 确定实际渲染的图片列表 (至少10张，不足则重复)，用于计算内容宽度
   const itemsToRender = useMemo(
     () =>
-      images.length >= 10
-        ? images
-        : [...images, ...images, ...images].slice(0, 10),
-    [images],
+      albumImages.length >= 10
+        ? albumImages
+        : [...albumImages, ...albumImages, ...albumImages].slice(0, 10),
+    [albumImages],
   );
   // 将渲染列表加倍，用于实现无缝循环效果
   const doubledItems = useMemo(
@@ -305,13 +311,22 @@ const PhotoGallery: React.FC = () => {
     setSelectedCategory(null); // 清除选中的类别
     setCurrentView("highlight"); // 切换回高亮视图
     isPausedRef.current = false; // 恢复高亮流的动画
+    setCategoryImages([]); // 清空分类图片
   };
 
   // --- 数据准备 ---
   // 根据当前选中的类别，过滤出用于瀑布流视图的图片列表
-  const waterfallImages = images.filter(
+  const waterfallImages = albumImages?.filter(
     (img) => img.category === selectedCategory,
   );
+
+  if (albumLoading || categoryLoading) {
+    return (
+      <div className="flex justify-center items-center h-96">
+        <Loader2 className="animate-spin text-green-400" size={48} />
+      </div>
+    );
+  }
 
   // --- 组件渲染 ---
   return (
@@ -395,13 +410,13 @@ const PhotoGallery: React.FC = () => {
             </div>
 
             {/* 类别选择器容器 (在高亮视图下方) */}
-            {uniqueCategories.length > 0 && (
+            {CATEGORIES.length > 0 && (
               <motion.div
                 className="category-selector flex justify-center flex-wrap gap-3 px-4"
                 variants={categorySelectorVariants} // 应用进入/退出动画
               >
                 {/* 渲染各个类别按钮 */}
-                {uniqueCategories.map((category) => (
+                {CATEGORIES.map((category) => (
                   <motion.button
                     key={category}
                     ref={(el: HTMLButtonElement | null) => {
@@ -474,7 +489,7 @@ const PhotoGallery: React.FC = () => {
             </div>
             {/* 渲染瀑布流组件 */}
             <WaterfallView
-              images={waterfallImages}
+              images={categoryImages}
               selectedCategory={selectedCategory} // 正确的 prop
               onImageClick={handleImageClick}
             />

@@ -30,19 +30,31 @@
    npx prisma migrate dev      #如果你的数据库还没初始化，可能还需要运行这一条代码
    ```
 
-3. **运行开发服务器 (Run Development Server):**
+3. **扫描图片库 (Scan Gallery):**
+   如果需要导入图片库中的图片到数据库，运行：
+
+   ```bash
+   pnpm run db:scan-gallery
+   ```
+
+   这个命令会扫描 `public/images/gallery` 目录下的所有图片，并将它们添加到数据库中。它会自动：
+   - 根据目录结构识别图片分类
+   - 跳过已经存在的图片
+   - 保持现有的显示顺序和设置
+
+4. **运行开发服务器 (Run Development Server):**
    安装完依赖后，运行以下命令启动 Next.js 开发服务器：
 
    ```bash
-   npm run dev
+   pnpm dev
    ```
 
    此命令会启动一个本地服务器，通常监听在 `http://localhost:3000`。
 
-4. **在浏览器中查看 (View in Browser):**
+5. **在浏览器中查看 (View in Browser):**
    打开您的浏览器，访问 [http://localhost:3000](http://localhost:3000)。您应该能看到正在开发的实验室主页。
 
-5. **开始编辑 (Start Editing):**
+6. **开始编辑 (Start Editing):**
    项目的主要页面代码位于 `src/app/page.tsx`。您可以开始修改这个文件，保存后页面会自动更新以反映您的更改。
 
 ## 主要技术栈

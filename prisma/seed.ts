@@ -703,16 +703,175 @@ async function main() {
 
   // --- 9. Other Tables ---
   console.log(`Skipping other table seeding (no test data)`);
+
+  // --- 导入 Gallery 数据 ---
+  console.log("\n开始处理 Gallery 数据...");
+
+  // 定义支持的分类
+  const VALID_CATEGORIES = [
+    'Meetings',
+    'Graduation',
+    'Team Building',
+    'Sports',
+    'Lab Life',
+    'Competition'
+  ] as const;
+
+  // 获取分类函数
+  function getCategoryFromPath(filepath: string): string {
+    if (filepath.includes('Events/groupbuild')) return 'Team Building';
+    if (filepath.includes('Events/lab_life') || filepath.includes('Events/lablife')) return 'Lab Life';
+    if (filepath.includes('Meetings')) return 'Meetings';
+    if (filepath.includes('Graduation')) return 'Graduation';
+    if (filepath.includes('Sports')) return 'Sports';
+    if (filepath.includes('Competition')) return 'Competition';
+    return 'Other';
+  }
+
+  // 递归扫描目录
+  async function scanDirectory(dir: string, baseDir: string): Promise<string[]> {
+    const entries = await fs.promises.readdir(dir, { withFileTypes: true });
+    const files: string[] = [];
+
+    for (const entry of entries) {
+      const fullPath = path.join(dir, entry.name);
+      const relativePath = path.relative(baseDir, fullPath).replace(/\\/g, '/');
+
+      if (entry.isDirectory()) {
+        const subFiles = await scanDirectory(fullPath, baseDir);
+        files.push(...subFiles);
+      } else if (entry.isFile() && /\.(jpg|jpeg|png|gif|webp)$/i.test(entry.name)) {
+        files.push(relativePath);
+      }
+    }
+
+    return files;
+  }
+
+  // 扫描图片文件
+  const galleryDir = path.join(process.cwd(), 'public', 'images', 'gallery');
+  console.log('\n扫描图片目录:', galleryDir);
+
+  if (fs.existsSync(galleryDir)) {
+    const files = await scanDirectory(galleryDir, galleryDir);
+    console.log(`找到 ${files.length} 张图片`);
+
+    let newCount = 0;
+    let skipCount = 0;
+    let errorCount = 0;
+
+    // 获取现有记录
+    const existingPhotos = await prisma.galleryPhoto.findMany();
+    const existingFiles = new Set(existingPhotos.map(p => p.filename));
+
+    // 处理每个文件
+    for (const file of files) {
+      const category = getCategoryFromPath(file);
+      if (!VALID_CATEGORIES.includes(category as any)) {
+        console.log(`跳过无效分类的文件: ${file}`);
+        skipCount++;
+        continue;
+      }
+
+      try {
+        // 如果文件已存在，更新它
+        if (existingFiles.has(file)) {
+          await prisma.galleryPhoto.updateMany({
+            where: { filename: file },
+            data: {
+              category,
+              is_visible: true
+            }
+          });
+          console.log(`更新已存在的图片: ${file}`);
+          skipCount++;
+          continue;
+        }
+
+        // 获取当前分类中最大的 display_order
+        const maxOrderRecord = await prisma.galleryPhoto.findFirst({
+          where: { category },
+          orderBy: { display_order: 'desc' },
+          select: { display_order: true }
+        });
+        const maxOrder = maxOrderRecord?.display_order ?? -1;
+
+        // 创建新记录
+        await prisma.galleryPhoto.create({
+          data: {
+            filename: file,
+            category,
+            is_visible: true,
+            show_in_albums: false,
+            display_order: maxOrder + 1,
+            albums_order: 0
+          }
+        });
+        console.log(`导入新图片: ${file}`);
+        newCount++;
+      } catch (error) {
+        console.error(`处理图片 ${file} 时出错:`, error);
+        errorCount++;
+      }
+    }
+
+    // 导出所有图片数据到 CSV
+    const allPhotos = await prisma.galleryPhoto.findMany({
+      orderBy: [
+        { category: 'asc' },
+        { display_order: 'asc' }
+      ]
+    });
+
+    const csvHeader = 'filename,category,caption,date,is_visible,show_in_albums,display_order,albums_order\n';
+    const csvRows = allPhotos.map(photo => {
+      return [
+        photo.filename,
+        photo.category,
+        photo.caption || '',
+        photo.date || '',
+        photo.is_visible ? 'true' : 'false',
+        photo.show_in_albums ? 'true' : 'false',
+        photo.display_order,
+        photo.albums_order
+      ].map(field => `"${String(field).replace(/"/g, '""')}"`)
+        .join(',');
+    }).join('\n');
+
+    const csvContent = csvHeader + csvRows;
+    const outputFile = path.join(__dirname, 'initcsv', 'GalleryPhoto.csv');
+    await fs.promises.writeFile(outputFile, csvContent, 'utf-8');
+
+    // 打印统计信息
+    console.log('\nGallery 处理结果:');
+    console.log(`新导入: ${newCount}`);
+    console.log(`已存在/跳过: ${skipCount}`);
+    console.log(`错误: ${errorCount}`);
+
+    // 打印分类统计
+    const categoryStats = allPhotos.reduce((acc, photo) => {
+      acc[photo.category] = (acc[photo.category] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+
+    console.log('\n按分类统计:');
+    Object.entries(categoryStats).forEach(([category, count]) => {
+      console.log(`${category}: ${count} 张`);
+    });
+
+    console.log(`\nGallery 数据已导出到 ${outputFile}`);
+  } else {
+    console.log('Gallery 目录不存在，跳过图片处理');
+  }
+
+  console.log("\n所有数据填充完成！");
 }
 
-// --- 执行主函数并处理结果 --- Corrected promise handling structure
 main()
-    .then(async () => {
-    console.log("Test data seeding successful!");
-        await prisma.$disconnect();
-    })
-    .catch(async (e) => {
-    console.error("Error seeding test data:", e);
-        await prisma.$disconnect();
-        process.exit(1);
-  }); // Ensure semicolon is here if needed, or just end
+  .catch((e) => {
+    console.error(e);
+    process.exit(1);
+  })
+  .finally(async () => {
+    await prisma.$disconnect();
+  });

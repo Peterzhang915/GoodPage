@@ -44,18 +44,18 @@ const educationSchema = z.object({
   start_year: z.preprocess(
     (val) => val === '' ? undefined : Number(val),
     z.number({ invalid_type_error: "Start year must be a number" })
-      .int()
-      .min(1900, "Invalid year")
+                .int()
+                .min(1900, "Invalid year")
       .max(new Date().getFullYear() + 10, "Invalid year")
   ),
   end_year: z.preprocess(
     (val) => val === '' ? null : Number(val),
     z.number({ invalid_type_error: "End year must be a number" })
-      .int()
-      .min(1900, "Invalid year")
-      .max(new Date().getFullYear() + 20, "Invalid year")
+                .int()
+                .min(1900, "Invalid year")
+                .max(new Date().getFullYear() + 20, "Invalid year")
       .nullable()
-      .optional()
+                .optional()
   ),
   thesis_title: z.string().optional().nullable(),
   description: z.string().optional().nullable(),
@@ -175,106 +175,106 @@ export function EducationFormModal({
         <form onSubmit={handleSubmit(handleFormSubmit)} className="grid gap-4 py-4">
             {/* School (Required) */}
             <div>
-              <div className="grid grid-cols-4 items-center gap-4">
+            <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="school" className="text-right dark:text-gray-300">
-                  School <span className="text-red-500">*</span>
+                    School <span className="text-red-500">*</span>
                 </Label>
                 <Input
-                  id="school"
-                  {...register("school")}
-                  className="col-span-3 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
-                  disabled={isSubmitting}
+                    id="school"
+                    {...register("school")}
+                    className="col-span-3 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
+                    disabled={isSubmitting}
                 />
-              </div>
+            </div>
               {errors.school && <p className="text-sm text-red-500 dark:text-red-400 mt-1 min-h-[1.25em] leading-tight break-all whitespace-normal">{errors.school.message}</p>}
             </div>
 
             {/* Degree (Required) */}
             <div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="degree" className="text-right dark:text-gray-300">
-                  Degree <span className="text-red-500">*</span>
-                </Label>
-                <Input
-                  id="degree"
-                  {...register("degree")}
-                  className="col-span-3 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
-                  disabled={isSubmitting}
-                />
-              </div>
+             <div className="grid grid-cols-4 items-center gap-4">
+                 <Label htmlFor="degree" className="text-right dark:text-gray-300">
+                    Degree <span className="text-red-500">*</span>
+                 </Label>
+                 <Input
+                    id="degree"
+                    {...register("degree")}
+                    className="col-span-3 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
+                    disabled={isSubmitting}
+                 />
+             </div>
               {errors.degree && <p className="text-sm text-red-500 dark:text-red-400 mt-1 min-h-[1.25em] leading-tight break-all whitespace-normal">{errors.degree.message}</p>}
             </div>
 
-            {/* Field (Optional) */}
+             {/* Field (Optional) */}
             <div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="field" className="text-right dark:text-gray-300">Field</Label>
-                <Input
-                  id="field"
-                  {...register("field")}
-                  className="col-span-3 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
-                  disabled={isSubmitting}
-                />
-              </div>
+             <div className="grid grid-cols-4 items-center gap-4">
+                 <Label htmlFor="field" className="text-right dark:text-gray-300">Field</Label>
+                 <Input
+                    id="field"
+                    {...register("field")}
+                    className="col-span-3 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
+                    disabled={isSubmitting}
+                 />
+             </div>
             </div>
 
-            {/* Start Year (Required) */}
+             {/* Start Year (Required) */}
             <div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="start_year" className="text-right dark:text-gray-300">
-                  Start Year <span className="text-red-500">*</span>
-                </Label>
-                <Input
-                  id="start_year"
+            <div className="grid grid-cols-4 items-center gap-4">
+                 <Label htmlFor="start_year" className="text-right dark:text-gray-300">
+                     Start Year <span className="text-red-500">*</span>
+                 </Label>
+                 <Input
+                     id="start_year"
                   type="number"
                   {...register("start_year", { valueAsNumber: true })}
-                  className="col-span-3 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
-                  disabled={isSubmitting}
-                  placeholder="YYYY"
-                />
-              </div>
+                     className="col-span-3 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
+                     disabled={isSubmitting}
+                     placeholder="YYYY"
+                 />
+             </div>
               {errors.start_year && <p className="text-sm text-red-500 dark:text-red-400 mt-1 min-h-[1.25em] leading-tight break-all whitespace-normal">{errors.start_year.message}</p>}
             </div>
 
-            {/* End Year (Optional) */}
+             {/* End Year (Optional) */}
             <div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="end_year" className="text-right dark:text-gray-300">End Year</Label>
-                <Input
-                  id="end_year"
-                  type="number"
-                  {...register("end_year")}
-                  className="col-span-3 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
-                  disabled={isSubmitting}
-                  placeholder="YYYY or leave blank if ongoing"
-                />
-              </div>
+             <div className="grid grid-cols-4 items-center gap-4">
+                 <Label htmlFor="end_year" className="text-right dark:text-gray-300">End Year</Label>
+                 <Input
+                     id="end_year"
+                     type="number"
+                     {...register("end_year")}
+                     className="col-span-3 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
+                     disabled={isSubmitting}
+                     placeholder="YYYY or leave blank if ongoing"
+                 />
+             </div>
               {errors.end_year && <p className="text-sm text-red-500 dark:text-red-400 mt-1 min-h-[1.25em] leading-tight break-all whitespace-normal">{errors.end_year.message}</p>}
             </div>
 
-            {/* Thesis Title (Optional) */}
+             {/* Thesis Title (Optional) */}
             <div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="thesis_title" className="text-right dark:text-gray-300">Thesis Title</Label>
-                <Input
-                  id="thesis_title"
-                  {...register("thesis_title")}
-                  className="col-span-3 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
-                  disabled={isSubmitting}
-                />
+             <div className="grid grid-cols-4 items-center gap-4">
+                 <Label htmlFor="thesis_title" className="text-right dark:text-gray-300">Thesis Title</Label>
+                 <Input
+                    id="thesis_title"
+                    {...register("thesis_title")}
+                    className="col-span-3 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
+                    disabled={isSubmitting}
+                 />
               </div>
-            </div>
+             </div>
 
-            {/* Description (Optional) */}
+             {/* Description (Optional) */}
             <div>
-              <div className="grid grid-cols-4 items-center gap-4">
+            <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="description" className="text-right dark:text-gray-300">Description</Label>
                 <Textarea
-                  id="description"
-                  {...register("description")}
-                  className="col-span-3 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
-                  rows={3}
-                  disabled={isSubmitting}
+                    id="description"
+                    {...register("description")}
+                    className="col-span-3 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
+                    rows={3}
+                    disabled={isSubmitting}
                 />
               </div>
             </div>

@@ -1,36 +1,733 @@
 "use client";
 
-import React from "react";
-import { ArrowLeft, Image } from "lucide-react"; // Import necessary icons
+import React, { useState, useEffect, useRef } from "react";
+import { Image, Trash2, Loader2, Plus, Eye, EyeOff, Upload, Calendar, Type, Info, Edit2, Check, X } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+
+// 确保photos为GalleryImage[]类型
+interface GalleryImage {
+  id: string;
+  src: string;
+  alt: string;
+  category: string;
+  caption: string | null;
+  date: string | null;
+  is_visible: boolean;
+  show_in_albums: boolean;
+  display_order: number;
+  albums_order: number;
+}
 
 // 定义 PhotoManager 组件预期的 props，主要是 onClose
 interface PhotoManagerProps {
   onClose: () => void;
 }
 
-/**
- * PhotoManager 组件的占位符。
- * TODO: 实现照片上传和管理功能。
- */
+// 图片卡片组件的 props
+interface PhotoCardProps {
+  photo: GalleryImage;
+  onDelete: (photo: GalleryImage) => void;
+  onToggleVisibility: (photo: GalleryImage) => void;
+  onOrderChange: (photo: GalleryImage, newOrder: number) => void;
+  onUpdateMetadata: (photo: GalleryImage, caption: string | null, date: string | null) => void;
+  isAlbumsView?: boolean;
+}
+
+// 支持的分类（与前端页面完全一致）
+const VALID_CATEGORIES = [
+  "Albums",
+  "Meetings",
+  "Graduation",
+  "Team Building",
+  "Sports",
+  "Lab Life",
+  "Competition"
+] as const;
+
+type Category = (typeof VALID_CATEGORIES)[number];
+
+const isAlbumsView = (cat: Category) => cat === "Albums";
+
 const PhotoManager: React.FC<PhotoManagerProps> = ({ onClose }) => {
+  // 分类选择
+  const [category, setCategory] = useState<Category>("Albums");
+  // 图片列表
+  const [photos, setPhotos] = useState<GalleryImage[]>([]);
+  // 上传状态
+  const [uploading, setUploading] = useState(false);
+  const [file, setFile] = useState<File | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  // 表单状态
+  const [caption, setCaption] = useState("");
+  const [date, setDate] = useState("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isDragging, setIsDragging] = useState(false);
+
+  // 加载图片列表（包括不可见的图片）
+  useEffect(() => {
+    async function fetchPhotos() {
+      setLoading(true);
+      setError(null);
+      try {
+        // Albums 视图管理页面用 include_hidden=true，其他分区同理
+        const res = await fetch(`/api/gallery/photos?category=${category}&include_hidden=true`);
+        const data = await res.json();
+        if (data.success) {
+          let sortedPhotos = data.data;
+          // 按可见性和顺序排序
+          sortedPhotos.sort((a: GalleryImage, b: GalleryImage) => {
+            if (category === "Albums") {
+              if (a.show_in_albums !== b.show_in_albums) {
+                return a.show_in_albums ? -1 : 1;
+              }
+              return a.albums_order - b.albums_order;
+            } else {
+              if (a.is_visible !== b.is_visible) {
+                return a.is_visible ? -1 : 1;
+              }
+              return a.display_order - b.display_order;
+            }
+          });
+          setPhotos(sortedPhotos);
+        } else {
+          setPhotos([]);
+        }
+      } catch {
+        setPhotos([]);
+      }
+      setLoading(false);
+    }
+    fetchPhotos();
+  }, [category]);
+
+  // 上传图片
+  async function handleUpload() {
+    if (!file || isAlbumsView(category)) return;
+    setUploading(true);
+    setError(null);
+
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("category", category);
+      if (caption) formData.append("caption", caption);
+      if (date) formData.append("date", date);
+
+      const res = await fetch("/api/gallery/photos", { 
+        method: "POST", 
+        body: formData 
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        // 上传成功后重新获取图片列表
+        const res2 = await fetch(`/api/gallery/photos?category=${category}&include_hidden=true`);
+        const data2 = await res2.json();
+        
+        if (data2.success) {
+          let filteredPhotos = data2.data;
+          if (!isAlbumsView(category)) {
+            filteredPhotos = data2.data.filter((img: GalleryImage) => img.category === category);
+          }
+          // 按可见性和顺序排序
+          filteredPhotos.sort((a: GalleryImage, b: GalleryImage) => {
+            if (a.is_visible !== b.is_visible) {
+              return a.is_visible ? -1 : 1;
+            }
+            return a.display_order - b.display_order;
+          });
+          setPhotos(filteredPhotos);
+        }
+
+        // 重置表单
+        setFile(null);
+        setCaption("");
+        setDate("");
+      } else {
+        setError(data.error?.message || "Upload failed");
+      }
+    } catch (error) {
+      console.error('Upload failed:', error);
+      setError("Upload failed. Please try again.");
+    } finally {
+      setUploading(false);
+    }
+  }
+
+  // 删除图片
+  async function handleDelete(photo: GalleryImage) {
+    if (!window.confirm("Delete this photo?")) return;
+    setError(null);
+    try {
+      const res = await fetch(`/api/gallery/photos?id=${photo.id}`, { method: "DELETE" });
+      const data = await res.json();
+      if (data.success) {
+        setPhotos((prev) => prev.filter((p) => p.id !== photo.id));
+      } else {
+        setError(data.error?.message || "Delete failed");
+      }
+    } catch {
+      setError("Delete failed");
+    }
+  }
+
+  // 切换图片可见性
+  async function handleToggleVisibility(photo: GalleryImage) {
+    try {
+      const albumsView = isAlbumsView(category);
+      const patchData = albumsView
+        ? { id: photo.id, show_in_albums: !photo.show_in_albums }
+        : { id: photo.id, is_visible: !photo.is_visible };
+      const res = await fetch(`/api/gallery/photos`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(patchData)
+      });
+      const data = await res.json();
+      if (data.success) {
+        setPhotos(prev => {
+          const updated = prev.map(p =>
+            p.id === photo.id
+              ? {
+                  ...p,
+                  ...(albumsView
+                    ? { show_in_albums: !p.show_in_albums }
+                    : { is_visible: !p.is_visible })
+                }
+              : p
+          );
+          return updated;
+        });
+      } else {
+        setError(data.error?.message || "Update failed");
+      }
+    } catch {
+      setError("Update failed");
+    }
+  }
+
+  // 更新图片顺序
+  async function handleOrderChange(photo: GalleryImage, newOrder: number) {
+    try {
+      const isAlbumsView = category === "Albums";
+      const res = await fetch(`/api/gallery/photos`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: photo.id,
+          [isAlbumsView ? "albums_order" : "display_order"]: newOrder
+        })
+      });
+      const data = await res.json();
+      if (data.success) {
+        // 重新获取图片列表以确保顺序正确
+        const res2 = await fetch(`/api/gallery/photos?category=${category}&include_hidden=true`);
+        const data2 = await res2.json();
+        if (data2.success) {
+          let filteredPhotos = data2.data;
+          if (category !== "Albums") {
+            filteredPhotos = data2.data.filter((img: GalleryImage) => img.category === category);
+          }
+          // 按可见性和顺序排序
+          filteredPhotos.sort((a: GalleryImage, b: GalleryImage) => {
+            if (isAlbumsView) {
+              if (a.show_in_albums !== b.show_in_albums) {
+                return a.show_in_albums ? -1 : 1;
+              }
+              return a.albums_order - b.albums_order;
+            } else {
+              if (a.is_visible !== b.is_visible) {
+                return a.is_visible ? -1 : 1;
+              }
+              return a.display_order - b.display_order;
+            }
+          });
+          setPhotos(filteredPhotos);
+        }
+      } else {
+        setError(data.error?.message || "Update failed");
+      }
+    } catch {
+      setError("Update failed");
+    }
+  }
+
+  // 更新图片元数据
+  async function handleUpdateMetadata(photo: GalleryImage, caption: string | null, date: string | null) {
+    try {
+      const res = await fetch(`/api/gallery/photos`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: photo.id,
+          caption,
+          date
+        })
+      });
+      const data = await res.json();
+      if (data.success) {
+        // 更新本地状态
+        setPhotos(prev => prev.map(p => 
+          p.id === photo.id ? { ...p, caption, date } : p
+        ));
+      } else {
+        setError(data.error?.message || "Update failed");
+      }
+    } catch (error) {
+      console.error('Failed to update photo metadata:', error);
+      setError("Update failed. Please try again.");
+    }
+  }
+
+  // 处理文件拖放
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    const files = e.dataTransfer.files;
+    if (files.length > 0) {
+      setFile(files[0]);
+    }
+  };
+
+  // 触发文件选择
+  const handleClickUpload = () => {
+    fileInputRef.current?.click();
+  };
+
   return (
-    <div>
-      {/* 页眉，包含返回按钮 */}
-      <div className="flex justify-between items-center mb-6 border-b border-gray-700 pb-4">
+    <div className="min-h-[600px] bg-gray-900 rounded-lg p-6">
+      {/* 页眉 */}
+      <div className="flex items-center justify-between mb-8 border-b border-gray-700 pb-4">
         <h2 className="text-2xl font-semibold text-green-400 flex items-center gap-2">
-          <Image size={24} /> {/* 添加图标 */}
-          Manage Photos (Coming Soon)
+          <Image size={24} /> Photo Gallery Manager
         </h2>
+        <div className="text-sm text-gray-400">
+          <Info size={16} className="inline mr-1" />
+          {isAlbumsView(category) ? (
+            "Manage the photos displayed in the album homepage, which does not affect the display status of each category"
+          ) : (
+            "Manage photos in the laboratory album, control visibility and sorting"
+          )}
+        </div>
       </div>
 
-      {/* 主要内容区域 */}
-      <div className="p-6 bg-gray-800 border border-gray-700 rounded-lg text-center text-gray-400">
-        <p>Photo upload and management features will be available here.</p>
-        <p className="mt-2 text-sm">(Functionality under development)</p>
+      {/* 分类选择 */}
+      <div className="mb-6">
+        <label className="block text-sm font-medium text-gray-300 mb-2">
+          Select album category
+        </label>
+        <select
+          value={category}
+          onChange={(e) => setCategory(e.target.value as Category)}
+          className="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-gray-100"
+        >
+          {VALID_CATEGORIES.map((cat) => (
+            <option key={cat} value={cat}>
+              {cat}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      {/* 上传区域 - 仅在非主页管理时显示 */}
+      {!isAlbumsView(category) && (
+        <div className="mb-8 space-y-4">
+          <div className="bg-gray-800 border-2 border-dashed border-gray-600 rounded-lg p-6 text-center cursor-pointer transition-colors hover:border-green-500 hover:bg-gray-750"
+            onClick={handleClickUpload}
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+            style={{
+              borderColor: isDragging ? '#22c55e' : undefined,
+              backgroundColor: isDragging ? 'rgba(34, 197, 94, 0.1)' : undefined
+            }}
+          >
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={(e) => setFile(e.target.files?.[0] || null)}
+              className="hidden"
+            />
+            <Upload size={32} className="mx-auto mb-2 text-gray-400" />
+            <div className="text-gray-300 mb-1">
+              {file ? (
+                <span className="text-green-400">{file.name}</span>
+              ) : (
+                <>
+                  <span className="text-green-400">Click to upload</span> or drag and drop images here
+                </>
+              )}
+            </div>
+            <p className="text-sm text-gray-500">
+              Supports JPG, PNG, GIF, WEBP formats, up to 10MB
+            </p>
+          </div>
+
+          {file && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-gray-800 rounded-lg p-4 space-y-4"
+            >
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="flex items-center text-sm font-medium text-gray-300 mb-2">
+                    <Type size={16} className="mr-1" />
+                    Image Caption
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g., 2024 Graduation Photo"
+                    value={caption}
+                    onChange={(e) => setCaption(e.target.value)}
+                    className="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-gray-100 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  />
+                  <p className="mt-1 text-xs text-gray-500">
+                    Add a caption to display below the image
+                  </p>
+                </div>
+                <div>
+                  <label className="flex items-center text-sm font-medium text-gray-300 mb-2">
+                    <Calendar size={16} className="mr-1" />
+                    Photo Date
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g., 2024.06.10"
+                    value={date}
+                    onChange={(e) => setDate(e.target.value)}
+                    className="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-gray-100 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  />
+                  <p className="mt-1 text-xs text-gray-500">
+                    Used for photo sorting and display, recommend YYYY.MM.DD format
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex justify-end">
+                <button
+                  onClick={() => setFile(null)}
+                  className="mr-3 px-4 py-2 text-gray-300 hover:text-white transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleUpload}
+                  disabled={uploading}
+                  className="flex items-center px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {uploading ? (
+                    <>
+                      <Loader2 size={16} className="animate-spin mr-2" />
+                      Uploading...
+                    </>
+                  ) : (
+                    <>
+                      <Upload size={16} className="mr-2" />
+                      Start Upload
+                    </>
+                  )}
+                </button>
+              </div>
+            </motion.div>
+          )}
+        </div>
+      )}
+
+      {error && (
+        <div className="mb-4 p-3 bg-red-900/50 border border-red-500 rounded-lg text-red-200">
+          <p className="flex items-center">
+            <Info size={16} className="mr-2" />
+            {error}
+          </p>
+        </div>
+      )}
+
+      {/* 图片列表 */}
+      <div className="space-y-8">
+        {loading ? (
+          <div className="flex items-center justify-center h-40">
+            <Loader2 className="animate-spin text-green-400" size={32} />
+          </div>
+        ) : photos.length === 0 ? (
+          <div className="text-center py-12 text-gray-400">
+            <Image size={48} className="mx-auto mb-4 opacity-50" />
+            <p>No photos in this category yet</p>
+            {category !== "Albums" && (
+              <p className="text-sm mt-2">Click the upload area above to add new photos</p>
+            )}
+          </div>
+        ) : (
+          <>
+            {/* 可见照片区域 */}
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-medium text-gray-300">
+                  {category === "Albums" ? "Album Display Photos" : "Visible Photos"}
+                </h3>
+                <span className="text-sm text-gray-500">
+                  {category === "Albums"
+                    ? photos.filter(p => p.show_in_albums).length
+                    : photos.filter(p => p.is_visible).length} photos
+                </span>
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {category === "Albums"
+                  ? photos.filter(photo => photo.show_in_albums).map((photo) => (
+                      <PhotoCard
+                        key={photo.id}
+                        photo={photo}
+                        onDelete={handleDelete}
+                        onToggleVisibility={handleToggleVisibility}
+                        onOrderChange={handleOrderChange}
+                        onUpdateMetadata={handleUpdateMetadata}
+                        isAlbumsView={true}
+                      />
+                    ))
+                  : photos.filter(photo => photo.is_visible).map((photo) => (
+                      <PhotoCard
+                        key={photo.id}
+                        photo={photo}
+                        onDelete={handleDelete}
+                        onToggleVisibility={handleToggleVisibility}
+                        onOrderChange={handleOrderChange}
+                        onUpdateMetadata={handleUpdateMetadata}
+                        isAlbumsView={false}
+                      />
+                    ))}
+              </div>
+            </div>
+
+            {/* 隐藏照片区域 */}
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-medium text-gray-300">
+                  {category === "Albums" ? "Hidden Photos" : "Hidden Photos"}
+                </h3>
+                <span className="text-sm text-gray-500">
+                  {category === "Albums"
+                    ? photos.filter(p => !p.show_in_albums).length
+                    : photos.filter(p => !p.is_visible).length} photos
+                </span>
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {category === "Albums"
+                  ? photos.filter(photo => !photo.show_in_albums).map((photo) => (
+                      <PhotoCard
+                        key={photo.id}
+                        photo={photo}
+                        onDelete={handleDelete}
+                        onToggleVisibility={handleToggleVisibility}
+                        onOrderChange={handleOrderChange}
+                        onUpdateMetadata={handleUpdateMetadata}
+                        isAlbumsView={true}
+                      />
+                    ))
+                  : photos.filter(photo => !photo.is_visible).map((photo) => (
+                      <PhotoCard
+                        key={photo.id}
+                        photo={photo}
+                        onDelete={handleDelete}
+                        onToggleVisibility={handleToggleVisibility}
+                        onOrderChange={handleOrderChange}
+                        onUpdateMetadata={handleUpdateMetadata}
+                        isAlbumsView={false}
+                      />
+                    ))}
+              </div>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
 };
 
-// 确保有默认导出，使其成为一个有效的模块
+// 图片卡片组件
+const PhotoCard: React.FC<PhotoCardProps> = ({
+  photo,
+  onDelete,
+  onToggleVisibility,
+  onOrderChange,
+  onUpdateMetadata,
+  isAlbumsView = false
+}) => {
+  const [showControls, setShowControls] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editCaption, setEditCaption] = useState(photo.caption || '');
+  const [editDate, setEditDate] = useState(photo.date || '');
+
+  const handleSave = () => {
+    onUpdateMetadata(photo, editCaption || null, editDate || null);
+    setIsEditing(false);
+  };
+
+  const handleCancel = () => {
+    setEditCaption(photo.caption || '');
+    setEditDate(photo.date || '');
+    setIsEditing(false);
+  };
+
+  return (
+    <motion.div
+      className={`relative group border rounded-lg overflow-hidden ${
+        isAlbumsView
+          ? photo.show_in_albums ? "border-green-500" : "border-gray-700"
+          : photo.is_visible ? "border-gray-700" : "border-red-700 opacity-50"
+      }`}
+      layout
+      onMouseEnter={() => setShowControls(true)}
+      onMouseLeave={() => {
+        setShowControls(false);
+        if (!isEditing) {
+          handleCancel();
+        }
+      }}
+    >
+      <img
+        src={photo.src}
+        alt={photo.alt || "photo"}
+        className="w-full h-40 object-cover"
+      />
+      <AnimatePresence>
+        {showControls && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 bg-black bg-opacity-50 flex flex-col justify-between p-2"
+          >
+            {/* 顶部控制 */}
+            <div className="flex justify-end gap-2">
+              {!isEditing && (
+                <>
+                  <button
+                    onClick={() => setIsEditing(true)}
+                    className="bg-black bg-opacity-60 rounded-full p-2 text-white hover:bg-opacity-80 transition-colors"
+                    title="Edit information"
+                  >
+                    <Edit2 size={16} />
+                  </button>
+                  <button
+                    onClick={() => onToggleVisibility(photo)}
+                    className="bg-black bg-opacity-60 rounded-full p-2 text-white hover:bg-opacity-80 transition-colors"
+                    title={
+                      isAlbumsView
+                        ? photo.show_in_albums
+                          ? "Remove from album"
+                          : "Add to album"
+                        : photo.is_visible
+                        ? "Hide in category"
+                        : "Show in category"
+                    }
+                  >
+                    {isAlbumsView ? (
+                      photo.show_in_albums ? <EyeOff size={16} /> : <Eye size={16} />
+                    ) : (
+                      photo.is_visible ? <EyeOff size={16} /> : <Eye size={16} />
+                    )}
+                  </button>
+                  {!isAlbumsView && (
+                    <button
+                      onClick={() => onDelete(photo)}
+                      className="bg-black bg-opacity-60 rounded-full p-2 text-white hover:bg-opacity-80 transition-colors"
+                      title="Delete photo"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  )}
+                </>
+              )}
+            </div>
+
+            {/* 底部信息和控制 */}
+            <div className="space-y-2">
+              {/* 排序控制 */}
+              {!isEditing && (
+                <div className="flex justify-center gap-2">
+                  <button
+                    onClick={() => onOrderChange(photo, isAlbumsView ? photo.albums_order - 1 : photo.display_order - 1)}
+                    className="bg-black bg-opacity-60 rounded px-3 py-1 text-white text-sm hover:bg-opacity-80 transition-colors disabled:opacity-50"
+                    disabled={isAlbumsView ? photo.albums_order <= 0 : photo.display_order <= 0}
+                  >
+                    Move Up
+                  </button>
+                  <button
+                    onClick={() => onOrderChange(photo, isAlbumsView ? photo.albums_order + 1 : photo.display_order + 1)}
+                    className="bg-black bg-opacity-60 rounded px-3 py-1 text-white text-sm hover:bg-opacity-80 transition-colors"
+                  >
+                    Move Down
+                  </button>
+                </div>
+              )}
+
+              {/* 图片信息 */}
+              {isEditing ? (
+                <div className="bg-black bg-opacity-80 rounded p-2 space-y-2">
+                  <div>
+                    <input
+                      type="text"
+                      value={editCaption}
+                      onChange={(e) => setEditCaption(e.target.value)}
+                      placeholder="Image Caption"
+                      className="w-full bg-gray-800 border border-gray-600 rounded px-2 py-1 text-sm text-white"
+                    />
+                  </div>
+                  <div>
+                    <input
+                      type="text"
+                      value={editDate}
+                      onChange={(e) => setEditDate(e.target.value)}
+                      placeholder="Photo Date (YYYY.MM.DD)"
+                      className="w-full bg-gray-800 border border-gray-600 rounded px-2 py-1 text-sm text-white"
+                    />
+                  </div>
+                  <div className="flex justify-end gap-2">
+                    <button
+                      onClick={handleCancel}
+                      className="bg-gray-700 rounded px-2 py-1 text-white text-sm hover:bg-gray-600 transition-colors"
+                    >
+                      <X size={14} />
+                    </button>
+                    <button
+                      onClick={handleSave}
+                      className="bg-green-600 rounded px-2 py-1 text-white text-sm hover:bg-green-500 transition-colors"
+                    >
+                      <Check size={14} />
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                (photo.caption || photo.date) && (
+                  <div className="bg-black bg-opacity-60 rounded p-2 text-xs">
+                    {photo.caption && (
+                      <div className="text-white truncate">{photo.caption}</div>
+                    )}
+                    {photo.date && (
+                      <div className="text-gray-300 text-xs">{photo.date}</div>
+                    )}
+                  </div>
+                )
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
+  );
+};
+
 export default PhotoManager;

@@ -518,3 +518,21 @@ model HomepageTeaching {
   @@index([display_order])
   @@map("homepage_teaching") // 指定数据库表名
 }
+
+model GalleryPhoto {
+  id           Int      @id @default(autoincrement())
+  filename     String   // The filename including path relative to /public/images/gallery
+  category     String   // One of: Meetings, Graduation, Team Building, Sports, Lab Life, Competition
+  caption      String?  // Optional caption for the photo
+  date         String?  // Optional date for the photo
+  is_visible   Boolean  @default(true) // Whether the photo should be displayed in its category
+  show_in_albums Boolean @default(false) // Whether the photo should be displayed in the Albums view
+  display_order Int     @default(0) // Order within its category
+  albums_order Int     @default(0) // Order in the Albums view
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+
+  @@unique([filename])
+  @@index([category, is_visible])
+  @@index([show_in_albums])
+}

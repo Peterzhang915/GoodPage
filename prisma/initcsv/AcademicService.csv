@@ -1,0 +1,31 @@
+id,member_id,organization,role,start_year,end_year,description,display_order,isFeatured
+"573","ZichenXu","APPT","Artifact Chair","2025","","Artifact Chair, APPT 2025","0",true
+"574","ZichenXu","SiftDB","Local Chair","2025","","Local Chair, SiftDB 2025","1",true
+"575","ZichenXu","SenSys","PC","2024","","PC, SenSys 2024","2",true
+"576","ZichenXu","CCFSys","Publicity Chair","2024","","Publicity Chair, CCFSys 2024","3",true
+"577","ZichenXu","CCF Computility","Organization Committee","2024","","Organization Committee, CCF Computility 2024","4",true
+"578","ZichenXu","CCF Chips","Organization Committee","2024","","Organization Committee, CCF Chips 2024","5",true
+"579","ZichenXu","GreenCom","Program Chair","2022","","Program Chair, GreenCom 2022","6",true
+"580","ZichenXu","SI in IEEE Transactions on Sustainable Computing","Guest Associate Editor","","","Guest Associate Editor, SI in IEEE Transactions on Sustainable Computing","7",false
+"581","ZichenXu","CCFsys","Local Chair/PC","2022","","Local Chair/PC, CCFsys 2022","8",true
+"582","ZichenXu","CCFChips","PC,  CCFsys 2020","2021","","PC, CCFsys 2020, CCFChips, 2021","9",false
+"583","ZichenXu","评审专家","教育部学位中心","2020","2025","教育部学位中心，评审专家，2020-2025","10",true
+"584","ZichenXu","SoCC","PC","2022","","PC, SoCC, 2022","11",true
+"585","ZichenXu","SSDBM","PC","2022","","PC, SSDBM, 2022","12",true
+"586","ZichenXu","2021","PC,  NDBC","2022","","PC, NDBC, 2021, 2022","13",true
+"587","ZichenXu","2021","PC,  ICPADS","2022","","PC, ICPADS, 2021, 2022","14",true
+"588","ZichenXu","IEEE BigData","Track Chair","2021","","Track Chair, IEEE BigData, 2021","15",false
+"589","ZichenXu","SSDBM","Publicity Chair","2021","","Publicity Chair, SSDBM, 2021","16",false
+"590","ZichenXu","HPCChina","PC","2021","","PC, HPCChina, 2021","17",false
+"591","ZichenXu","ACM SIGCSE 2020","PC","2021","","PC, ACM SIGCSE 2020, 2021","18",false
+"592","ZichenXu","2020","Publicity Chair,  ICAC (Now ACSOS) 2019","2021","","Publicity Chair, ICAC (Now ACSOS) 2019, 2020, 2021","19",false
+"593","ZichenXu","2020","PC,  ICAC (Now ACSOS) 2015,  2017,  2019","2021","","PC, ICAC (Now ACSOS) 2015, 2017, 2019, 2020, 2021","20",false
+"594","ZichenXu","colocated with CTC China","Chair,  Workshop on Cloud-edge Computing Enabling Novel Computing Architecture","2020","","Chair, Workshop on Cloud-edge Computing Enabling Novel Computing Architecture, colocated with CTC China 2020","21",false
+"595","ZichenXu","ACA","Workshop Chair","2020","","Workshop Chair, ACA 2020","22",false
+"596","ZichenXu","ACM TUR-C","PC","2020","","PC, ACM TUR-C 2020","23",false
+"597","ZichenXu","HPBD&IS","PC","2020","","PC, HPBD&IS 2020","24",false
+"598","ZichenXu","NAS","PC","2019","","PC, NAS 2019","25",false
+"599","ZichenXu","IWQoS","Publicity Chair","2016","","Publicity Chair, IWQoS 2016","26",false
+"600","ZichenXu","INFOCOM","Session Chair","2016","","Session Chair, INFOCOM 2016","27",false
+"601","ZichenXu","ICDCS","Session Chair","2015","","Session Chair, ICDCS 2015","28",false
+"602","ZichenXu","ICDCS 2013","PC","2020","","PC, ICDCS 2013, 2020","29",false
