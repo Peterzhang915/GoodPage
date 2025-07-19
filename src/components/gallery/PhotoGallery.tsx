@@ -1,3 +1,25 @@
+/**
+ * 实验室相册展示组件
+ * 
+ * 功能特点：
+ * 1. 支持两种展示模式：
+ *    - 高亮滚动流（highlight）：自动滚动的图片流，支持鼠标交互控制
+ *    - 瀑布流布局（waterfall）：按分类展示的瀑布流布局
+ * 2. 支持图片分类和筛选
+ * 3. 支持图片点击放大查看
+ * 4. 支持无限滚动和平滑动画效果
+ * 
+ * 交互设计：
+ * 1. 高亮流模式：
+ *    - 自动向左滚动
+ *    - 鼠标悬停在边缘区域可控制滚动方向和速度
+ *    - 点击图片可放大查看
+ * 2. 瀑布流模式：
+ *    - 按分类展示图片
+ *    - 支持分类切换
+ *    - 自适应布局
+ */
+
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import {
   motion,
@@ -13,29 +35,33 @@ import { themeColors } from "@/styles/theme";
 import type { GalleryImage } from "@/lib/types";
 import { Loader2 } from "lucide-react";
 
-// 视图类型定义
+// 视图类型定义：highlight（高亮滚动流）或 waterfall（瀑布流）
 type GalleryView = "highlight" | "waterfall";
 
-// 新增：支持外部传入 images 和 loading
+/**
+ * 组件属性定义
+ * @property images - 要展示的图片数组，可选，如不提供则从 API 获取
+ * @property loading - 加载状态标志，用于显示加载动画
+ */
 interface PhotoGalleryProps {
   images?: GalleryImage[];
   loading?: boolean;
 }
 
-// 示例图片数据 (扩展)
-const images: GalleryImage[] = []; // 移除硬编码的图片数据
-
-// 从图片数据中提取唯一的类别
+// 支持的图片分类列表
 const CATEGORIES = [
-  "Meetings",
-  "Graduation",
-  "Team Building",
-  "Sports",
-  "Lab Life",
-  "Competition"
+  "Meetings",      // 会议照片
+  "Graduation",    // 毕业照片
+  "Team Building", // 团建活动
+  "Sports",        // 运动照片
+  "Lab Life",      // 实验室生活
+  "Competition"    // 比赛照片
 ];
 
-// 类别与其对应的 Emoji 图标的映射关系
+/**
+ * 分类对应的 Emoji 图标映射
+ * 用于在界面上直观展示不同分类
+ */
 const categoryEmojis: { [key: string]: string } = {
   Meetings: "🤝",
   Graduation: "🎓",
@@ -46,52 +72,58 @@ const categoryEmojis: { [key: string]: string } = {
   Default: "🖼️"
 };
 
-// --- Framer Motion 动画变体定义 ---
+/**
+ * Framer Motion 动画配置
+ */
 
-// 高亮滚动视图的进入/退出动画效果
+// 高亮滚动视图的动画效果
 const highlightStreamVariants = {
-  hidden: { opacity: 0, y: -20 }, // 初始状态：透明，向上偏移
-  visible: { opacity: 1, y: 0 }, // 可见状态：不透明，回到原位
-  exit: { opacity: 0, y: 20, transition: { duration: 0.3 } }, // 退出状态：透明，向下偏移
+  hidden: { opacity: 0, y: -20 },    // 初始隐藏状态
+  visible: { opacity: 1, y: 0 },     // 显示状态
+  exit: { opacity: 0, y: 20, transition: { duration: 0.3 } }, // 退出动画
 };
 
-// 类别选择器容器的进入/退出动画效果
+// 分类选择器的动画效果
 const categorySelectorVariants = {
   hidden: { opacity: 0 },
-  visible: { opacity: 1, transition: { delay: 0.2 } }, // 进入时延迟 0.2 秒显示
+  visible: { opacity: 1, transition: { delay: 0.2 } },
   exit: { opacity: 0, transition: { duration: 0.3 } },
 };
 
-// 类别按钮的动画变体 (主要定义了初始状态，交互效果通过 whileHover/whileTap 实现)
+// 分类按钮的动画效果
 const categoryButtonVariants = {
   initial: { opacity: 1, scale: 1 },
-  // fadeOut: { opacity: 0, scale: 0.9, transition: { duration: 0.3 } }, // 暂未实现点击后其他按钮淡出的效果
-  // selected: { scale: 1.05, transition: { duration: 0.3 } } // 暂未实现选中按钮高亮的效果
 };
 
-// 瀑布流视图的进入/退出动画效果
+// 瀑布流视图的动画效果
 const waterfallViewVariants = {
-  hidden: { opacity: 0 }, // 初始状态：透明
-  visible: { opacity: 1, transition: { duration: 0.5 } }, // 可见状态：不透明 (可添加 stagger 实现子元素交错出现)
-  exit: { opacity: 0, transition: { duration: 0.3 } }, // 退出状态：透明
+  hidden: { opacity: 0 },
+  visible: { opacity: 1, transition: { duration: 0.5 } },
+  exit: { opacity: 0, transition: { duration: 0.3 } },
 };
 
-// 照片墙主组件
+/**
+ * 相册展示主组件
+ * @param props PhotoGalleryProps
+ */
 const PhotoGallery: React.FC<PhotoGalleryProps> = ({ images: albumImages = [], loading: albumLoading }) => {
-  // --- 组件状态管理 ---
-  const [currentView, setCurrentView] = useState<GalleryView>("highlight"); // 当前显示的视图 ('highlight' 或 'waterfall')
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null); // 用户选择的图片类别
-  const [selectedImage, setSelectedImage] = useState<GalleryImage | null>(null); // 用户点击放大的图片 (用于 Modal)
-  const [originRect, setOriginRect] = useState<DOMRect | null>(null); // 新增: 存储点击按钮的矩形信息
+  // === 状态管理 ===
   
-  // 新增：分类图片的状态管理
+  // 视图控制状态
+  const [currentView, setCurrentView] = useState<GalleryView>("highlight");
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [selectedImage, setSelectedImage] = useState<GalleryImage | null>(null);
+  const [originRect, setOriginRect] = useState<DOMRect | null>(null);
+  
+  // 图片数据状态
   const [categoryImages, setCategoryImages] = useState<GalleryImage[]>([]);
   const [categoryLoading, setCategoryLoading] = useState(false);
 
-  // 加载图片数据
+  // === 数据加载逻辑 ===
+
+  // 加载初始图片数据
   useEffect(() => {
     async function fetchImages() {
-      // 只有在没有外部图片时才加载
       if (!albumImages) {
         setCategoryLoading(true);
         try {
@@ -107,9 +139,9 @@ const PhotoGallery: React.FC<PhotoGalleryProps> = ({ images: albumImages = [], l
       }
     }
     fetchImages();
-  }, [albumImages]); // 依赖 albumImages 变化时重新加载
+  }, [albumImages]);
 
-  // 加载分类图片
+  // 加载分类图片数据
   useEffect(() => {
     async function fetchCategoryImages() {
       if (currentView === "waterfall" && selectedCategory) {
@@ -129,29 +161,30 @@ const PhotoGallery: React.FC<PhotoGalleryProps> = ({ images: albumImages = [], l
     fetchCategoryImages();
   }, [currentView, selectedCategory]);
 
-  // --- Refs 用于高亮滚动流的交互 ---
-  const containerRef = useRef<HTMLDivElement>(null); // 指向高亮流滚动容器的引用
-  const isHoveringRef = useRef(false); // 标记鼠标是否悬停在高亮流容器上
-  const isPausedRef = useRef(false); // 标记高亮流是否因用户交互（点击图片、切换视图）而暂停
-  const mouseXRelative = useRef<number | null>(null); // 存储鼠标在高亮流容器内的相对 X 坐标 (0 到 1)
+  // === 高亮滚动流控制 ===
 
-  // 新增: Refs for category buttons
-  const categoryButtonRefs = useRef<{
-    [key: string]: HTMLButtonElement | null;
-  }>({});
+  // 引用和标记
+  const containerRef = useRef<HTMLDivElement>(null);     // 滚动容器引用
+  const isHoveringRef = useRef(false);                  // 鼠标悬停标记
+  const isPausedRef = useRef(false);                    // 动画暂停标记
+  const mouseXRelative = useRef<number | null>(null);   // 鼠标相对位置
+  const categoryButtonRefs = useRef<{[key: string]: HTMLButtonElement | null}>({});
 
-  // --- 高亮滚动流物理动画参数 ---
-  const normalVelocity = 60; // 默认向左滚动速度 (像素/秒)
-  const maxVelocity = 600; // 鼠标在边缘悬停时的最大滚动速度
-  const acceleration = 500; // 加速度 (像素/秒²)
-  const deceleration = -500; // 减速度 (像素/秒²)
-  const edgeThreshold = 0.2; // 定义容器左右边缘区域的宽度比例 (0.2 表示 20%)
+  // 动画参数配置
+  const normalVelocity = 60;    // 正常滚动速度（像素/秒）
+  const maxVelocity = 600;      // 最大滚动速度
+  const acceleration = 500;     // 加速度
+  const deceleration = -500;    // 减速度
+  const edgeThreshold = 0.2;    // 边缘触发区域（20%）
 
-  // --- 高亮滚动流尺寸与内容计算 ---
-  const itemWidth = 256; // 单个图片的显示宽度
-  const itemHeight = 192; // 单个图片的显示高度
-  const gap = 16; // 图片之间的水平间距
-  // 确定实际渲染的图片列表 (至少10张，不足则重复)，用于计算内容宽度
+  // 布局参数
+  const itemWidth = 256;        // 图片宽度
+  const itemHeight = 192;       // 图片高度
+  const gap = 16;              // 图片间距
+
+  // === 内容计算 ===
+
+  // 计算渲染列表（确保至少10张图片）
   const itemsToRender = useMemo(
     () =>
       albumImages.length >= 10
@@ -159,83 +192,84 @@ const PhotoGallery: React.FC<PhotoGalleryProps> = ({ images: albumImages = [], l
         : [...albumImages, ...albumImages, ...albumImages].slice(0, 10),
     [albumImages],
   );
-  // 将渲染列表加倍，用于实现无缝循环效果
+
+  // 双倍列表用于无缝循环
   const doubledItems = useMemo(
     () => [...itemsToRender, ...itemsToRender],
     [itemsToRender],
   );
-  // 计算单倍内容的总宽度
+
+  // 计算内容总宽度
   const contentWidth = useMemo(
     () => itemsToRender.length * (itemWidth + gap),
     [itemsToRender, itemWidth, gap],
   );
 
-  // --- 高亮滚动流运动值 ---
-  const x = motionValue(0); // 使用 motion value 存储和驱动 X 坐标动画
-  const velocity = useRef(-normalVelocity); // 使用 ref 存储当前滚动速度
+  // === 动画控制 ===
 
-  // --- 高亮滚动流核心动画逻辑 (使用 useAnimationFrame) ---
+  const x = motionValue(0);                     // X 坐标动画值
+  const velocity = useRef(-normalVelocity);     // 当前速度
+
+  // 动画帧更新逻辑
   useAnimationFrame((time, delta) => {
-    // 仅当处于高亮视图且内容有效时才执行动画计算
+    // 仅在高亮视图且有内容时执行动画
     if (currentView !== "highlight" || contentWidth <= 0) {
-      velocity.current = 0; // 确保不在高亮视图时速度为 0
+      velocity.current = 0;
       return;
     }
 
-    const dt = delta / 1000; // 将时间差转换为秒
-    let targetVelocity = -normalVelocity; // 默认目标速度：向左滚动
+    const dt = delta / 1000;  // 转换为秒
+    let targetVelocity = -normalVelocity;  // 默认向左滚动
 
-    // 根据当前状态判断目标速度
+    // 根据状态确定目标速度
     if (isPausedRef.current) {
-      // 状态 1: 如果被暂停 (用户点击图片或切换视图)
+      // 暂停状态
       targetVelocity = 0;
     } else if (isHoveringRef.current && mouseXRelative.current !== null) {
-      // 状态 2: 如果鼠标悬停在容器内且未暂停
+      // 鼠标悬停状态
       const relativeX = mouseXRelative.current;
       if (relativeX < edgeThreshold) {
-        // 子状态 2.1: 鼠标在左边缘区域 -> 加速向左
+        // 左边缘：向左加速
         targetVelocity = -maxVelocity;
       } else if (relativeX > 1 - edgeThreshold) {
-        // 子状态 2.2: 鼠标在右边缘区域 -> 加速向右
+        // 右边缘：向右加速
         targetVelocity = maxVelocity;
       } else {
-        // 子状态 2.3: 鼠标在中间区域 -> 减速至停止
+        // 中间区域：停止
         targetVelocity = 0;
       }
     }
-    // 状态 3: (默认) 未暂停且鼠标未悬停 -> 目标速度保持为默认向左滚动
 
-    // --- 平滑速度过渡与位置更新 ---
-    // 计算当前速度与目标速度的差值
+    // 速度平滑过渡
     const deltaVelocity = targetVelocity - velocity.current;
-    // 如果速度差显著，则应用加速度或减速度
     if (Math.abs(deltaVelocity) > 0.1) {
       const accel = deltaVelocity > 0 ? acceleration : deceleration;
       velocity.current += accel * dt;
-      // 防止速度超过目标值 (过冲)
+      // 限制速度不超过目标值
       if (deltaVelocity > 0) {
         velocity.current = Math.min(velocity.current, targetVelocity);
       } else {
         velocity.current = Math.max(velocity.current, targetVelocity);
       }
     } else if (Math.abs(targetVelocity - velocity.current) <= 0.1) {
-      // 如果速度已非常接近目标值，直接设置为目标值
       velocity.current = targetVelocity;
     }
-    // 根据当前速度更新 X 坐标
+
+    // 更新位置
     let currentX = x.get();
     let moveBy = velocity.current * dt;
     let newX = currentX + moveBy;
 
-    // --- 处理无限循环边界 ---
-    // 向左滚动超出边界时，重置到右侧相应位置
+    // 处理循环边界
     if (velocity.current < 0 && newX <= -contentWidth) {
+      // 向左超出：重置到右侧
       newX += contentWidth;
-      // 向右滚动超出边界时，重置到左侧相应位置
     } else if (velocity.current > 0 && newX >= 0) {
+      // 向右超出：重置到左侧
       newX -= contentWidth;
     }
-    // 更新 motion value 以驱动动画
+
+    // 应用新位置
     x.set(newX);
   });
 

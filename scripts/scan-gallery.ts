@@ -1,21 +1,44 @@
-const { PrismaClient } = require('@prisma/client');
-const { readdir } = require('fs/promises');
-const path = require('path');
-const fs = require('fs/promises');
+/**
+ * 图片扫描和导入脚本
+ * 
+ * 功能：
+ * 1. 扫描指定目录下的图片文件
+ * 2. 根据目录结构自动识别分类
+ * 3. 将图片信息导入数据库
+ * 4. 导出数据到 CSV 用于备份和迁移
+ * 
+ * 使用方法：
+ * pnpm run db:scan-gallery
+ */
+
+import { PrismaClient } from '@prisma/client';
+import { readdir } from 'fs/promises';
+import path from 'path';
+import fs from 'fs/promises';
 
 const prisma = new PrismaClient();
 
-// 支持的分类
+/**
+ * 支持的图片分类
+ * 注意：添加新分类时需要同时修改：
+ * 1. 这个常量定义
+ * 2. getCategoryFromPath 函数的匹配规则
+ * 3. 相关的类型定义
+ */
 const VALID_CATEGORIES = [
-  'Meetings',
-  'Graduation',
-  'Team Building',
-  'Sports',
-  'Lab Life',
-  'Competition'
+  'Meetings',    // 会议照片
+  'Graduation',  // 毕业照片
+  'Team Building', // 团建活动
+  'Sports',      // 运动照片
+  'Lab Life',    // 实验室生活
+  'Competition'  // 比赛照片
 ] as const;
 
-// 获取分类
+/**
+ * 根据文件路径识别图片分类
+ * @param filepath 图片文件的相对路径
+ * @returns 识别出的分类名称
+ */
 function getCategoryFromPath(filepath: string): string {
   if (filepath.includes('Events/groupbuild')) return 'Team Building';
   if (filepath.includes('Events/lab_life') || filepath.includes('Events/lablife')) return 'Lab Life';
@@ -26,9 +49,14 @@ function getCategoryFromPath(filepath: string): string {
   return 'Other';
 }
 
-// 递归扫描目录
+/**
+ * 递归扫描目录，查找所有图片文件
+ * @param dir 要扫描的目录路径
+ * @param baseDir 基准目录，用于计算相对路径
+ * @returns 图片文件的相对路径数组
+ */
 async function scanDirectory(dir: string, baseDir: string): Promise<string[]> {
-  const entries = await readdir(dir, { withFileTypes: true });
+  const entries = await fs.readdir(dir, { withFileTypes: true });
   const files: string[] = [];
 
   for (const entry of entries) {
@@ -46,9 +74,15 @@ async function scanDirectory(dir: string, baseDir: string): Promise<string[]> {
   return files;
 }
 
-// 导出数据到 CSV
+/**
+ * 将图片数据导出到 CSV 文件
+ * @param photos 要导出的图片数据数组
+ */
 async function exportToCSV(photos: any[]) {
+  // CSV 文件头
   const csvHeader = 'filename,category,caption,date,is_visible,show_in_albums,display_order,albums_order\n';
+  
+  // 转换数据为 CSV 行
   const csvRows = photos.map(photo => {
     return [
       photo.filename,
@@ -69,12 +103,12 @@ async function exportToCSV(photos: any[]) {
   const outputDir = path.join(process.cwd(), 'prisma', 'initcsv');
   const outputFile = path.join(outputDir, 'GalleryPhoto.csv');
 
-  // 确保目录存在
+  // 确保输出目录存在
   await fs.mkdir(outputDir, { recursive: true });
 
   // 写入文件
   await fs.writeFile(outputFile, csvContent, 'utf-8');
-  console.log(`\nGallery data exported to ${outputFile}`);
+  console.log(`\nGallery 数据已导出到 ${outputFile}`);
 }
 
 async function main() {
@@ -82,18 +116,18 @@ async function main() {
     // 1. 检查数据库连接
     try {
       await prisma.$queryRaw`SELECT 1`;
-      console.log('Database connection successful');
+      console.log('数据库连接成功');
     } catch (error) {
-      console.error('Database connection failed:', error);
+      console.error('数据库连接失败:', error);
       process.exit(1);
     }
 
     // 2. 扫描图片文件
     const galleryDir = path.join(process.cwd(), 'public', 'images', 'gallery');
-    console.log('\nScanning directory:', galleryDir);
+    console.log('\n扫描目录:', galleryDir);
 
     const files = await scanDirectory(galleryDir, galleryDir);
-    console.log(`Found ${files.length} images`);
+    console.log(`找到 ${files.length} 张图片`);
 
     // 3. 获取现有记录
     let existingFiles = new Set<string>();
@@ -116,20 +150,20 @@ async function main() {
     for (const file of files) {
       const category = getCategoryFromPath(file);
       if (!VALID_CATEGORIES.includes(category as any)) {
-        console.log(`Skipping file with invalid category: ${file}`);
+        console.log(`跳过无效分类的文件: ${file}`);
         skipCount++;
         continue;
       }
 
       try {
-        // 如果文件已存在于数据库中，跳过
+        // 如果文件已存在，跳过
         if (existingFiles.has(file)) {
-          console.log(`File already exists in database: ${file}`);
+          console.log(`文件已存在于数据库中: ${file}`);
           skipCount++;
           continue;
         }
 
-        // 获取当前分类中最大的 display_order
+        // 获取当前分类中最大的显示顺序
         let maxOrder = 0;
         try {
           const maxOrderRecord = await prisma.galleryPhoto.findFirst({
@@ -156,10 +190,10 @@ async function main() {
           }
         });
         allPhotos.push(newPhoto);
-        console.log(`Imported: ${file}`);
+        console.log(`导入成功: ${file}`);
         newCount++;
       } catch (error) {
-        console.error(`Error importing ${file}:`, error);
+        console.error(`导入 ${file} 时出错:`, error);
         errorCount++;
       }
     }
@@ -168,11 +202,11 @@ async function main() {
     await exportToCSV(allPhotos);
 
     // 6. 打印统计信息
-    console.log('\nImport Summary:');
-    console.log(`Total files found: ${files.length}`);
-    console.log(`New records created: ${newCount}`);
-    console.log(`Files skipped: ${skipCount}`);
-    console.log(`Errors encountered: ${errorCount}`);
+    console.log('\n导入统计:');
+    console.log(`发现文件总数: ${files.length}`);
+    console.log(`新增记录数: ${newCount}`);
+    console.log(`跳过文件数: ${skipCount}`);
+    console.log(`错误数: ${errorCount}`);
 
     // 7. 打印分类统计
     const categoryStats = allPhotos.reduce((acc, photo) => {
@@ -180,15 +214,15 @@ async function main() {
       return acc;
     }, {} as Record<string, number>);
 
-    console.log('\nPhotos by category:');
+    console.log('\n按分类统计:');
     Object.entries(categoryStats).forEach(([category, count]) => {
-      console.log(`${category}: ${count} photos`);
+      console.log(`${category}: ${count} 张`);
     });
 
-    console.log('\nImport and export completed successfully');
+    console.log('\n导入和导出完成');
 
   } catch (error) {
-    console.error('Process failed:', error);
+    console.error('处理失败:', error);
     process.exit(1);
   } finally {
     await prisma.$disconnect();

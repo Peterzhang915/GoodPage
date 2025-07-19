@@ -1,76 +1,121 @@
 "use client";
 
+/**
+ * 实验室相册管理面板组件
+ * 
+ * 功能：
+ * 1. 按分类管理图片
+ * 2. 上传新图片
+ * 3. 编辑图片信息（标题、日期）
+ * 4. 控制图片显示/隐藏
+ * 5. 调整图片顺序
+ * 6. 删除图片
+ * 
+ * 特点：
+ * 1. 支持拖拽上传
+ * 2. 实时预览
+ * 3. 批量操作
+ * 4. 错误处理和状态反馈
+ */
+
 import React, { useState, useEffect, useRef } from "react";
 import { Image, Trash2, Loader2, Plus, Eye, EyeOff, Upload, Calendar, Type, Info, Edit2, Check, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
-// 确保photos为GalleryImage[]类型
+/**
+ * 图片数据类型定义
+ * 对应后端 GalleryPhoto 模型
+ */
 interface GalleryImage {
-  id: string;
-  src: string;
-  alt: string;
-  category: string;
-  caption: string | null;
-  date: string | null;
-  is_visible: boolean;
-  show_in_albums: boolean;
-  display_order: number;
-  albums_order: number;
+  id: string;           // 图片ID
+  src: string;          // 图片URL
+  alt: string;          // 替代文本
+  category: string;     // 分类
+  caption: string | null;    // 标题
+  date: string | null;       // 日期
+  is_visible: boolean;       // 分类中是否可见
+  show_in_albums: boolean;   // 是否在首页相册显示
+  display_order: number;     // 分类中的显示顺序
+  albums_order: number;      // 首页相册中的显示顺序
 }
 
-// 定义 PhotoManager 组件预期的 props，主要是 onClose
+/**
+ * 组件属性定义
+ */
 interface PhotoManagerProps {
-  onClose: () => void;
+  onClose: () => void;  // 关闭管理面板的回调
 }
 
-// 图片卡片组件的 props
+/**
+ * 图片卡片组件属性定义
+ */
 interface PhotoCardProps {
-  photo: GalleryImage;
-  onDelete: (photo: GalleryImage) => void;
-  onToggleVisibility: (photo: GalleryImage) => void;
-  onOrderChange: (photo: GalleryImage, newOrder: number) => void;
-  onUpdateMetadata: (photo: GalleryImage, caption: string | null, date: string | null) => void;
-  isAlbumsView?: boolean;
+  photo: GalleryImage;  // 图片数据
+  onDelete: (photo: GalleryImage) => void;  // 删除回调
+  onToggleVisibility: (photo: GalleryImage) => void;  // 切换可见性回调
+  onOrderChange: (photo: GalleryImage, newOrder: number) => void;  // 更改顺序回调
+  onUpdateMetadata: (photo: GalleryImage, caption: string | null, date: string | null) => void;  // 更新元数据回调
+  isAlbumsView?: boolean;  // 是否为相册视图
 }
 
-// 支持的分类（与前端页面完全一致）
+/**
+ * 支持的图片分类列表
+ * 注意：与前端展示页面保持一致
+ */
 const VALID_CATEGORIES = [
-  "Albums",
-  "Meetings",
-  "Graduation",
-  "Team Building",
-  "Sports",
-  "Lab Life",
-  "Competition"
+  "Albums",        // 首页相册
+  "Meetings",      // 会议照片
+  "Graduation",    // 毕业照片
+  "Team Building", // 团建活动
+  "Sports",        // 运动照片
+  "Lab Life",      // 实验室生活
+  "Competition"    // 比赛照片
 ] as const;
 
+// 分类类型定义
 type Category = (typeof VALID_CATEGORIES)[number];
 
+/**
+ * 判断是否为相册视图
+ * @param cat 分类名称
+ * @returns 是否为相册视图
+ */
 const isAlbumsView = (cat: Category) => cat === "Albums";
 
+/**
+ * 相册管理面板主组件
+ */
 const PhotoManager: React.FC<PhotoManagerProps> = ({ onClose }) => {
-  // 分类选择
-  const [category, setCategory] = useState<Category>("Albums");
-  // 图片列表
-  const [photos, setPhotos] = useState<GalleryImage[]>([]);
-  // 上传状态
-  const [uploading, setUploading] = useState(false);
-  const [file, setFile] = useState<File | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
-  // 表单状态
-  const [caption, setCaption] = useState("");
-  const [date, setDate] = useState("");
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const [isDragging, setIsDragging] = useState(false);
+  // === 状态管理 ===
 
-  // 加载图片列表（包括不可见的图片）
+  // 视图控制
+  const [category, setCategory] = useState<Category>("Albums");  // 当前选中的分类
+  const [photos, setPhotos] = useState<GalleryImage[]>([]);     // 图片列表
+  const [loading, setLoading] = useState(false);                 // 加载状态
+  const [error, setError] = useState<string | null>(null);       // 错误信息
+
+  // 上传控制
+  const [uploading, setUploading] = useState(false);            // 上传状态
+  const [file, setFile] = useState<File | null>(null);          // 待上传文件
+  const [caption, setCaption] = useState("");                    // 图片标题
+  const [date, setDate] = useState("");                         // 拍摄日期
+  
+  // 拖拽上传
+  const fileInputRef = useRef<HTMLInputElement>(null);          // 文件输入引用
+  const [isDragging, setIsDragging] = useState(false);          // 拖拽状态
+
+  // === 数据加载 ===
+
+  /**
+   * 加载图片列表
+   * 包括不可见的图片，用于管理
+   */
   useEffect(() => {
     async function fetchPhotos() {
       setLoading(true);
       setError(null);
       try {
-        // Albums 视图管理页面用 include_hidden=true，其他分区同理
+        // 获取所有图片，包括隐藏的
         const res = await fetch(`/api/gallery/photos?category=${category}&include_hidden=true`);
         const data = await res.json();
         if (data.success) {
@@ -78,11 +123,13 @@ const PhotoManager: React.FC<PhotoManagerProps> = ({ onClose }) => {
           // 按可见性和顺序排序
           sortedPhotos.sort((a: GalleryImage, b: GalleryImage) => {
             if (category === "Albums") {
+              // 相册视图：先按是否显示，再按相册顺序
               if (a.show_in_albums !== b.show_in_albums) {
                 return a.show_in_albums ? -1 : 1;
               }
               return a.albums_order - b.albums_order;
             } else {
+              // 分类视图：先按是否可见，再按显示顺序
               if (a.is_visible !== b.is_visible) {
                 return a.is_visible ? -1 : 1;
               }
@@ -101,19 +148,28 @@ const PhotoManager: React.FC<PhotoManagerProps> = ({ onClose }) => {
     fetchPhotos();
   }, [category]);
 
-  // 上传图片
+  // === 图片操作处理 ===
+
+  /**
+   * 处理图片上传
+   * 1. 验证文件和分类
+   * 2. 上传文件和元数据
+   * 3. 刷新图片列表
+   */
   async function handleUpload() {
     if (!file || isAlbumsView(category)) return;
     setUploading(true);
     setError(null);
 
     try {
+      // 准备上传数据
       const formData = new FormData();
       formData.append("file", file);
       formData.append("category", category);
       if (caption) formData.append("caption", caption);
       if (date) formData.append("date", date);
 
+      // 上传文件
       const res = await fetch("/api/gallery/photos", { 
         method: "POST", 
         body: formData 
@@ -122,16 +178,17 @@ const PhotoManager: React.FC<PhotoManagerProps> = ({ onClose }) => {
       const data = await res.json();
 
       if (data.success) {
-        // 上传成功后重新获取图片列表
+        // 重新获取图片列表
         const res2 = await fetch(`/api/gallery/photos?category=${category}&include_hidden=true`);
         const data2 = await res2.json();
         
         if (data2.success) {
           let filteredPhotos = data2.data;
+          // 过滤当前分类的图片
           if (!isAlbumsView(category)) {
             filteredPhotos = data2.data.filter((img: GalleryImage) => img.category === category);
           }
-          // 按可见性和顺序排序
+          // 排序
           filteredPhotos.sort((a: GalleryImage, b: GalleryImage) => {
             if (a.is_visible !== b.is_visible) {
               return a.is_visible ? -1 : 1;
@@ -156,7 +213,12 @@ const PhotoManager: React.FC<PhotoManagerProps> = ({ onClose }) => {
     }
   }
 
-  // 删除图片
+  /**
+   * 处理图片删除
+   * 1. 确认删除
+   * 2. 调用删除 API
+   * 3. 更新本地状态
+   */
   async function handleDelete(photo: GalleryImage) {
     if (!window.confirm("Delete this photo?")) return;
     setError(null);
@@ -173,10 +235,14 @@ const PhotoManager: React.FC<PhotoManagerProps> = ({ onClose }) => {
     }
   }
 
-  // 切换图片可见性
+  /**
+   * 处理图片可见性切换
+   * 根据视图类型切换不同的可见性字段
+   */
   async function handleToggleVisibility(photo: GalleryImage) {
     try {
       const albumsView = isAlbumsView(category);
+      // 根据视图类型构建更新数据
       const patchData = albumsView
         ? { id: photo.id, show_in_albums: !photo.show_in_albums }
         : { id: photo.id, is_visible: !photo.is_visible };
@@ -187,6 +253,7 @@ const PhotoManager: React.FC<PhotoManagerProps> = ({ onClose }) => {
       });
       const data = await res.json();
       if (data.success) {
+        // 更新本地状态
         setPhotos(prev => {
           const updated = prev.map(p =>
             p.id === photo.id
@@ -208,10 +275,15 @@ const PhotoManager: React.FC<PhotoManagerProps> = ({ onClose }) => {
     }
   }
 
-  // 更新图片顺序
+  /**
+   * 处理图片顺序更改
+   * 1. 更新数据库
+   * 2. 重新获取并排序图片列表
+   */
   async function handleOrderChange(photo: GalleryImage, newOrder: number) {
     try {
       const isAlbumsView = category === "Albums";
+      // 更新顺序
       const res = await fetch(`/api/gallery/photos`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
@@ -222,15 +294,16 @@ const PhotoManager: React.FC<PhotoManagerProps> = ({ onClose }) => {
       });
       const data = await res.json();
       if (data.success) {
-        // 重新获取图片列表以确保顺序正确
+        // 重新获取图片列表
         const res2 = await fetch(`/api/gallery/photos?category=${category}&include_hidden=true`);
         const data2 = await res2.json();
         if (data2.success) {
           let filteredPhotos = data2.data;
+          // 过滤当前分类
           if (category !== "Albums") {
             filteredPhotos = data2.data.filter((img: GalleryImage) => img.category === category);
           }
-          // 按可见性和顺序排序
+          // 排序
           filteredPhotos.sort((a: GalleryImage, b: GalleryImage) => {
             if (isAlbumsView) {
               if (a.show_in_albums !== b.show_in_albums) {
@@ -254,7 +327,11 @@ const PhotoManager: React.FC<PhotoManagerProps> = ({ onClose }) => {
     }
   }
 
-  // 更新图片元数据
+  /**
+   * 处理图片元数据更新
+   * 1. 调用 API 更新
+   * 2. 更新本地状态
+   */
   async function handleUpdateMetadata(photo: GalleryImage, caption: string | null, date: string | null) {
     try {
       const res = await fetch(`/api/gallery/photos`, {
