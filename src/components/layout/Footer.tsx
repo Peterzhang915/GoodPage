@@ -73,15 +73,15 @@ const Footer: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    const fetchVisitCounts = async () => {
+    const incrementAndFetch = async () => {
       try {
-        // GET 请求获取两个计数值
+        // 先递增
+        await fetch("/api/visit", { method: "POST" });
+        // 再获取
         const response = await fetch("/api/visit");
-        if (!response.ok) {
-          throw new Error(`API request failed with status ${response.status}`);
-        }
+        if (!response.ok) throw new Error(`API request failed with status ${response.status}`);
         const data = await response.json();
-        setTotalVisits(data.total ?? 0); // 使用 ?? 0 提供默认值
+        setTotalVisits(data.total ?? 0);
         setDeveloperVisits(data.developer ?? 0);
       } catch (error) {
         console.error("Failed to fetch visit counts:", error);
@@ -89,7 +89,7 @@ const Footer: React.FC = () => {
         setDeveloperVisits(0);
       }
     };
-    fetchVisitCounts();
+    incrementAndFetch();
   }, []);
 
   // 根据 isDeveloperMode 渲染不同内容
