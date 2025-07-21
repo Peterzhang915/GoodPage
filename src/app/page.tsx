@@ -147,7 +147,7 @@ export default async function Home() {
             </p>
 
             {/* 分隔线 */}
-            <div className="border-t border-gray-200 dark:border-gray-700 my-6"></div>
+            <div className="border-t border-t-[1px] border-gray-300 my-6"></div>
 
             {/* 新闻内容的条件渲染区域 (保持不变) */}
             {newsError ? (

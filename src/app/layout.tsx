@@ -14,6 +14,7 @@ import { AnimatePresence } from "framer-motion";
 import { motion } from "framer-motion";
 import { useDeveloperMode } from "@/contexts/DeveloperModeContext";
 import { ThemeProvider, useTheme } from "next-themes";
+import { themeColors } from "@/styles/theme";
 
 // const inter = Inter({ subsets: ["latin"] });
 
@@ -149,6 +150,9 @@ export default function RootLayout({
       // isn't added as a dependency to avoid potential loops,
       // or use more complex logic to set only when transitioning *away*
       // from the developer path. For now, just forcing dark might be enough.
+      // Set light theme for non-developer paths
+      console.log("[Layout Theme] Setting theme to light for regular pages.");
+      setTheme('light');
     }
   }, [isDeveloperPath, setTheme]); // Depend on path and setter
 
@@ -176,7 +180,7 @@ export default function RootLayout({
         >
           <DeveloperModeProvider>
             <Navbar />
-            <main className={`flex-grow pt-0`}>{children}</main>
+            <main className={`flex-grow pt-0 ${themeColors.themePageBg}`}>{children}</main>
             {!isDeveloperPath && <Footer />}
           </DeveloperModeProvider>
         </ThemeProvider>

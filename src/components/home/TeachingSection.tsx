@@ -50,12 +50,10 @@ const TeachingSection: React.FC<TeachingSectionProps> = ({ items, error }) => {
           <span>Error loading teaching data: {error}</span>
         </div>
       ) : items && items.length > 0 ? (
-        <ul
-          className={`list-disc pl-5 sm:pl-6 space-y-3 text-sm md:text-base ${themeColors.textColorSecondary}`}
-        >
+        <ul className={`list-disc pl-5 sm:pl-6 space-y-3 text-sm md:text-base ${themeColors.textColorSecondary}`}>
           {items.map((item) => (
             <li key={item.id}>
-              <span className="font-medium text-gray-800 dark:text-gray-200">{item.course_title}</span>
+              <span className={`font-medium ${themeColors.textColorPrimary}`}>{item.course_title}</span>
               {item.details && <span className="ml-2 text-xs">({item.details})</span>}
             </li>
           ))}
