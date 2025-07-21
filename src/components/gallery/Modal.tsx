@@ -104,9 +104,7 @@ const Modal: React.FC<ModalProps> = ({
                 {title}
               </h2>
             )}
-            <div className="px-6 py-5 overflow-y-auto flex-grow">
-              {children}
-            </div>
+            {children}
           </motion.div>
         </motion.div>
       )}

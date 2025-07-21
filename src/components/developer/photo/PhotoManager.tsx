@@ -646,6 +646,15 @@ const PhotoCard: React.FC<PhotoCardProps> = ({
   const [isEditing, setIsEditing] = useState(false);
   const [editCaption, setEditCaption] = useState(photo.caption || '');
   const [editDate, setEditDate] = useState(photo.date || '');
+  const [isComposing, setIsComposing] = useState(false);
+
+  // 保证每次进入编辑时都同步 caption
+  React.useEffect(() => {
+    if (isEditing) {
+      setEditCaption(photo.caption || '');
+      setEditDate(photo.date || '');
+    }
+  }, [isEditing, photo.caption, photo.date]);
 
   const handleSave = () => {
     onUpdateMetadata(photo, editCaption || null, editDate || null);
@@ -666,13 +675,9 @@ const PhotoCard: React.FC<PhotoCardProps> = ({
           : photo.is_visible ? "border-gray-700" : "border-red-700 opacity-50"
       }`}
       layout
+      // 鼠标活动不再影响编辑状态
       onMouseEnter={() => setShowControls(true)}
-      onMouseLeave={() => {
-        setShowControls(false);
-        if (!isEditing) {
-          handleCancel();
-        }
-      }}
+      onMouseLeave={() => setShowControls(false)}
     >
       <img
         src={photo.src}
@@ -680,7 +685,7 @@ const PhotoCard: React.FC<PhotoCardProps> = ({
         className="w-full h-40 object-cover"
       />
       <AnimatePresence>
-        {showControls && (
+        {(showControls || isEditing) && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -756,9 +761,12 @@ const PhotoCard: React.FC<PhotoCardProps> = ({
                 <div className="bg-black bg-opacity-80 rounded p-2 space-y-2">
                   <div>
                     <input
+                      key={photo.id + (isEditing ? '-editing' : '-view')}
                       type="text"
                       value={editCaption}
-                      onChange={(e) => setEditCaption(e.target.value)}
+                      onChange={e => setEditCaption(e.target.value)}
+                      onCompositionStart={() => setIsComposing(true)}
+                      onCompositionEnd={() => setIsComposing(false)}
                       placeholder="Image Caption"
                       className="w-full bg-gray-800 border border-gray-600 rounded px-2 py-1 text-sm text-white"
                     />

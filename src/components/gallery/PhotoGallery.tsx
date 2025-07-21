@@ -531,26 +531,26 @@ const PhotoGallery: React.FC<PhotoGalleryProps> = ({ images: albumImages = [], l
         )}
       </AnimatePresence>
       {/* 渲染模态框组件 (独立于视图切换) */}
-      <Modal isOpen={selectedImage !== null} onClose={closeModal}>
+      <Modal isOpen={selectedImage !== null} onClose={closeModal} showCloseButton={false}>
         {selectedImage && (
-          <div className="modal-content">
-            <Image
+          <div className="relative flex flex-col items-center justify-center bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden">
+            {/* 顶部品牌字样 */}
+            <div className="absolute top-0 left-0 w-full flex items-center px-4 py-2 bg-white/90 border-b border-gray-100 rounded-t-2xl z-10">
+              <span className="font-bold text-base tracking-wide text-blue-700 select-none" style={{letterSpacing: '0.08em', fontFamily: 'serif'}}>LAB GALLERY</span>
+            </div>
+            {/* 图片主体 */}
+            <img
               src={selectedImage.src}
-              alt={selectedImage.alt}
-              width={500}
-              height={500}
-              className="object-cover"
+              alt={selectedImage.alt || ''}
+              className="w-full h-auto object-cover rounded-2xl mt-8 mb-1"
+              style={{maxHeight: 340, minHeight: 180, background: '#f8fafc'}}
             />
-            {selectedImage.caption && (
-              <div className="caption">
-                <p>{selectedImage.caption}</p>
-              </div>
-            )}
-            {selectedImage.date && (
-              <div className="date">
-                <p>{selectedImage.date}</p>
-              </div>
-            )}
+            {/* 底部信息栏：一行内展示所有信息 */}
+            <div className="absolute bottom-0 left-0 right-0 bg-white/95 py-2 px-4 border-t border-gray-100 rounded-b-2xl flex flex-row items-center gap-3 text-xs">
+              <span className="font-semibold text-gray-800 truncate max-w-[40%]" title={selectedImage.caption || ''}>{selectedImage.caption}</span>
+              <span className="text-blue-700 font-bold tracking-wide uppercase whitespace-nowrap">{selectedImage.category || ''}</span>
+              {selectedImage.date && <span className="text-gray-500 font-mono whitespace-nowrap">{selectedImage.date}</span>}
+            </div>
           </div>
         )}
       </Modal>
