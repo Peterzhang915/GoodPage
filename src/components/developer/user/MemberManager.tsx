@@ -31,6 +31,7 @@ interface Member {
   status: string;
   avatar_url?: string | null;
   username?: string | null; // Ensure username is included
+  display_order?: number; // 新增：用于教授排序
   // Add other relevant fields if needed for display
 }
 
@@ -71,8 +72,12 @@ const MemberManager: React.FC<MemberManagerProps> = ({ onClose }) => {
           fetchedMembers = fetchedMembers.filter(member => member.username === loggedInUsername);
           console.log(`User role detected. Filtered members down to user: ${loggedInUsername}`);
         }
-        
-        setMembers(fetchedMembers);
+        // 前端排序：教授按 display_order 升序，其余成员顺序不变
+        const professors = fetchedMembers
+          .filter(m => m.status === 'PROFESSOR')
+          .sort((a, b) => (a.display_order ?? 0) - (b.display_order ?? 0));
+        const others = fetchedMembers.filter(m => m.status !== 'PROFESSOR');
+        setMembers([...professors, ...others]);
       } else {
           throw new Error(result.error || "Invalid data format received from API.");
       }

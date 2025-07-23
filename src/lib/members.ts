@@ -186,20 +186,30 @@ export async function getAllMembersGrouped(): Promise<
       .forEach((key) => {
         // 组内排序
         sortedGroupedData[key] = grouped[key].sort((a, b) => {
-          const yearA = a.enrollment_year ?? Infinity;
-          const yearB = b.enrollment_year ?? Infinity;
-          const isStudentA =
-            a.status === MemberStatus.PHD_STUDENT ||
-            a.status === MemberStatus.MASTER_STUDENT ||
-            a.status === MemberStatus.UNDERGRADUATE;
+          if (key === MemberStatus.PROFESSOR) {
+            // 教授分组：按 display_order 升序（数值小的在前）
+            // @ts-ignore: MemberForCard 里有 display_order
+            const orderA = a.display_order ?? 0;
+            // @ts-ignore
+            const orderB = b.display_order ?? 0;
+            return orderA - orderB;
+          } else {
+            // 其他分组：原有排序逻辑
+            const yearA = a.enrollment_year ?? Infinity;
+            const yearB = b.enrollment_year ?? Infinity;
+            const isStudentA =
+              a.status === MemberStatus.PHD_STUDENT ||
+              a.status === MemberStatus.MASTER_STUDENT ||
+              a.status === MemberStatus.UNDERGRADUATE;
 
-          if (yearA !== yearB) {
-            return isStudentA ? yearA - yearB : yearB - yearA; // 学生升序，其他降序
+            if (yearA !== yearB) {
+              return isStudentA ? yearA - yearB : yearB - yearA; // 学生升序，其他降序
+            }
+            // 使用 ?? '' 保证 localeCompare 操作字符串
+            return (a.name_en ?? a.name_zh ?? '').localeCompare(
+              b.name_en ?? b.name_zh ?? '',
+            );
           }
-          // 使用 ?? '' 保证 localeCompare 操作字符串
-          return (a.name_en ?? a.name_zh ?? "").localeCompare(
-            b.name_en ?? b.name_zh ?? "",
-          );
         });
       });
     return sortedGroupedData;
@@ -583,8 +593,8 @@ export async function getAllMembersForManager(): Promise<Member[]> {
     const sortedMemberList = [...members].sort((a, b) => {
       const statusA = a.status || MemberStatus.OTHER;
       const statusB = b.status || MemberStatus.OTHER;
-      const orderA = statusOrderMap[statusA] || 99;
-      const orderB = statusOrderMap[statusB] || 99;
+      const orderA = statusOrderMap[statusA as MemberStatus] || 99;
+      const orderB = statusOrderMap[statusB as MemberStatus] || 99;
 
       if (orderA !== orderB) {
         return orderA - orderB;

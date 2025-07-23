@@ -152,7 +152,12 @@ export function MemberCard({ member, isEmojiEnabled }: MemberCardProps) {
           {/* 【修改】直接放置状态信息，移除外层 div */}
           {/* Use span instead of p for a tighter inline element */}
           <span
-            className={`mt-2 text-xs sm:text-sm font-medium ${themeColors.accentColor ?? "text-purple-700"} bg-purple-50 dark:bg-purple-900/20 px-2 sm:px-3 py-2 sm:py-1 rounded-full inline-block w-fit`}
+            className={`mt-2 text-xs sm:text-sm font-medium 
+              ${themeColors.accentColor ?? "text-purple-700"}  // 文字颜色
+              bg-purple-50 dark:bg-purple-300/20  // 紫色边框（边缘紫色）
+              bg-blur-sm
+              px-2 sm:px-3 py-2 sm:py-1 
+              rounded-full inline-block w-fit`}
           >
             {/* 【修改】仅非教授且年份存在时显示年份 */}
             {member.status !== MemberStatus.PROFESSOR && member.enrollment_year
