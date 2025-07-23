@@ -12,7 +12,7 @@ export const dynamic = 'force-dynamic';
 
 // 定义分组标题 (保持不变)
 const statusTitles: Record<string, string> = {
-  PROFESSOR: "Head of Lab",
+  PROFESSOR: "PROFESSOR",
   博士后: "Postdoctoral Researchers",
   PHD_STUDENT: "PhD Students",
   MASTER_STUDENT: "Master Students",
