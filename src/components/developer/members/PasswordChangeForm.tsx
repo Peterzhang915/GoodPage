@@ -76,21 +76,21 @@ export const PasswordChangeForm: React.FC<PasswordChangeFormProps> = ({
   };
 
   return (
-    <Card className="mt-6 border-blue-500/50 dark:border-blue-400/40">
+    <Card className="mt-6 mb-6 dark:bg-gray-800 overflow-hidden border-green-500/50 dark:border-green-400/40 rounded-xl">
       <CardHeader
-        className="flex flex-row items-center justify-between cursor-pointer px-3 py-1"
+        className="flex flex-row items-center justify-between cursor-pointer px-3 py-4"
         onClick={onToggle}
         role="button"
         tabIndex={0}
         aria-expanded={isOpen}
         aria-controls={`password-content-${memberId}`}
       >
-        <CardTitle className="text-lg flex items-center gap-2 text-blue-700 dark:text-blue-400">
-           <KeyRound className="h-5 w-5" /> Change Password
+        <CardTitle className="text-lg flex items-center gap-2 text-green-700 dark:text-green-400">
+           <KeyRound className="h-5 w-5 text-green-500 dark:text-green-400" /> Change Password
         </CardTitle>
         <Button variant="ghost" size="icon" aria-label={isOpen ? "Collapse Change Password" : "Expand Change Password"}>
           <motion.div animate={{ rotate: isOpen ? 180 : 0 }}>
-            <ChevronDown className="h-5 w-5 text-gray-500" />
+            <ChevronDown className="h-5 w-5 text-green-500" />
           </motion.div>
         </Button>
       </CardHeader>
@@ -152,7 +152,7 @@ export const PasswordChangeForm: React.FC<PasswordChangeFormProps> = ({
               <Button 
                 type="submit" 
                 disabled={isLoading} 
-                className="mt-4 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 dark:text-white disabled:opacity-50"
+                className="mt-4 bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600 dark:text-white disabled:opacity-50"
               >
                 {isLoading ? (
                   <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Updating...</>

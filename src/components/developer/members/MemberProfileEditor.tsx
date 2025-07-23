@@ -54,6 +54,7 @@ import { PresentationFormModal } from './PresentationFormModal'; // Import the n
 import { SoftwareDatasetFormModal } from './SoftwareDatasetFormModal'; // Import the new modal
 import { PasswordChangeForm } from './PasswordChangeForm'; // Import the new form component
 import { UsernameChangeForm } from './UsernameChangeForm'; // Import the new username form
+import { MemberProfileImage } from '@/components/members/MemberProfileImage'; // 导入头像显示组件
 
 // --- Type Definitions ---
 // Define types used internally within this component
@@ -299,6 +300,66 @@ export default function MemberProfileEditor({ initialData }: MemberProfileEditor
   // Correct state variable name based on types.ts (member.softwareAndDatasets)
   const [editingSoftwareAndDataset, setEditingSoftwareAndDataset] = useState<SoftwareDataset | null>(null);
   const [softwareAndDatasetsList, setSoftwareAndDatasetsList] = useState<SoftwareDataset[]>(initialData.softwareAndDatasets || []);
+
+  // 头像相关状态
+  const [avatarUrl, setAvatarUrl] = useState<string>(initialData.avatar_url || '/avatars/placeholder.png');
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+
+  // 处理头像文件选择
+  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    // 前端校验文件类型和大小
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/jpg'];
+    if (!allowedTypes.includes(file.type)) {
+      toast.error('Only JPG, PNG, GIF, and WEBP images are supported.');
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('Image size must not exceed 5MB.');
+      return;
+    }
+    setAvatarFile(file);
+    setAvatarPreview(URL.createObjectURL(file));
+  };
+
+  // 上传头像到服务器
+  const handleUploadAvatar = async () => {
+    if (!avatarFile) return;
+    setIsUploadingAvatar(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', avatarFile);
+      // username 字段确保为 string
+      formData.append('username', String(initialData.username || ''));
+      // 调用后端 API 上传
+      const res = await fetch('/api/avatar/upload', {
+        method: 'POST',
+        body: formData,
+      });
+      const data = await res.json();
+      if (data.success && data.url) {
+        // 上传成功后，更新 avatar_url 字段
+        const updateRes = await updateMemberField(initialData.id, 'avatar_url', data.url);
+        if (updateRes.success) {
+          setAvatarUrl(data.url);
+          setAvatarPreview(null);
+          setAvatarFile(null);
+          toast.success('Avatar uploaded and saved successfully!');
+        } else {
+          toast.error('Avatar uploaded, but failed to save avatar URL: ' + (updateRes.error || 'Unknown error'));
+        }
+      } else {
+        toast.error('Failed to upload avatar: ' + (data.error || 'Unknown error'));
+      }
+    } catch (err: any) {
+      toast.error('Avatar upload error: ' + (err.message || 'Unknown error'));
+    } finally {
+      setIsUploadingAvatar(false);
+    }
+  };
 
   // Toggle function
   const toggleSection = (sectionId: SectionId) => {
@@ -972,110 +1033,158 @@ export default function MemberProfileEditor({ initialData }: MemberProfileEditor
   };
 
   return (
-    <div className="space-y-6 pb-10"> 
+    <div className="space-y-6 pb-10">
+      {/* --- Avatar Upload & Preview --- */}
+      <Card className="dark:bg-gray-800 overflow-hidden border-green-500/50 dark:border-green-400/40 mb-6 rounded-xl">
+        <CardHeader className="flex flex-row items-center gap-6 px-3 py-4">
+          {/* 头像显示区 */}
+          <div className="flex flex-col items-center justify-center">
+            <MemberProfileImage
+              src={avatarPreview || avatarUrl}
+              alt={initialData.name_en + ' avatar'}
+              width={96}
+              height={96}
+              className="rounded-full border-2 border-green-400 shadow-md mb-2"
+            />
+            <span className="text-xs text-green-400">Avatar Preview</span>
+          </div>
+          {/* 上传控件与按钮 */}
+          <div className="flex flex-col gap-2 flex-1">
+            <input
+              type="file"
+              accept="image/*"
+              id="avatar-upload-input"
+              className="hidden"
+              onChange={handleAvatarChange}
+              disabled={isUploadingAvatar}
+            />
+            <label htmlFor="avatar-upload-input">
+              <Button asChild variant="outline" size="sm" disabled={isUploadingAvatar} className="border-green-500 text-green-700 dark:border-green-400 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900">
+                <span>Select New Avatar</span>
+              </Button>
+            </label>
+            {avatarPreview && (
+              <Button
+                variant="default"
+                size="sm"
+                onClick={handleUploadAvatar}
+                disabled={isUploadingAvatar}
+                className="bg-green-600 hover:bg-green-700 text-white dark:bg-green-700 dark:hover:bg-green-800"
+              >
+                {isUploadingAvatar ? (
+                  <span>
+                    <svg className="animate-spin inline-block mr-2 h-4 w-4 text-white" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+                    </svg>
+                    Uploading...
+                  </span>
+                ) : 'Upload and Save Avatar'}
+              </Button>
+            )}
+            <span className="text-xs text-green-500">Supported: JPG/PNG/GIF/WEBP, Max 5MB</span>
+          </div>
+        </CardHeader>
+      </Card>
 
-      {/* --- Section 1: Basic Info --- */} 
-      {/* Apply blue border, remove gray border, keep existing background */}
-      <Card className="dark:bg-gray-800 overflow-hidden border-blue-500/50 dark:border-blue-400/40">
-        {/* Change vertical padding to py-0 */}
+      {/* --- Section 1: Basic Info --- */}
+      <Card className="dark:bg-gray-800 overflow-hidden border-green-500/50 dark:border-green-400/40">
         <CardHeader className="flex flex-row items-center justify-between cursor-pointer px-3 py-0" onClick={() => toggleSection('basicInfo')}>
-          {/* Apply blue text color, remove green color, add Info icon and flex layout */}
-          <CardTitle className="text-lg flex items-center gap-2 text-blue-700 dark:text-blue-400">
-            <Info className="h-5 w-5" /> {/* Add Info icon */}
+          <CardTitle className="text-lg flex items-center gap-2 text-green-700 dark:text-green-400">
+            <Info className="h-5 w-5 text-green-500 dark:text-green-400" />
             Basic Information
           </CardTitle>
-          {/* REPLACE chevron button content */}
-          <Button variant="ghost" size="icon" aria-label={openSections.basicInfo ? "Collapse Basic Information" : "Expand Basic Information"} className="self-center">
-             <motion.div animate={{ rotate: openSections.basicInfo ? 180 : 0 }}>
-                <ChevronDown className="h-5 w-5 text-gray-500" />
-             </motion.div>
+          <Button variant="ghost" size="icon" aria-label={openSections.basicInfo ? "Collapse Basic Information" : "Expand Basic Information"} className="self-center text-green-500 dark:text-green-400">
+            <motion.div animate={{ rotate: openSections.basicInfo ? 180 : 0 }}>
+              <ChevronDown className="h-5 w-5 text-green-500" />
+            </motion.div>
           </Button>
         </CardHeader>
         <motion.div
-            initial={false}
-            animate={{
-                height: openSections.basicInfo ? 'auto' : 0,
-                opacity: openSections.basicInfo ? 1 : 0,
-            }}
-            transition={{ duration: 0.3, ease: "easeInOut" }}
-            style={{ overflow: 'hidden' }}
+          initial={false}
+          animate={{
+            height: openSections.basicInfo ? 'auto' : 0,
+            opacity: openSections.basicInfo ? 1 : 0,
+          }}
+          transition={{ duration: 0.3, ease: "easeInOut" }}
+          style={{ overflow: 'hidden' }}
         >
-            <CardContent className="pt-4 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-1">
-          {/* Replace EditableTextField for English Name with static display */}
-          <div className="mb-4">
-            <Label className="text-sm font-medium text-gray-700 dark:text-gray-300 block mb-1">English Name</Label>
-            <p className="mt-1 text-gray-900 dark:text-gray-100 min-h-[40px] py-1 px-2 break-words">
-              {initialData.name_en || <span className="text-gray-400 dark:text-gray-500 italic">Not set</span>}
-            </p>
-          </div>
-          {/* <EditableTextField label="Chinese Name" fieldName="name_zh" initialValue={initialData.name_zh} memberId={initialData.id} /> */}
-          {/* Add static display for Chinese Name */}
-          <div className="mb-4">
-            <Label className="text-sm font-medium text-gray-700 dark:text-gray-300 block mb-1">Chinese Name</Label>
-            <p className="mt-1 text-gray-900 dark:text-gray-100 min-h-[40px] py-1 px-2 break-words">
-              {initialData.name_zh || <span className="text-gray-400 dark:text-gray-500 italic">Not set</span>}
-            </p>
-          </div>
-          <EditableTextField label="Email" fieldName="email" initialValue={initialData.email} memberId={initialData.id} inputType="email" />
-          <EditableTextField label="English Title" fieldName="title_en" initialValue={initialData.title_en} memberId={initialData.id} />
-          <EditableTextField label="Chinese Title" fieldName="title_zh" initialValue={initialData.title_zh} memberId={initialData.id} />
+          <CardContent className="pt-4 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-1">
+            {/* Replace EditableTextField for English Name with static display */}
+            <div className="mb-4">
+              <Label className="text-sm font-medium text-gray-700 dark:text-gray-300 block mb-1">English Name</Label>
+              <p className="mt-1 text-gray-900 dark:text-gray-100 min-h-[40px] py-1 px-2 break-words">
+                {initialData.name_en || <span className="text-gray-400 dark:text-gray-500 italic">Not set</span>}
+              </p>
+            </div>
+            {/* <EditableTextField label="Chinese Name" fieldName="name_zh" initialValue={initialData.name_zh} memberId={initialData.id} /> */}
+            {/* Add static display for Chinese Name */}
+            <div className="mb-4">
+              <Label className="text-sm font-medium text-gray-700 dark:text-gray-300 block mb-1">Chinese Name</Label>
+              <p className="mt-1 text-gray-900 dark:text-gray-100 min-h-[40px] py-1 px-2 break-words">
+                {initialData.name_zh || <span className="text-gray-400 dark:text-gray-500 italic">Not set</span>}
+              </p>
+            </div>
+            <EditableTextField label="Email" fieldName="email" initialValue={initialData.email} memberId={initialData.id} inputType="email" />
+            <EditableTextField label="English Title" fieldName="title_en" initialValue={initialData.title_en} memberId={initialData.id} />
+            <EditableTextField label="Chinese Title" fieldName="title_zh" initialValue={initialData.title_zh} memberId={initialData.id} />
 
-          <div className="mb-4">
-                <Label htmlFor="status" className="dark:text-gray-300">Status</Label>
-                <Select value={currentStatus ?? ""} onValueChange={handleStatusChange} disabled={isStatusLoading}>
-                  <SelectTrigger className="w-full dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100">
-                    <SelectValue placeholder="Select status..." />
-                  </SelectTrigger>
-                  <SelectContent className="dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100">
-                    {Object.values(MemberStatus).map(status => (
-                      <SelectItem key={status} value={status} className="dark:hover:bg-gray-700 dark:focus:bg-gray-700">
-                        {formatStatusLabel(status)}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-          </div>
+            <div className="mb-4">
+                  <Label htmlFor="status" className="dark:text-gray-300">Status</Label>
+                  <Select value={currentStatus ?? ""} onValueChange={handleStatusChange} disabled={isStatusLoading}>
+                    <SelectTrigger className="w-full dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100">
+                      <SelectValue placeholder="Select status..." />
+                    </SelectTrigger>
+                    <SelectContent className="dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100">
+                      {Object.values(MemberStatus).map(status => (
+                        <SelectItem key={status} value={status} className="dark:hover:bg-gray-700 dark:focus:bg-gray-700">
+                          {formatStatusLabel(status)}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+            </div>
 
-              <div className="mb-4 flex items-center space-x-3 justify-between rounded-md border dark:border-gray-700 p-3 col-span-1 md:col-span-2">
-                <Label htmlFor="is_profile_public" className="text-sm font-medium cursor-pointer dark:text-gray-300">
-                    Profile Public
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
-                       Make this member's profile page visible to the public internet.
-                    </p>
-                </Label>
-                <Switch
-                  id="is_profile_public"
-                  checked={isPublic}
-                  onCheckedChange={handleVisibilityChange}
-                  disabled={isVisibilityLoading}
-                  aria-label="Toggle profile visibility"
-                />
-          </div>
+                <div className="mb-4 flex items-center space-x-3 justify-between rounded-md border dark:border-gray-700 p-3 col-span-1 md:col-span-2">
+                  <Label htmlFor="is_profile_public" className="text-sm font-medium cursor-pointer dark:text-gray-300">
+                      Profile Public
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                         Make this member's profile page visible to the public internet.
+                      </p>
+                  </Label>
+                  <Switch
+                    id="is_profile_public"
+                    checked={isPublic}
+                    onCheckedChange={handleVisibilityChange}
+                    disabled={isVisibilityLoading}
+                    aria-label="Toggle profile visibility"
+                  />
+            </div>
 
-          <EditableTextField
-            label="Enrollment Year"
-            fieldName="enrollment_year"
-            initialValue={initialData.enrollment_year}
-            memberId={initialData.id}
-            inputType="number"
-          />
-          <EditableTextField
-            label="Graduation Year"
-            fieldName="graduation_year"
-            initialValue={initialData.graduation_year}
-            memberId={initialData.id}
-            inputType="number"
-          />
+            <EditableTextField
+              label="Enrollment Year"
+              fieldName="enrollment_year"
+              initialValue={initialData.enrollment_year}
+              memberId={initialData.id}
+              inputType="number"
+            />
+            <EditableTextField
+              label="Graduation Year"
+              fieldName="graduation_year"
+              initialValue={initialData.graduation_year}
+              memberId={initialData.id}
+              inputType="number"
+            />
 
-          <EditableTextField label="Office Location" fieldName="office_location" initialValue={initialData.office_location} memberId={initialData.id} />
-          <EditableTextField label="Phone Number" fieldName="phone_number" initialValue={initialData.phone_number} memberId={initialData.id} inputType="text" />
-          <EditableTextField label="Office Hours" fieldName="office_hours" initialValue={initialData.office_hours} memberId={initialData.id} />
-          <EditableTextField label="Pronouns" fieldName="pronouns" initialValue={initialData.pronouns} memberId={initialData.id} placeholder="e.g., she/her, he/him, they/them" />
-          {/* Commenting out Avatar URL field as requested */}
-          {/* 
-          <EditableTextField label="Avatar URL" fieldName="avatar_url" initialValue={initialData.avatar_url} memberId={initialData.id} inputType="url" />
-          */}
-        </CardContent>
+            <EditableTextField label="Office Location" fieldName="office_location" initialValue={initialData.office_location} memberId={initialData.id} />
+            <EditableTextField label="Phone Number" fieldName="phone_number" initialValue={initialData.phone_number} memberId={initialData.id} inputType="text" />
+            <EditableTextField label="Office Hours" fieldName="office_hours" initialValue={initialData.office_hours} memberId={initialData.id} />
+            <EditableTextField label="Pronouns" fieldName="pronouns" initialValue={initialData.pronouns} memberId={initialData.id} placeholder="e.g., she/her, he/him, they/them" />
+            {/* Commenting out Avatar URL field as requested */}
+            {/* 
+            <EditableTextField label="Avatar URL" fieldName="avatar_url" initialValue={initialData.avatar_url} memberId={initialData.id} inputType="url" />
+            */}
+          </CardContent>
         </motion.div>
       </Card>
 
@@ -1097,17 +1206,17 @@ export default function MemberProfileEditor({ initialData }: MemberProfileEditor
 
       {/* --- Section 2: Detailed Profile --- */} 
       {/* Apply blue theme: border, title color, icon */}
-      <Card className="dark:bg-gray-800 overflow-hidden border-blue-500/50 dark:border-blue-400/40">
+      <Card className="dark:bg-gray-800 overflow-hidden border-green-500/50 dark:border-green-400/40">
         {/* Change vertical padding to py-0 */}
         <CardHeader className="flex flex-row items-center justify-between cursor-pointer px-3 py-0" onClick={() => toggleSection('detailedProfile')}>
-          <CardTitle className="text-lg flex items-center gap-2 text-blue-700 dark:text-blue-400"> {/* Update class */}
+          <CardTitle className="text-lg flex items-center gap-2 text-green-700 dark:text-green-400"> {/* Update class */}
             <ClipboardList className="h-5 w-5" /> {/* Add icon */}
             Detailed Profile
           </CardTitle>
            {/* REPLACE chevron button content */}
            <Button variant="ghost" size="icon" aria-label={openSections.detailedProfile ? "Collapse Detailed Profile" : "Expand Detailed Profile"} className="self-center">
              <motion.div animate={{ rotate: openSections.detailedProfile ? 180 : 0 }}>
-                <ChevronDown className="h-5 w-5 text-gray-500" />
+                <ChevronDown className="h-5 w-5 text-green-500" />
              </motion.div>
           </Button>
         </CardHeader>
@@ -1126,17 +1235,17 @@ export default function MemberProfileEditor({ initialData }: MemberProfileEditor
       </Card>
 
       {/* --- Section 3: Links --- */}
-      <Card className="dark:bg-gray-800 overflow-hidden border-blue-500/50 dark:border-blue-400/40">
+      <Card className="dark:bg-gray-800 overflow-hidden border-green-500/50 dark:border-green-400/40">
           {/* Change vertical padding to py-0 */}
           <CardHeader className="flex flex-row items-center justify-between cursor-pointer px-3 py-0" onClick={() => toggleSection('links')}>
-                <CardTitle className="text-lg flex items-center gap-2 text-blue-700 dark:text-blue-400"> {/* Update class */}
+                <CardTitle className="text-lg flex items-center gap-2 text-green-700 dark:text-green-400"> {/* Update class */}
                     <Link className="h-5 w-5" /> {/* Add icon */}
                     Links & IDs
                 </CardTitle>
                 {/* REPLACE chevron button content */}
                 <Button variant="ghost" size="icon" aria-label={openSections.links ? "Collapse Links" : "Expand Links"} className="self-center">
                    <motion.div animate={{ rotate: openSections.links ? 180 : 0 }}>
-                      <ChevronDown className="h-5 w-5 text-gray-500" />
+                      <ChevronDown className="h-5 w-5 text-green-500" />
                    </motion.div>
                 </Button>
            </CardHeader>
@@ -1158,15 +1267,15 @@ export default function MemberProfileEditor({ initialData }: MemberProfileEditor
       </Card>
 
       {/* --- Section 4: Education History --- */}
-      <Card className='mb-6 dark:bg-gray-800 overflow-hidden border-blue-500/50 dark:border-blue-400/40'>
+      <Card className='mb-6 dark:bg-gray-800 overflow-hidden border-green-500/50 dark:border-green-400/40'>
         {/* Change vertical padding to py-0 */}
         <CardHeader className="flex flex-row items-center justify-between cursor-pointer px-3 py-0" onClick={() => toggleSection('education')}>
-            <CardTitle className="text-lg flex items-center gap-2 text-blue-700 dark:text-blue-400">
+            <CardTitle className="text-lg flex items-center gap-2 text-green-700 dark:text-green-400">
                 <GraduationCap className="h-5 w-5" /> Education History
             </CardTitle>
             <Button variant="ghost" size="icon" aria-label={openSections.education ? "Collapse Education" : "Expand Education"}>
                 <motion.div animate={{ rotate: openSections.education ? 180 : 0 }}>
-                    <ChevronDown className="h-5 w-5 text-gray-500" />
+                    <ChevronDown className="h-5 w-5 text-green-500" />
                 </motion.div>
             </Button>
         </CardHeader>
@@ -1184,7 +1293,7 @@ export default function MemberProfileEditor({ initialData }: MemberProfileEditor
                 <Button
                   onClick={handleOpenAddEducationModal} // Removed stopPropagation
                   size="sm"
-                  className="mb-4 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 dark:text-white"
+                  className="mb-4 bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600 dark:text-white"
                 >
                   Add Education
                 </Button>
@@ -1252,15 +1361,15 @@ export default function MemberProfileEditor({ initialData }: MemberProfileEditor
       </Card>
 
       {/* --- Section 5: Awards --- */}
-       <Card className='mb-6 dark:bg-gray-800 overflow-hidden border-blue-500/50 dark:border-blue-400/40'>
+       <Card className='mb-6 dark:bg-gray-800 overflow-hidden border-green-500/50 dark:border-green-400/40'>
          {/* Change vertical padding to py-0 */}
          <CardHeader className="flex flex-row items-center justify-between cursor-pointer px-3 py-0" onClick={() => toggleSection('awards')}>
-           <CardTitle className="text-lg flex items-center gap-2 text-blue-700 dark:text-blue-400">
+           <CardTitle className="text-lg flex items-center gap-2 text-green-700 dark:text-green-400">
                 <AwardIcon className="h-5 w-5" /> Awards
            </CardTitle>
             <Button variant="ghost" size="icon" aria-label={openSections.awards ? "Collapse Awards" : "Expand Awards"}>
                <motion.div animate={{ rotate: openSections.awards ? 180 : 0 }}>
-                 <ChevronDown className="h-5 w-5 text-gray-500" />
+                 <ChevronDown className="h-5 w-5 text-green-500" />
                </motion.div>
             </Button>
          </CardHeader>
@@ -1278,7 +1387,7 @@ export default function MemberProfileEditor({ initialData }: MemberProfileEditor
                 <Button
                   onClick={handleOpenAddAwardModal} // Removed stopPropagation
                   size="sm"
-                  className="mb-4 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 dark:text-white"
+                  className="mb-4 bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600 dark:text-white"
                 >
                   Add Award
                 </Button>
@@ -1354,15 +1463,15 @@ export default function MemberProfileEditor({ initialData }: MemberProfileEditor
        </Card>
 
       {/* --- Section 6: Featured Publications --- */}
-      <Card className='mb-6 dark:bg-gray-800 overflow-hidden border-blue-500/50 dark:border-blue-400/40'>
+      <Card className='mb-6 dark:bg-gray-800 overflow-hidden border-green-500/50 dark:border-green-400/40'>
         {/* Change vertical padding to py-0 */}
         <CardHeader className="flex flex-row items-center justify-between cursor-pointer px-3 py-0" onClick={() => toggleSection('featuredPublications')}>
-          <CardTitle className="text-lg flex items-center gap-2 text-blue-700 dark:text-blue-400">
+          <CardTitle className="text-lg flex items-center gap-2 text-green-700 dark:text-green-400">
             <Star className="h-5 w-5" /> Featured Publications
           </CardTitle>
            <Button variant="ghost" size="icon" aria-label={openSections.featuredPublications ? "Collapse Featured Publications" : "Expand Featured Publications"}>
                <motion.div animate={{ rotate: openSections.featuredPublications ? 180 : 0 }}>
-                 <ChevronDown className="h-5 w-5 text-gray-500" />
+                 <ChevronDown className="h-5 w-5 text-green-500" />
                </motion.div>
            </Button>
         </CardHeader>
@@ -1410,7 +1519,7 @@ export default function MemberProfileEditor({ initialData }: MemberProfileEditor
                     onClick={handleSaveFeaturedPublications} 
                     disabled={isSavingFeatured} 
                     // Apply blue style (keep default size)
-                    className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 dark:text-white disabled:opacity-50"
+                    className="bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600 dark:text-white disabled:opacity-50"
                   >
                     {isSavingFeatured ? 'Saving...' : 'Save Featured List'}
                   </Button>
@@ -1422,22 +1531,22 @@ export default function MemberProfileEditor({ initialData }: MemberProfileEditor
       </Card>
 
       {/* --- Section 7: Projects --- */}
-      <Card className='mb-6 dark:bg-gray-800 overflow-hidden border-blue-500/50 dark:border-blue-400/40'>
+      <Card className='mb-6 dark:bg-gray-800 overflow-hidden border-green-500/50 dark:border-green-400/40'>
           {/* Change vertical padding to py-0 */}
           <CardHeader className="flex flex-row items-center justify-between cursor-pointer px-3 py-0" onClick={() => toggleSection('projects')}>
-              <CardTitle className="text-lg flex items-center gap-2 text-blue-700 dark:text-blue-400">
+              <CardTitle className="text-lg flex items-center gap-2 text-green-700 dark:text-green-400">
                     <Briefcase className="h-5 w-5" /> Projects
               </CardTitle>
                <Button variant="ghost" size="icon" aria-label={openSections.projects ? "Collapse Projects" : "Expand Projects"}>
                   <motion.div animate={{ rotate: openSections.projects ? 180 : 0 }}>
-                    <ChevronDown className="h-5 w-5 text-gray-500" />
+                    <ChevronDown className="h-5 w-5 text-green-500" />
                   </motion.div>
                </Button>
           </CardHeader>
            <motion.div initial={false} animate={{ height: openSections.projects ? 'auto' : 0, opacity: openSections.projects ? 1 : 0 }} transition={{ duration: 0.3, ease: "easeInOut" }} style={{ overflow: 'hidden' }}>
              <CardContent className="pt-4">
                   {/* Move Add button here */}
-                  <Button size="sm" className="mb-4 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 dark:text-white" onClick={handleOpenAddProjectModal}> {/* Removed stopPropagation */}
+                  <Button size="sm" className="mb-4 bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600 dark:text-white" onClick={handleOpenAddProjectModal}> {/* Removed stopPropagation */}
                     Add Project
                   </Button>
                   {projectsList.length > 0 ? (
@@ -1510,14 +1619,14 @@ export default function MemberProfileEditor({ initialData }: MemberProfileEditor
       </Card>
 
       {/* --- Section 8: Presentations --- */}
-      <Card className='mb-6 dark:bg-gray-800 overflow-hidden border-blue-500/50 dark:border-blue-400/40'>
+      <Card className='mb-6 dark:bg-gray-800 overflow-hidden border-green-500/50 dark:border-green-400/40'>
            <CardHeader className="flex flex-row items-center justify-between cursor-pointer px-3 py-0" onClick={() => toggleSection('presentations')}>
-                <CardTitle className="text-lg flex items-center gap-2 text-blue-700 dark:text-blue-400">
+                <CardTitle className="text-lg flex items-center gap-2 text-green-700 dark:text-green-400">
                       <PresentationIcon className="h-5 w-5" /> Presentations
                 </CardTitle>
                 <Button variant="ghost" size="icon" aria-label={openSections.presentations ? "Collapse Presentations" : "Expand Presentations"} className="self-center">
                   <motion.div animate={{ rotate: openSections.presentations ? 180 : 0 }}>
-                   <ChevronDown className="h-5 w-5 text-gray-500" />
+                   <ChevronDown className="h-5 w-5 text-green-500" />
                   </motion.div>
                 </Button>
             </CardHeader>
@@ -1536,7 +1645,7 @@ export default function MemberProfileEditor({ initialData }: MemberProfileEditor
                   <Button
                       onClick={handleOpenAddPresentationModal}
                       size="sm"
-                      className="mb-4 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 dark:text-white"
+                      className="mb-4 bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600 dark:text-white"
                   >
                       Add Presentation
                   </Button>
@@ -1608,14 +1717,14 @@ export default function MemberProfileEditor({ initialData }: MemberProfileEditor
       </Card>
 
        {/* --- Section 9: Software & Datasets --- */}
-       <Card className='mb-6 dark:bg-gray-800 overflow-hidden border-blue-500/50 dark:border-blue-400/40'>
+       <Card className='mb-6 dark:bg-gray-800 overflow-hidden border-green-500/50 dark:border-green-400/40'>
           <CardHeader className="flex flex-row items-center justify-between cursor-pointer px-3 py-0" onClick={() => toggleSection('softwareDatasets')}>
-              <CardTitle className="text-lg flex items-center gap-2 text-blue-700 dark:text-blue-400">
+              <CardTitle className="text-lg flex items-center gap-2 text-green-700 dark:text-green-400">
                   <Database className="h-5 w-5" /> Software & Datasets
               </CardTitle>
               <Button variant="ghost" size="icon" aria-label={openSections.softwareDatasets ? "Collapse Software & Datasets" : "Expand Software & Datasets"} className="self-center">
                   <motion.div animate={{ rotate: openSections.softwareDatasets ? 180 : 0 }}>
-                   <ChevronDown className="h-5 w-5 text-gray-500" />
+                   <ChevronDown className="h-5 w-5 text-green-500" />
                   </motion.div>
               </Button>
           </CardHeader>
@@ -1634,7 +1743,7 @@ export default function MemberProfileEditor({ initialData }: MemberProfileEditor
                   <Button
                       onClick={handleOpenAddSoftwareDatasetModal}
                       size="sm"
-                      className="mb-4 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 dark:text-white"
+                      className="mb-4 bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600 dark:text-white"
                   >
                       Add Software/Dataset
                   </Button>
@@ -1714,14 +1823,14 @@ export default function MemberProfileEditor({ initialData }: MemberProfileEditor
        </Card>
 
        {/* --- Section 10: Patents --- */}
-       <Card className='mb-6 dark:bg-gray-800 overflow-hidden border-blue-500/50 dark:border-blue-400/40'>
+       <Card className='mb-6 dark:bg-gray-800 overflow-hidden border-green-500/50 dark:border-green-400/40'>
           <CardHeader className="flex flex-row items-center justify-between cursor-pointer px-3 py-0" onClick={() => toggleSection('patents')}>
-              <CardTitle className="text-lg flex items-center gap-2 text-blue-700 dark:text-blue-400">
+              <CardTitle className="text-lg flex items-center gap-2 text-green-700 dark:text-green-400">
                   <ScrollText className="h-5 w-5" /> Patents
               </CardTitle>
                <Button variant="ghost" size="icon" aria-label={openSections.patents ? "Collapse Patents" : "Expand Patents"} className="self-center">
                  <motion.div animate={{ rotate: openSections.patents ? 180 : 0 }}>
-                   <ChevronDown className="h-5 w-5 text-gray-500" />
+                   <ChevronDown className="h-5 w-5 text-green-500" />
                  </motion.div>
                </Button>
           </CardHeader>
@@ -1754,14 +1863,14 @@ export default function MemberProfileEditor({ initialData }: MemberProfileEditor
        </Card>
 
         {/* --- Section 11: Academic Services --- */}
-        <Card className='mb-6 dark:bg-gray-800 overflow-hidden border-blue-500/50 dark:border-blue-400/40'>
+        <Card className='mb-6 dark:bg-gray-800 overflow-hidden border-green-500/50 dark:border-green-400/40'>
           <CardHeader className="flex flex-row items-center justify-between cursor-pointer px-3 py-0" onClick={() => toggleSection('academicServices')}>
-              <CardTitle className="text-lg flex items-center gap-2 text-blue-700 dark:text-blue-400">
+              <CardTitle className="text-lg flex items-center gap-2 text-green-700 dark:text-green-400">
                   <Users className="h-5 w-5" /> Academic Services
               </CardTitle>
                <Button variant="ghost" size="icon" aria-label={openSections.academicServices ? "Collapse Academic Services" : "Expand Academic Services"} className="self-center">
                  <motion.div animate={{ rotate: openSections.academicServices ? 180 : 0 }}>
-                   <ChevronDown className="h-5 w-5 text-gray-500" />
+                   <ChevronDown className="h-5 w-5 text-green-500" />
                  </motion.div>
                </Button>
           </CardHeader>
@@ -1780,7 +1889,7 @@ export default function MemberProfileEditor({ initialData }: MemberProfileEditor
                   <Button
                       onClick={handleOpenAddServiceModal}
                       size="sm"
-                      className="mb-4 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 dark:text-white"
+                      className="mb-4 bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600 dark:text-white"
                   >
                       Add Service
                   </Button>
