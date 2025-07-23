@@ -10,9 +10,11 @@ type LabLeaderHeaderProps = {
   // Pass the whole Member object or select needed fields
   // Using partial allows flexibility if not all fields are always present
   leaderData: Partial<Member> | null;
+  addressLine1?: string;
+  addressLine2?: string;
 };
 
-const LabLeaderHeader: React.FC<LabLeaderHeaderProps> = ({ leaderData }) => {
+const LabLeaderHeader: React.FC<LabLeaderHeaderProps> = ({ leaderData, addressLine1, addressLine2 }) => {
   // Provide default values or handle null case gracefully
   // 强制添加 Dr. 前缀
   const rawNameEn = leaderData?.name_en;
@@ -27,8 +29,8 @@ const LabLeaderHeader: React.FC<LabLeaderHeaderProps> = ({ leaderData }) => {
   const university = "The Nanchang University"; // Potentially dynamic later
   const email = leaderData?.email ?? "xuz@ncu.edu.cn";
   const phone = leaderData?.phone_number ?? "(0791) 8396 8516";
-  const addressLine1 = "999 Xuefu BLVD"; // Static for now
-  const addressLine2 = "Nanchang, Jiangxi, 330000"; // Static for now
+  const address1 = addressLine1 ?? "";
+  const address2 = addressLine2 ?? "";
   const office = leaderData?.office_location;
   const avatarUrl = leaderData?.avatar_url ?? "/avatars/zichenxu.jpg"; // Default avatar
 
@@ -70,8 +72,8 @@ const LabLeaderHeader: React.FC<LabLeaderHeaderProps> = ({ leaderData }) => {
                   <ObfuscatedContact value={phone} type="phone" />
                 </p>
               )}
-              <p>{addressLine1}</p>
-              <p>{addressLine2}</p>
+              {address1 && <p>{address1}</p>}
+              {address2 && <p>{address2}</p>}
               {office && <p>Office: {office}</p>}
             </div>
           </div>

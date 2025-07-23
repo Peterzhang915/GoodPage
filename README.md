@@ -34,7 +34,7 @@
    如果需要导入图片库中的图片到数据库，运行：
 
    ```bash
-   pnpm run db:scan-gallery
+   npm run db:scan-gallery
    ```
 
    这个命令会扫描 `public/images/gallery` 目录下的所有图片，并将它们添加到数据库中。它会自动：
@@ -46,7 +46,7 @@
    安装完依赖后，运行以下命令启动 Next.js 开发服务器：
 
    ```bash
-   pnpm dev
+   npm dev
    ```
 
    此命令会启动一个本地服务器，通常监听在 `http://localhost:3000`。
