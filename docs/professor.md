@@ -1,5 +1,45 @@
 # Professor 页面变更说明文档
 
+
+
+---
+
+## 教授（professor）页面数据获取与实现说明（重构版）
+
+### 数据来源与实现逻辑
+
+- **成员基本信息**：通过 `prisma.member.findUnique` 查询数据库，获取指定教授（如 `JiahuiHu`）的基本信息。
+- **学术服务（AcademicService）**：通过 `prisma.academicService.findMany` 查询，按 `display_order` 排序，并根据 `isFeatured` 字段分为“特色服务”和“详细服务”。
+- **奖项（Award）**：通过 `prisma.award.findMany` 查询，按 `display_order` 排序，并根据 `isFeatured` 字段分为“特色奖项”和“详细奖项”。
+- **资助/赞助（Sponsorship）**：通过 `prisma.sponsorship.findMany` 查询，按 `display_order` 排序，并根据 `isFeatured` 字段分为“特色资助”和“详细资助”。
+- **出版物（Publication）**：通过 `getPublicationsByMemberIdFormatted` 工具函数，获取该成员作为作者的所有出版物，并自动格式化作者信息（包括内部成员和外部作者）。
+
+### 组件结构与渲染流程
+
+- 页面主入口为 `src/app/professor/JiahuiHu/page.tsx`，为每位教授单独生成页面。
+- 页面渲染时，所有数据均通过服务端组件（Server Component）在服务端获取，保证数据实时、最新。
+- 数据获取失败时会显示友好的错误提示。
+- 页面内容由 `ProfessorProfileContent` 组件负责渲染，所有数据通过 props 传递。
+
+### 主要特性
+
+- **无硬编码**：所有展示内容均来源于数据库，无“Zichen Xu”等硬编码信息，支持多教授扩展。
+- **分组展示**：学术服务、奖项、资助等均支持“特色”与“详细”分组，便于前端灵活展示。
+- **出版物作者智能格式化**：支持内部成员高亮、外部作者自动格式化，兼容通讯作者标记。
+- **地址信息**：优先显示数据库中的 `office_location`，如无则使用默认地址。
+- **错误处理**：数据获取异常时，页面会显示相应的错误信息，便于调试和用户提示。
+
+### 参考 lab_leader 实现
+
+- 教授页面的数据获取和分组方式与 `lab_leader` 页面保持一致，便于维护和扩展。
+- 代码结构清晰，便于后续添加更多教授页面或调整数据展示逻辑。
+
+---
+
+> ⚠️ 所有教授页面均采用上述动态数据库查询与分组渲染方式，原有静态/硬编码实现已废弃，请勿再参考旧实现。 
+
+## 旧文档：
+
 ## 1. 变更背景
 
 为提升教授个人主页的可维护性、可扩展性和数据一致性，对 `src/app/professor/JiahuiHu/page.tsx` 及其相关组件进行了重构和优化。此次变更旨在实现：
