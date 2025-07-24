@@ -20,7 +20,7 @@ import AwardsSection from "@/components/lab_leader/AwardsSection";
 import SponsorshipsSection from "@/components/lab_leader/SponsorshipsSection";
 
 // Define Props Interface to receive data from the parent Server Component
-interface ProfessorProfileContentProps {
+interface LabLeaderProfileContentProps {
   leaderData: Member | null;
   publications: PublicationInfo[];
   pubError: string | null;
@@ -56,7 +56,7 @@ const itemVariants = {
   },
 };
 
-const ProfessorProfileContent: React.FC<ProfessorProfileContentProps> = ({
+const LabLeaderProfileContent: React.FC<LabLeaderProfileContentProps> = ({
   leaderData,
   publications,
   pubError,
@@ -128,4 +128,4 @@ const ProfessorProfileContent: React.FC<ProfessorProfileContentProps> = ({
   );
 };
 
-export default ProfessorProfileContent;
+export default LabLeaderProfileContent;

@@ -2,7 +2,7 @@
 
 ## 1. 变更背景
 
-为提升教授个人主页的可维护性、可扩展性和数据一致性，对 `src/app/professor/jiahuishu/page.tsx` 及其相关组件进行了重构和优化。此次变更旨在实现：
+为提升教授个人主页的可维护性、可扩展性和数据一致性，对 `src/app/professor/JiahuiHu/page.tsx` 及其相关组件进行了重构和优化。此次变更旨在实现：
 - 统一教授页面与 lab_leader 页面的数据结构和展示风格
 - 支持从数据库动态获取教授信息
 - 组件化各类学术信息展示，便于后续扩展
@@ -10,7 +10,7 @@
 ## 2. 页面结构与数据流
 
 ### 2.1 页面入口
-- 路径：`src/app/professor/jiahuishu/page.tsx`
+- 路径：`src/app/professor/JiahuiHu/page.tsx`
 - 类型：Next.js 13+ App Router 的 Server Component
 - 主要逻辑：
   1. 通过 Prisma 查询数据库，获取 id 为 `JiahuiHu` 的教授信息（member 表）
@@ -65,7 +65,7 @@
 - 丰富各分区内容，如加入社会兼职、团队介绍等
 
 ## 5. 相关文件
-- 页面入口：`src/app/professor/jiahuishu/page.tsx`
+- 页面入口：`src/app/professor/JiahuiHu/page.tsx`
 - 主要组件：`src/components/lab_leader/ProfessorProfileContent.tsx` 及其所有子组件
 - 数据库接口：`@/lib/prisma`
 - 类型定义：`@/lib/types`、`@prisma/client`

@@ -10,15 +10,15 @@ interface NavItem {
   href: string;
 }
 
-const Navbar: React.FC = () => {
-  const professorNavItems: NavItem[] = [
-    { name: "Dr. Jiahui Hu", href: "/professor/jiahuishu" },
-  ];
+  const Navbar: React.FC = () => {
+//   const professorNavItems: NavItem[] = [
+//     { name: "Dr. Jiahui Hu", href: "/professor/JiahuiHu" },
+//   ];
 
   const navItems: NavItem[] = [
     { name: "Lab Leader (Dr. Zichen Xu)", href: "/lab_leader" },
      // ... 其他教授
-    ...professorNavItems, // 列出其他教授
+    // ...professorNavItems, // 列出其他教授
     { name: "Lab Members", href: "/members" },
     { name: "Publications", href: "/publications" },
     { name: "Lab Photo Gallery", href: "/gallery" },

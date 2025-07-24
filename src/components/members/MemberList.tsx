@@ -21,6 +21,11 @@ export function MemberList({ groupedMembers, statusTitles }: MemberListProps) {
   const headOfLabGroupKey = "PROFESSOR"; // 假设这是 PROFESSOR 的 key
   const headOfLabMembers = groupedMembers[headOfLabGroupKey] || [];
 
+  // 新增：区分 lab leader 和其他 professor
+  // 假设 lab leader id 固定为 "ZichenXu"，如需更改请同步修改
+  const labLeader = headOfLabMembers.find((m) => m.id === "ZichenXu");
+  const otherProfessors = headOfLabMembers.filter((m) => m.id !== "ZichenXu");
+
   // 获取除了 PROFESSOR 之外的其他分组键
   const otherGroupKeys = Object.keys(groupedMembers).filter(
     key => key !== headOfLabGroupKey
@@ -50,16 +55,34 @@ export function MemberList({ groupedMembers, statusTitles }: MemberListProps) {
 
   return (
     <>
-      {/* 1. 渲染 PROFESSOR (如果存在) */}
-      {headOfLabMembers.length > 0 && (
-        <section key={headOfLabGroupKey} className="mb-12 md:mb-16">
+      {/* 1. 渲染 Lab Leader (如果存在) */}
+      {labLeader && (
+        <section key="lab-leader" className="mb-12 md:mb-16">
           <h2
             className={`text-2xl md:text-3xl font-semibold ${themeColors.textColorPrimary ?? ""} border-b ${themeColors.footerBorder ?? "border-gray-300"} pb-3 mb-8 scroll-mt-20`}
           >
-            {statusTitles[headOfLabGroupKey] || "PROFESSOR"}
+            Lab Leader
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-x-6 gap-y-8">
-            {headOfLabMembers.map((member) => (
+            <MemberCard
+              key={labLeader.id}
+              member={labLeader}
+              isEmojiEnabled={isEmojiEnabled}
+            />
+          </div>
+        </section>
+      )}
+
+      {/* 2. 渲染 Professors (除 lab leader 外) */}
+      {otherProfessors.length > 0 && (
+        <section key="professors" className="mb-12 md:mb-16">
+          <h2
+            className={`text-2xl md:text-3xl font-semibold ${themeColors.textColorPrimary ?? ""} border-b ${themeColors.footerBorder ?? "border-gray-300"} pb-3 mb-8 scroll-mt-20`}
+          >
+            Professors
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-x-6 gap-y-8">
+            {otherProfessors.map((member) => (
               <MemberCard
                 key={member.id}
                 member={member}
@@ -69,24 +92,6 @@ export function MemberList({ groupedMembers, statusTitles }: MemberListProps) {
           </div>
         </section>
       )}
-
-      {/* 2. 硬编码渲染 Faculty 部分 */}
-      {/* <section key="faculty" className="mb-12 md:mb-16">
-        <h2
-          className={`text-2xl md:text-3xl font-semibold ${themeColors.textColorPrimary ?? ""} border-b ${themeColors.footerBorder ?? "border-gray-300"} pb-3 mb-8 scroll-mt-20`}
-        >
-          Faculty 
-        </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-x-6 gap-y-8">
-          {facultyMembers.map((member) => (
-            <MemberCard
-              key={member.id}
-              member={member} // 使用硬编码的数据
-              isEmojiEnabled={isEmojiEnabled}
-            />
-          ))}
-        </div>
-      </section> */}
 
       {/* 3. 渲染其他分组 (跳过 PROFESSOR) */}
       {otherGroupKeys.map((groupKey) => {

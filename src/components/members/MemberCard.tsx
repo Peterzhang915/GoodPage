@@ -110,8 +110,18 @@ export function MemberCard({ member, isEmojiEnabled }: MemberCardProps) {
     confettiRef.current.addConfetti(config as any);
   };
 
+  // 计算跳转链接
+  let href = `/members/${member.id}`;
+  if (member.status === MemberStatus.PROFESSOR) {
+    if (member.id === "ZichenXu") {
+      href = "/lab_leader";
+    } else {
+      href = `/professor/${member.id}`;
+    }
+  }
+
   return (
-    <Link href={`/members/${member.id}`} className="block group h-full">
+    <Link href={href} className="block group h-full">
       <motion.div
         ref={cardRef}
         onMouseEnter={handleMouseEnterConfetti}

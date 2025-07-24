@@ -11,7 +11,7 @@ import type {
 } from "@prisma/client";
 // Import the extracted component
 import prisma from "@/lib/prisma"; // Import Prisma Client instance
-import ProfessorProfileContent from "@/components/lab_leader/ProfessorProfileContent";
+import LabLeaderProfileContent from "@/components/lab_leader/LabLeaderProfileContent";
 
 // Force dynamic rendering (SSR) for this page
 export const dynamic = 'force-dynamic';
@@ -39,9 +39,9 @@ export default async function ProfessorPage() {
   const professorId = "ZichenXu"; // Assuming the ID is fixed
 
   // --- 获取教授个人信息和关联数据 ---
-  let professorData: Member | null = null;
+  let leaderData: Member | null = null;
   try {
-    professorData = await prisma.member.findUnique({
+    leaderData = await prisma.member.findUnique({
       where: { id: professorId },
     });
 
@@ -49,7 +49,7 @@ export default async function ProfessorPage() {
     // if (!professorData) { notFound(); }
 
     // Fetch services, awards, and sponsorships only if professor exists
-    if (professorData) {
+    if (leaderData) {
       services = await prisma.academicService.findMany({
         where: { member_id: professorId },
         orderBy: { display_order: "asc" },
@@ -84,8 +84,8 @@ export default async function ProfessorPage() {
 
   // --- Render the client component and pass data as props ---
   return (
-    <ProfessorProfileContent
-      leaderData={professorData}
+    <LabLeaderProfileContent
+      leaderData={leaderData}
       publications={ccfAPubs}
       pubError={pubError}
       featuredServices={featuredServices}
