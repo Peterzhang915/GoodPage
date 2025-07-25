@@ -2,7 +2,7 @@
 
 import prisma from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
-import type { Teaching } from '@/lib/prisma'; // Import Teaching type
+import type { Teaching } from '@prisma/client'; // Import Teaching type
 
 // --- Type for Teaching Form Data ---
 // Omit id and member_id as they are handled by the action/database

@@ -2,7 +2,7 @@
 
 import prisma from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
-import type { Education } from '@/lib/prisma'; // Import Education type
+import type { Education } from '@prisma/client'; // Import Education type
 
 // --- Type for Education Form Data (excluding id and member_id) ---
 // Ensure Omit uses the correct foreign key name 'member_id'

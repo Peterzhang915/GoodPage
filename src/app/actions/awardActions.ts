@@ -2,7 +2,7 @@
 
 import prisma from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
-import type { Award } from '@/lib/prisma'; // Import Award type
+import type { Award } from '@prisma/client'; // Import Award type
 
 // --- Type for Award Form Data ---
 // Assuming Award model has 'id', 'member_id', 'year', 'content'
