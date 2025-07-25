@@ -16,7 +16,7 @@ import {
   Home,
 } from "lucide-react";
 import { themeColors } from "@/styles/theme";
-import type { Member, MemberStatus } from "@/lib/prisma"; // Import necessary types
+import type { Member, MemberStatus } from "@prisma/client"; // Import necessary types
 
 // Define the props based on the fields used in the original aside section
 // We might need a more specific type than just Member if only a subset is needed,
