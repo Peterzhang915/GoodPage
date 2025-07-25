@@ -11,6 +11,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { type AcademicServiceFormData } from '@/app/actions/academicServiceActions'; // Assuming type is exported
 import type { AcademicService } from '@prisma/client'; // Import base type if needed for initialData
+import { Switch } from '@/components/ui/switch';
 
 // Zod schema for client-side validation (can be the same as server-side if preferred)
 const AcademicServiceFormSchema = z.object({
@@ -19,6 +20,7 @@ const AcademicServiceFormSchema = z.object({
     startYear: z.coerce.number().int().positive("Start year must be a positive number.").optional().nullable(),
     endYear: z.coerce.number().int().positive("End year must be a positive number.").optional().nullable(),
     description: z.string().optional().nullable(),
+    isFeatured: z.boolean().optional(),
 }).refine(data => !data.startYear || !data.endYear || data.endYear >= data.startYear, {
     message: "End year cannot be before start year.",
     path: ["endYear"],
@@ -43,6 +45,7 @@ export function AcademicServiceFormModal({ isOpen, onClose, onSubmit, initialDat
             startYear: initialData?.start_year ?? null,
             endYear: initialData?.end_year ?? null,
             description: initialData?.description ?? '',
+            isFeatured: initialData?.isFeatured ?? false,
         },
     });
 
@@ -55,6 +58,7 @@ export function AcademicServiceFormModal({ isOpen, onClose, onSubmit, initialDat
                 startYear: initialData?.start_year ?? null,
                 endYear: initialData?.end_year ?? null,
                 description: initialData?.description ?? '',
+                isFeatured: initialData?.isFeatured ?? false,
             });
         }
     }, [initialData, isOpen, reset]);
@@ -123,6 +127,24 @@ export function AcademicServiceFormModal({ isOpen, onClose, onSubmit, initialDat
                         />
                         {/* No explicit error display for description unless needed */}
                     </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="isFeatured" className="text-right dark:text-gray-300">Featured?</Label>
+                        <Controller
+                            name="isFeatured"
+                            control={control}
+                            render={({ field }) => (
+                                <Switch
+                                    id="isFeatured"
+                                    checked={field.value ?? false}
+                                    onCheckedChange={field.onChange}
+                                    disabled={isSubmitting}
+                                    className="col-span-3"
+                                    aria-label="Mark as featured service"
+                                />
+                            )}
+                        />
+                    </div>
+                    {errors.isFeatured && <p className="text-sm text-red-500 dark:text-red-400 mt-1 min-h-[1.25em] leading-tight break-all whitespace-normal col-span-4">{errors.isFeatured.message}</p>}
 
                     <DialogFooter>
                          <DialogClose asChild>

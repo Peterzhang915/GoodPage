@@ -15,6 +15,7 @@ const AcademicServiceFormSchema = z.object({
     startYear: z.coerce.number().int().positive("Start year must be a positive number.").optional().nullable(), // Coerce string/null to number
     endYear: z.coerce.number().int().positive("End year must be a positive number.").optional().nullable(), // Coerce string/null to number
     description: z.string().optional().nullable(),
+    isFeatured: z.boolean().optional(),
 }).refine(data => !data.startYear || !data.endYear || data.endYear >= data.startYear, {
     message: "End year cannot be before start year.",
     path: ["endYear"], // Attach error to endYear field
@@ -43,7 +44,8 @@ export async function addAcademicServiceRecord(memberId: string, data: AcademicS
                 start_year: validatedData.startYear,     // Correct field
                 end_year: validatedData.endYear,         // Correct field
                 description: validatedData.description,   // Correct field
-                // display_order and isFeatured will use default values
+                isFeatured: validatedData.isFeatured ?? false,
+                // display_order will use default value
             },
         });
 
@@ -84,8 +86,9 @@ export async function updateAcademicServiceRecord(serviceId: number, data: Acade
                 start_year: validatedData.startYear,
                 end_year: validatedData.endYear,
                 description: validatedData.description,
+                isFeatured: validatedData.isFeatured ?? false,
                 // member_id is not updated here
-                // display_order and isFeatured are not updated by this action currently
+                // display_order is not updated by this action currently
             },
         });
 
