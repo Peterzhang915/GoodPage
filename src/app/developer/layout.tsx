@@ -27,7 +27,6 @@ export default function DeveloperLayout({ children }: DeveloperLayoutProps) {
     // Remove inter.className
     <div
       className={`font-mono min-h-screen flex flex-col bg-gray-900 text-gray-300`}
-      className={`font-mono min-h-screen flex flex-col bg-gray-900 text-gray-300`}
     >
       {/* This layout intentionally does not include Navbar or Footer */}
       {/* Remove container, mx-auto, and py-* to allow content to fill more space */}
