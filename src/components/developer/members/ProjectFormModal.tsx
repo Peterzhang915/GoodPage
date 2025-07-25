@@ -118,7 +118,7 @@ export function ProjectFormModal({ isOpen, onClose, onSubmit, initialData, membe
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[525px] dark:bg-gray-850 dark:border-gray-700">
         <DialogHeader>
-          <DialogTitle className="dark:text-gray-100">
+          <DialogTitle className="text-green-600 dark:text-green-400 text-xl font-semibold">
             {initialData ? 'Edit Project' : 'Add New Project'}
           </DialogTitle>
         </DialogHeader>
@@ -166,14 +166,12 @@ export function ProjectFormModal({ isOpen, onClose, onSubmit, initialData, membe
              {errors.tags && <p className="text-sm text-red-500 dark:text-red-400 mt-1">{errors.tags.message}</p>}
            </div>
 
-          <DialogFooter>
-             <DialogClose asChild>
-                <Button type="button" variant="outline" onClick={onClose} className="dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700">
-                    Cancel
-                </Button>
-             </DialogClose>
-            <Button type="submit" disabled={isSubmitting} className="dark:bg-indigo-600 dark:hover:bg-indigo-700 dark:text-white">
-              {isSubmitting ? 'Saving...' : 'Save Project'}
+          <DialogFooter className="mt-4">
+            <DialogClose asChild>
+              <Button type="button" variant="outline" className="dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700">Cancel</Button>
+            </DialogClose>
+            <Button type="submit" disabled={isSubmitting} className="bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600 dark:text-white">
+              {isSubmitting ? 'Saving...' : (initialData ? 'Save Changes' : 'Add Project')}
             </Button>
           </DialogFooter>
         </form>

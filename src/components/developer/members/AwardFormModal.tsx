@@ -27,7 +27,7 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import type { Award } from '@/lib/prisma';
+import type { Award } from '@prisma/client';
 import { AwardLevel } from '@prisma/client';
 import type { AwardFormData } from '@/app/actions/awardActions';
 

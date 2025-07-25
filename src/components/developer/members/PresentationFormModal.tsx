@@ -69,7 +69,7 @@ export function PresentationFormModal({ isOpen, onClose, onSubmit, initialData, 
         <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
             <DialogContent className="sm:max-w-md dark:bg-gray-850 dark:border-gray-700">
                 <DialogHeader>
-                    <DialogTitle className="dark:text-gray-100">{isEditing ? 'Edit' : 'Add'} Presentation</DialogTitle>
+                    <DialogTitle className="text-green-600 dark:text-green-400 text-xl font-semibold">{isEditing ? 'Edit' : 'Add'} Presentation</DialogTitle>
                 </DialogHeader>
                 <form onSubmit={handleSubmit(handleFormSubmit)} className="grid gap-4 py-4">
                     {/* Title */}
@@ -164,11 +164,11 @@ export function PresentationFormModal({ isOpen, onClose, onSubmit, initialData, 
                         </div>
                     </div>
 
-                    <DialogFooter>
+                    <DialogFooter className="mt-4">
                          <DialogClose asChild>
                              <Button type="button" variant="outline" className="dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700">Cancel</Button>
                          </DialogClose>
-                         <Button type="submit" disabled={isSubmitting} className="dark:bg-indigo-600 dark:hover:bg-indigo-700 dark:text-white">
+                         <Button type="submit" disabled={isSubmitting} className="bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600 dark:text-white">
                             {isSubmitting ? 'Saving...' : (isEditing ? 'Save Changes' : 'Add Presentation')}
                          </Button>
                     </DialogFooter>

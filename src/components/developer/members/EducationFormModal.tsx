@@ -19,7 +19,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import type { Education } from '@/lib/prisma';
+import type { Education } from '@prisma/client';
 import type { EducationFormData } from '@/app/actions/educationActions'; // Import the form data type
 
 // --- Zod Schema for Validation ---
