@@ -20,7 +20,7 @@ const BioSection: React.FC<BioSectionProps> = ({ bio_zh, bio_en }) => {
         className={`text-xl font-semibold ${themeColors.textColorPrimary} border-b ${themeColors.footerBorder} pb-2 mb-3 flex items-center gap-1.5`}
       >
         <Info size={18} />
-        个人简介
+        Bio
       </h2>
       {bio_zh && (
         <p

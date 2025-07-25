@@ -32,7 +32,7 @@ const SuperviseesSection: React.FC<SuperviseesSectionProps> = ({
       <h2
         className={`text-xl font-semibold ${themeColors.textColorPrimary} border-b ${themeColors.footerBorder} pb-2 mb-3 flex items-center gap-1.5`}
       >
-        <Users size={18} /> 指导学生
+        <Users size={18} /> Supervisees
       </h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mt-3">
         {supervisees.map((student) => (

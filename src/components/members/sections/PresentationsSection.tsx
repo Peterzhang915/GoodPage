@@ -22,7 +22,7 @@ const PresentationsSection: React.FC<PresentationsSectionProps> = ({
       <h2
         className={`text-xl font-semibold ${themeColors.textColorPrimary} border-b ${themeColors.footerBorder} pb-2 mb-3 flex items-center gap-1.5`}
       >
-        <PresentationIcon size={18} /> 学术报告
+        <PresentationIcon size={18} /> Presentations
       </h2>
       <ul className="space-y-3 list-none p-0 mt-3">
         {presentations.map((pres) => (

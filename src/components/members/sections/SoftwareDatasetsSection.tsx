@@ -19,7 +19,7 @@ const SoftwareDatasetsSection: React.FC<SoftwareDatasetsSectionProps> = ({
       <h2
         className={`text-xl font-semibold ${themeColors.textColorPrimary} border-b ${themeColors.footerBorder} pb-2 mb-3 flex items-center gap-1.5`}
       >
-        <Code size={18} />/<Database size={18} /> 软件与数据集
+        <Code size={18} />/<Database size={18} /> Software & Datasets
       </h2>
       <ul className="space-y-4 list-none p-0 mt-3">
         {softwareAndDatasets.map((item) => (

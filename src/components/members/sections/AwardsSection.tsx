@@ -17,7 +17,7 @@ const AwardsSection: React.FC<AwardsSectionProps> = ({ awards }) => {
       <h2
         className={`text-xl font-semibold ${themeColors.textColorPrimary} border-b ${themeColors.footerBorder} pb-2 mb-3 flex items-center gap-1.5`}
       >
-        <AwardIcon size={18} /> 所获荣誉
+        <AwardIcon size={18} /> Awards & Honors
       </h2>
       <ul className="space-y-2 list-disc pl-5 text-sm mt-3">
         {awards.map((award) => (

@@ -20,7 +20,7 @@ const ResearchInterestsSection: React.FC<ResearchInterestsSectionProps> = ({
       <h2
         className={`text-xl font-semibold ${themeColors.textColorPrimary} border-b ${themeColors.footerBorder} pb-2 mb-3 flex items-center gap-1.5`}
       >
-        <Lightbulb size={18} /> 研究兴趣
+        <Lightbulb size={18} /> Research Interests
       </h2>
       <div className="flex flex-wrap gap-2 mt-3">
         {research_interests

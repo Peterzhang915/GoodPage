@@ -18,7 +18,7 @@ const MoreAboutMeSection: React.FC<MoreAboutMeSectionProps> = ({
       <h2
         className={`text-xl font-semibold ${themeColors.textColorPrimary} border-b ${themeColors.footerBorder} pb-2 mb-3 flex items-center gap-1.5`}
       >
-        <Info size={18} /> 更多关于我
+        <Info size={18} /> More About Me
       </h2>
       {/* Assuming the content might contain newlines that should be preserved */}
       <div

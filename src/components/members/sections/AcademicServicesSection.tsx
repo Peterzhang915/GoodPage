@@ -24,7 +24,7 @@ const AcademicServicesSection: React.FC<AcademicServicesSectionProps> = ({
       <h2
         className={`text-xl font-semibold ${themeColors.textColorPrimary} border-b ${themeColors.footerBorder} pb-2 mb-3 flex items-center gap-1.5`}
       >
-        <BriefcaseBusiness size={18} /> 学术服务
+        <BriefcaseBusiness size={18} /> Academic Services
       </h2>
       <ul className="space-y-1.5 list-none pl-0 text-sm mt-3">
         {sortedServices.map((service) => (

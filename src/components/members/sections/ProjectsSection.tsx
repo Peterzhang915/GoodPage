@@ -22,7 +22,7 @@ const ProjectsSection: React.FC<ProjectsSectionProps> = ({ projects }) => {
       <h2
         className={`text-xl font-semibold ${themeColors.textColorPrimary} border-b ${themeColors.footerBorder} pb-2 mb-3 flex items-center gap-1.5`}
       >
-        <Briefcase size={18} /> 研究项目
+        <Briefcase size={18} /> Projects
       </h2>
       <ul className="space-y-4 list-none p-0 mt-3">
         {projects.map(({ project, role }) => (

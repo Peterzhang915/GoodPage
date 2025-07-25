@@ -20,7 +20,7 @@ const EducationSection: React.FC<EducationSectionProps> = ({
       <h2
         className={`text-xl font-semibold ${themeColors.textColorPrimary} border-b ${themeColors.footerBorder} pb-2 mb-3 flex items-center gap-1.5`}
       >
-        <GraduationCap size={18} /> 教育背景
+        <GraduationCap size={18} /> Education History
       </h2>
       <ul className="space-y-3 list-none p-0 mt-3">
         {educationHistory.map((edu) => (

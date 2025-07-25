@@ -17,7 +17,7 @@ const PatentsSection: React.FC<PatentsSectionProps> = ({ patents }) => {
       <h2
         className={`text-xl font-semibold ${themeColors.textColorPrimary} border-b ${themeColors.footerBorder} pb-2 mb-3 flex items-center gap-1.5`}
       >
-        <PatentIcon size={18} /> 专利
+        <PatentIcon size={18} /> Patents
       </h2>
       <ul className="space-y-2 list-disc pl-5 text-sm mt-3">
         {patents.map((patent) => (
