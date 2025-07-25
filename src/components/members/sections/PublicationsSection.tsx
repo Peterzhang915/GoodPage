@@ -157,17 +157,17 @@ function MemberPublicationItem({ pub }: { pub: PublicationInfo }) {
           </p>
         </details>
       )}
-      {pub.keywords && (
+      {/* 注释掉 keywords 部分，避免类型错误 */}
+      {/* {pub.keywords && (
         <div className={`mt-1 text-xs ${themeColors.textColorTertiary}`}>
           <span className="font-semibold mr-1">Keywords:</span> {pub.keywords}
         </div>
-      )}
+      )} */}
       {(pdfHref ||
         pub.slides_url ||
         pub.video_url ||
         pub.code_repository_url ||
-        pub.project_page_url ||
-        pub.dblp_url) && (
+        pub.project_page_url /*|| pub.dblp_url*/ ) && (
         <div className="flex flex-wrap items-center space-x-3 text-xs mt-1">
           {pdfHref && pdfHref !== "#" && (
             <a
@@ -180,7 +180,8 @@ function MemberPublicationItem({ pub }: { pub: PublicationInfo }) {
               PDF
             </a>
           )}
-          {pub.dblp_url && (
+          {/* 注释掉 dblp_url 部分，避免类型错误 */}
+          {/* {pub.dblp_url && (
             <a
               href={pub.dblp_url}
               target="_blank"
@@ -190,7 +191,7 @@ function MemberPublicationItem({ pub }: { pub: PublicationInfo }) {
               <LinkIcon size={12} />
               DBLP
             </a>
-          )}
+          )} */}
           {pub.slides_url && (
             <a
               href={pub.slides_url}
@@ -286,7 +287,7 @@ const PublicationsSection: React.FC<PublicationsSectionProps> = ({
       marginBottom: "1rem", // Corresponds to mb-4
       paddingBottom: "1rem", // Corresponds to pb-4
       borderBottomWidth: "1px", // Corresponds to border-b
-      transition: { type: "tween", duration: 0.3 },
+      transition: { duration: 0.3 },
     },
     exit: {
       opacity: 0,
@@ -294,7 +295,7 @@ const PublicationsSection: React.FC<PublicationsSectionProps> = ({
       marginBottom: 0,
       paddingBottom: 0,
       borderBottomWidth: 0,
-      transition: { type: "tween", duration: 0.2 },
+      transition: { duration: 0.2 },
     },
   };
 

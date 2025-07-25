@@ -1,7 +1,7 @@
 import React from "react";
 import { Code, Database } from "lucide-react";
 import { themeColors } from "@/styles/theme";
-import type { SoftwareDataset, ArtefactType } from "@/lib/prisma"; // Import required types
+import type { SoftwareDataset, ArtefactType } from "@prisma/client"; // Import required types
 
 type SoftwareDatasetsSectionProps = {
   softwareAndDatasets: SoftwareDataset[] | null | undefined;

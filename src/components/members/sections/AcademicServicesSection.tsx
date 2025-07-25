@@ -1,7 +1,7 @@
 import React from "react";
 import { BriefcaseBusiness } from "lucide-react";
 import { themeColors } from "@/styles/theme";
-import type { AcademicService } from "@/lib/prisma"; // Import the AcademicService type
+import type { AcademicService } from "@prisma/client"; // Import the AcademicService type
 
 type AcademicServicesSectionProps = {
   academicServices: AcademicService[] | null | undefined;
@@ -42,11 +42,11 @@ const AcademicServicesSection: React.FC<AcademicServicesSectionProps> = ({
                 </span>
               )}
               {service.description && <p className={`text-xs ${themeColors.textColorTertiary ?? 'text-gray-500'} mt-0.5`}>{service.description}</p>}
-              {service.website_url && 
+              {/* {service.website_url && 
                   <a href={service.website_url} target="_blank" rel="noopener noreferrer" className={`text-xs ${themeColors.link ?? 'text-blue-600 hover:underline'} block mt-0.5`}>
                       Website
                   </a>
-              }
+              } */}
             </div>
           </li>
         ))}

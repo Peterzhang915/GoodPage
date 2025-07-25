@@ -1,7 +1,7 @@
 import React from "react";
 import { Building } from "lucide-react"; // Use Building or BookCopy etc.
 import { themeColors } from "@/styles/theme";
-import type { Teaching } from "@/lib/prisma"; // Import the Teaching type
+import type { Teaching } from "@prisma/client"; // Import the Teaching type
 
 type TeachingSectionProps = {
   teachingRoles: Teaching[] | null | undefined;

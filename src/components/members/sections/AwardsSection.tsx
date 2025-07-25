@@ -1,7 +1,7 @@
 import React from "react";
 import { Award as AwardIcon } from "lucide-react";
 import { themeColors } from "@/styles/theme";
-import type { Award } from "@/lib/prisma"; // Import the Award type
+import type { Award } from "@prisma/client"; // Import the Award type
 
 type AwardsSectionProps = {
   awards: Award[] | null | undefined;

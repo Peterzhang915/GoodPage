@@ -1,7 +1,7 @@
 import React from "react";
 import { Briefcase } from "lucide-react";
 import { themeColors } from "@/styles/theme";
-import type { ProjectMember, Project } from "@/lib/prisma"; // Import required types
+import type { ProjectMember, Project } from "@prisma/client"; // Import required types
 
 // Define a type for the project data including the nested project details
 type ProjectMemberWithProject = ProjectMember & {

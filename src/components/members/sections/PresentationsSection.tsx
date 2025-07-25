@@ -4,7 +4,7 @@ import {
   Link as LinkIcon,
 } from "lucide-react";
 import { themeColors } from "@/styles/theme";
-import type { Presentation } from "@/lib/prisma"; // Import the Presentation type
+import type { Presentation } from "@prisma/client"; // Import the Presentation type
 
 type PresentationsSectionProps = {
   presentations: Presentation[] | null | undefined;

@@ -1,7 +1,7 @@
 import React from "react";
 import { FileText as PatentIcon } from "lucide-react"; // Using FileText for Patent
 import { themeColors } from "@/styles/theme";
-import type { Patent } from "@/lib/prisma"; // Import the Patent type
+import type { Patent } from "@prisma/client"; // Import the Patent type
 
 type PatentsSectionProps = {
   patents: Patent[] | null | undefined;

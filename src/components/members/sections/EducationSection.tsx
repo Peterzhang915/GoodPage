@@ -1,7 +1,7 @@
 import React from "react";
 import { GraduationCap } from "lucide-react";
 import { themeColors } from "@/styles/theme";
-import type { Education } from "@/lib/prisma"; // Import the Education type
+import type { Education } from "@prisma/client"; // Import the Education type
 
 type EducationSectionProps = {
   educationHistory: Education[] | null | undefined;
