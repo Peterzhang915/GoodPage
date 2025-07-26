@@ -35,11 +35,11 @@ import type { AwardFormData } from '@/app/actions/awardActions';
 const awardSchema = z.object({
   content: z.string().min(1, "Award content/description is required"),
   year: z.number({ invalid_type_error: "Year must be a number" })
-            .int()
-            .min(1900, "Invalid year")
-            .max(new Date().getFullYear() + 5, "Invalid year")
-            .optional()
-            .nullable(),
+    .int()
+    .min(1900, "Invalid year")
+    .max(new Date().getFullYear() + 5, "Invalid year")
+    .optional()
+    .nullable(),
   // Use nativeEnum for level
   level: z.nativeEnum(AwardLevel).optional().nullable(), // Allow null initially, map to default later if needed
   link_url: z.string().url("Invalid URL format").optional().or(z.literal('')).nullable(), // 允许空字符串或有效URL
@@ -173,7 +173,13 @@ export function AwardFormModal({
                  <Input
                      id="year"
                      type="number"
-                     {...register("year", { valueAsNumber: true })} // Ensure value is treated as number
+                     {...register("year", {
+                       setValueAs: v => {
+                         if (v === "" || v === undefined || v === null) return undefined;
+                         const n = Number(v);
+                         return isNaN(n) ? undefined : n;
+                       }
+                     })}
                      className="col-span-3 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
                      disabled={isSubmitting}
                      placeholder="YYYY (Optional)"
