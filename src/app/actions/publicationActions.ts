@@ -2,6 +2,7 @@
 
 import prisma from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
+import type { Prisma } from '@prisma/client';
 
 // --- Type for individual publication update ---
 interface FeaturedPublicationUpdate {
@@ -39,7 +40,7 @@ export async function updateFeaturedPublications(
 
   try {
     // Use a transaction to ensure all updates succeed or fail together
-    await prisma.$transaction(async (tx) => {
+    await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       console.log(`Action: Starting transaction for member ${memberId}`);
 
       // Option 1: Update each PublicationAuthor record individually (potentially many DB calls)
