@@ -76,7 +76,9 @@ export function AcademicServiceFormModal({ isOpen, onClose, onSubmit, initialDat
                 </DialogHeader>
                 <form onSubmit={handleSubmit(handleFormSubmit)} className="grid gap-4 py-4">
                     <div className="grid grid-cols-4 items-center gap-4">
-                        <Label htmlFor="organization" className="text-right dark:text-gray-300">Organization</Label>
+                        <Label htmlFor="organization" className="text-right dark:text-gray-300">
+                            Organization <span className="text-red-500">*</span>
+                        </Label>
                         <Input
                             id="organization"
                             {...register("organization")}
@@ -86,7 +88,9 @@ export function AcademicServiceFormModal({ isOpen, onClose, onSubmit, initialDat
                         {errors.organization && <p className="col-span-4 text-sm text-red-500 dark:text-red-400 text-right">{errors.organization.message}</p>}
                     </div>
                     <div className="grid grid-cols-4 items-center gap-4">
-                        <Label htmlFor="role" className="text-right dark:text-gray-300">Role</Label>
+                        <Label htmlFor="role" className="text-right dark:text-gray-300">
+                            Role <span className="text-red-500">*</span>
+                        </Label>
                         <Input
                             id="role"
                             {...register("role")}

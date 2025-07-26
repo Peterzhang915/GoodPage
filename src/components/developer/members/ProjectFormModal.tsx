@@ -124,7 +124,9 @@ export function ProjectFormModal({ isOpen, onClose, onSubmit, initialData, membe
         </DialogHeader>
         <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4">
           <div>
-            <Label htmlFor="title" className="dark:text-gray-300">Title</Label>
+            <Label htmlFor="title" className="dark:text-gray-300">
+              Title <span className="text-red-500">*</span>
+            </Label>
             <Input id="title" {...register("title")} className="dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100" />
             {errors.title && <p className="text-sm text-red-500 dark:text-red-400 mt-1">{errors.title.message}</p>}
           </div>

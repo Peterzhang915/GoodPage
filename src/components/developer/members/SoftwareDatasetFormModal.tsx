@@ -84,7 +84,9 @@ export function SoftwareDatasetFormModal({ isOpen, onClose, onSubmit, initialDat
                 <form onSubmit={handleSubmit(handleFormSubmit)} className="grid gap-4 py-4 max-h-[70vh] overflow-y-auto px-6">
                     {/* Title */}
                     <div className="grid grid-cols-4 items-center gap-4">
-                        <Label htmlFor="title" className="text-right dark:text-gray-300">Title*</Label>
+                        <Label htmlFor="title" className="text-right dark:text-gray-300">
+                            Title <span className="text-red-500">*</span>
+                        </Label>
                         <Input
                             id="title"
                             {...register("title")}

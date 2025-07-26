@@ -74,7 +74,9 @@ export function PresentationFormModal({ isOpen, onClose, onSubmit, initialData, 
                 <form onSubmit={handleSubmit(handleFormSubmit)} className="grid gap-4 py-4">
                     {/* Title */}
                     <div className="grid grid-cols-4 items-center gap-4">
-                        <Label htmlFor="title" className="text-right dark:text-gray-300">Title*</Label>
+                        <Label htmlFor="title" className="text-right dark:text-gray-300">
+                            Title <span className="text-red-500">*</span>
+                        </Label>
                         <Input
                             id="title"
                             {...register("title")}
