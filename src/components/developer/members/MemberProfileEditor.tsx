@@ -1262,7 +1262,7 @@ export default function MemberProfileEditor({ initialData }: MemberProfileEditor
               <EditableTextField label="Google Scholar ID" fieldName="google_scholar_id" initialValue={initialData.google_scholar_id} memberId={initialData.id} />
               <EditableTextField label="DBLP URL" fieldName="dblp_url" initialValue={initialData.dblp_url} memberId={initialData.id} inputType="url" />
               <EditableTextField label="CV URL" fieldName="cv_url" initialValue={initialData.cv_url} memberId={initialData.id} inputType="url" />
-              <EditableTextField label="ORCID ID" fieldName="orcid_id" initialValue={initialData.orcid_id} memberId={initialData.id} inputType="url" />
+              <EditableTextField label="ORCID ID" fieldName="orcid_id" initialValue={initialData.orcid_id} memberId={initialData.id} inputType="text" />
            </CardContent>
            </motion.div>
       </Card>
