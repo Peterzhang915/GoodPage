@@ -14,6 +14,7 @@ import {
   Clock,
   UserCheck,
   Home,
+  BookOpen,
 } from "lucide-react";
 import { themeColors } from "@/styles/theme";
 import type { Member, MemberStatus } from "@prisma/client"; // Import necessary types
@@ -140,15 +141,26 @@ const MemberSidebar: React.FC<MemberSidebarProps> = ({
             <GraduationCap size={20} />
           </a>
         )}
-        {member.dblp_id && (
+        {member.dblp_url && (
           <a
-            href={`https://dblp.org/pid/${member.dblp_id}.html`}
+            href={member.dblp_url}
             target="_blank"
             rel="noopener noreferrer"
             title="DBLP"
             className={`${themeColors.textColorSecondary} hover:${themeColors.textColorPrimary} transition-colors`}
           >
             <BookCopy size={20} />
+          </a>
+        )}
+        {member.orcid_id && (
+          <a
+            href={`https://orcid.org/${member.orcid_id}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            title="ORCID"
+            className={`${themeColors.textColorSecondary} hover:${themeColors.textColorPrimary} transition-colors`}
+          >
+            <BookOpen size={20} />
           </a>
         )}
         {member.cv_url && (

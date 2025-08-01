@@ -99,7 +99,8 @@ model Member {
   github_username  String?
   linkedin_url     String?
   google_scholar_id String?
-  dblp_id          String? // Added DBLP ID field
+  dblp_url         String? // Added DBLP URL field
+  orcid_id        String? // Added ORCID ID field
   cv_url           String?
   display_order    Int     @default(0)
   is_active        Boolean @default(true)

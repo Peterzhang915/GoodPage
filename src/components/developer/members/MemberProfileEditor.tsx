@@ -1260,8 +1260,9 @@ export default function MemberProfileEditor({ initialData }: MemberProfileEditor
               <EditableTextField label="GitHub Username" fieldName="github_username" initialValue={initialData.github_username} memberId={initialData.id} />
               <EditableTextField label="LinkedIn URL" fieldName="linkedin_url" initialValue={initialData.linkedin_url} memberId={initialData.id} inputType="url" />
               <EditableTextField label="Google Scholar ID" fieldName="google_scholar_id" initialValue={initialData.google_scholar_id} memberId={initialData.id} />
-              <EditableTextField label="DBLP ID" fieldName="dblp_id" initialValue={initialData.dblp_id} memberId={initialData.id} />
+              <EditableTextField label="DBLP URL" fieldName="dblp_url" initialValue={initialData.dblp_url} memberId={initialData.id} inputType="url" />
               <EditableTextField label="CV URL" fieldName="cv_url" initialValue={initialData.cv_url} memberId={initialData.id} inputType="url" />
+              <EditableTextField label="ORCID ID" fieldName="orcid_id" initialValue={initialData.orcid_id} memberId={initialData.id} inputType="url" />
            </CardContent>
            </motion.div>
       </Card>
