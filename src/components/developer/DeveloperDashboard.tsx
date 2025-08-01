@@ -21,7 +21,7 @@ import { themeColors } from "@/styles/theme";
 import ToolCard from "./ToolCard";
 import HomepageContentEditor from "./homepage/HomepageContentEditor";
 import CodeServerManager from "./codeserver/CodeServerManager";
-import PublicationManager from "./publication/PublicationManager";
+import MainPublicationContainer from "./publication/containers/MainPublicationContainer";
 import PhotoManager from "./photo/PhotoManager";
 // Assuming MemberManager is correctly located here for now
 // (You might want to move it to ./members/MemberManager later for consistency)
@@ -57,7 +57,7 @@ const availableTools: ToolConfig[] = [
     description: "Review pending, manually manage publication entries.",
     icon: BookUp,
     requiredPermission: "manage_publications",
-    component: PublicationManager,
+    component: MainPublicationContainer,
     buttonText: "Manage Publications",
   },
   {

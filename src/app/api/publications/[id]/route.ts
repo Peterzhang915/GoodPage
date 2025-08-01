@@ -157,14 +157,17 @@ const updatePublicationSchema = z.object({
 
 // PUT Handler for updating a specific publication
 export async function PUT(request: Request, { params }: RouteParams) {
+    // 【修复】在Next.js 15中需要await params
+    const resolvedParams = await params;
+
     // Defensively check params
-    if (!params || !params.id) {
+    if (!resolvedParams || !resolvedParams.id) {
         return NextResponse.json(
             { success: false, error: { message: 'Missing Publication ID in route parameters.' } },
             { status: 400 }
         );
     }
-    const id = params.id;
+    const id = resolvedParams.id;
     const publicationId = parseInt(id, 10);
 
     if (isNaN(publicationId)) {
@@ -226,12 +229,13 @@ export async function PUT(request: Request, { params }: RouteParams) {
             // Attempt to find Member IDs for each parsed name, handling "LastName, FirstName" format
             const memberLookups = parsedNames.map(async (name): Promise<{ id: string } | null> => {
                 let searchName = name; // Default to using the name as is
-                // Check if the name likely follows "LastName, FirstName" format
+                // 【修复】检查是否为 "FirstName, LastName" 格式（而不是 "LastName, FirstName"）
                 if (name.includes(',')) {
                     const parts = name.split(',').map(part => part.trim());
                     if (parts.length === 2 && parts[0].length > 0 && parts[1].length > 0) {
-                        // Reassemble as "FirstName LastName"
-                        searchName = `${parts[1]} ${parts[0]}`;
+                        // 重新组装为 "FirstName LastName" 格式
+                        // 注意：输入格式是 "FirstName, LastName"，所以parts[0]是FirstName，parts[1]是LastName
+                        searchName = `${parts[0]} ${parts[1]}`;
                         console.log(`[API PUT /api/publications/${id}] Transformed name '${name}' to '${searchName}' for DB lookup.`);
                     }
                     // Optional: Add else block here to handle cases like "LastName, " or ", FirstName" if necessary

@@ -57,24 +57,57 @@ export async function getAllPublicationsFormatted(): Promise<
 
     // 【修改】转换数据结构，生成 displayAuthors
     return publicationsRaw.map((p) => {
-      // 将内部作者信息提取到 Map 中，方便按 order 查找
-      const internalAuthorsMap = new Map<
-        number,
-        {
-          id: string;
-          name_en: string;
-          name_zh: string | null;
-          is_corresponding: boolean;
-        }
-      >();
-      p.authors.forEach((ap) => {
-        internalAuthorsMap.set(ap.author_order, {
-          id: ap.author.id,
-          name_en: ap.author.name_en,
-          name_zh: ap.author.name_zh,
-          is_corresponding: ap.is_corresponding_author,
+      // 将内部作者信息提取到数组中，方便按名字匹配
+      const internalAuthors = p.authors.map((ap) => ({
+        id: ap.author.id,
+        name_en: ap.author.name_en,
+        name_zh: ap.author.name_zh,
+        is_corresponding: ap.is_corresponding_author,
+        author_order: ap.author_order,
+      }));
+
+      // 辅助函数：检查作者名字是否匹配
+      const findMatchingMember = (authorName: string) => {
+        const cleanName = authorName.trim().toLowerCase();
+
+        return internalAuthors.find((member) => {
+          const nameEn = member.name_en.toLowerCase();
+          const nameZh = member.name_zh?.toLowerCase();
+
+          // 【修复】处理两种格式：
+          // 1. "LastName, FirstName" -> "FirstName LastName" (原有数据格式)
+          // 2. "FirstName, LastName" -> "FirstName LastName" (新数据格式)
+          let normalizedAuthorName1 = cleanName; // "LastName, FirstName" -> "FirstName LastName"
+          let normalizedAuthorName2 = cleanName; // "FirstName, LastName" -> "FirstName LastName"
+
+          if (cleanName.includes(',')) {
+            const parts = cleanName.split(',').map(p => p.trim());
+            if (parts.length === 2) {
+              // 尝试两种格式转换
+              normalizedAuthorName1 = `${parts[1]} ${parts[0]}`.toLowerCase(); // "LastName, FirstName" -> "FirstName LastName"
+              normalizedAuthorName2 = `${parts[0]} ${parts[1]}`.toLowerCase(); // "FirstName, LastName" -> "FirstName LastName"
+            }
+          }
+
+          // 多种匹配策略
+          return (
+            // 直接匹配原始名字
+            nameEn === cleanName ||
+            nameEn.includes(cleanName) ||
+            cleanName.includes(nameEn) ||
+            // 匹配转换后的名字格式1 ("LastName, FirstName" -> "FirstName LastName")
+            nameEn === normalizedAuthorName1 ||
+            nameEn.includes(normalizedAuthorName1) ||
+            normalizedAuthorName1.includes(nameEn) ||
+            // 匹配转换后的名字格式2 ("FirstName, LastName" -> "FirstName LastName")
+            nameEn === normalizedAuthorName2 ||
+            nameEn.includes(normalizedAuthorName2) ||
+            normalizedAuthorName2.includes(nameEn) ||
+            // 中文名匹配
+            (nameZh && (nameZh === cleanName || nameZh.includes(cleanName) || cleanName.includes(nameZh)))
+          );
         });
-      });
+      };
 
       const displayAuthors: DisplayAuthor[] = [];
       const authorString = p.authors_full_string;
@@ -85,31 +118,33 @@ export async function getAllPublicationsFormatted(): Promise<
           .map((f) => f.trim())
           .filter((f) => f);
         fragments.forEach((fragment, index) => {
-          const internalAuthor = internalAuthorsMap.get(index);
-          if (internalAuthor) {
+          // 【修复】按名字匹配而不是按index匹配
+          const matchedMember = findMatchingMember(fragment);
+          if (matchedMember) {
             // 匹配到内部作者
             displayAuthors.push({
               type: "internal",
-              id: internalAuthor.id,
-              name_en: internalAuthor.name_en,
-              name_zh: internalAuthor.name_zh,
+              id: matchedMember.id,
+              name_en: matchedMember.name_en,
+              name_zh: matchedMember.name_zh,
               order: index,
-              is_corresponding: internalAuthor.is_corresponding,
+              is_corresponding: matchedMember.is_corresponding,
             });
           } else {
             // 未匹配到内部作者，作为外部作者处理
             let formattedText = fragment; // Default to original fragment
-            // 【新增】尝试格式化 "Last, First" -> "First Last"
+            // 【修复】简单去掉逗号，不做格式转换
             if (fragment.includes(",")) {
               const parts = fragment.split(",").map((p) => p.trim());
+              // 如果恰好分割成2部分且两部分都不为空，直接用空格连接
               if (parts.length === 2 && parts[0] && parts[1]) {
-                // Successfully split into Last, First - reorder
-                formattedText = `${parts[1]} ${parts[0]}`;
+                formattedText = `${parts[0]} ${parts[1]}`;
               }
+              // 否则保持原样
             }
             displayAuthors.push({
               type: "external",
-              text: formattedText, // 使用格式化后的文本
+              text: formattedText,
               order: index,
             });
           }
@@ -199,23 +234,31 @@ export async function getPublicationsByMemberIdFormatted(
 
     // 【修改】应用相同的 displayAuthors 生成逻辑，包含外部作者格式化
     return publicationsRaw.map((p) => {
-      const internalAuthorsMap = new Map<
-        number,
-        {
-          id: string;
-          name_en: string;
-          name_zh: string | null;
-          is_corresponding: boolean;
-        }
-      >();
-      p.authors.forEach((ap) => {
-        internalAuthorsMap.set(ap.author_order, {
-          id: ap.author.id,
-          name_en: ap.author.name_en,
-          name_zh: ap.author.name_zh,
-          is_corresponding: ap.is_corresponding_author,
+      // 将内部作者信息提取到数组中，方便按名字匹配
+      const internalAuthors = p.authors.map((ap) => ({
+        id: ap.author.id,
+        name_en: ap.author.name_en,
+        name_zh: ap.author.name_zh,
+        is_corresponding: ap.is_corresponding_author,
+        author_order: ap.author_order,
+      }));
+
+      // 辅助函数：检查作者名字是否匹配
+      const findMatchingMember = (authorName: string) => {
+        const cleanName = authorName.trim().toLowerCase();
+        return internalAuthors.find((member) => {
+          const nameEn = member.name_en.toLowerCase();
+          const nameZh = member.name_zh?.toLowerCase();
+
+          // 精确匹配或包含匹配
+          return (
+            nameEn === cleanName ||
+            nameEn.includes(cleanName) ||
+            cleanName.includes(nameEn) ||
+            (nameZh && (nameZh === cleanName || nameZh.includes(cleanName) || cleanName.includes(nameZh)))
+          );
         });
-      });
+      };
 
       const displayAuthors: DisplayAuthor[] = [];
       const authorString = p.authors_full_string;
@@ -226,16 +269,17 @@ export async function getPublicationsByMemberIdFormatted(
           .map((f) => f.trim())
           .filter((f) => f);
         fragments.forEach((fragment, index) => {
-          const internalAuthor = internalAuthorsMap.get(index);
-          if (internalAuthor) {
+          // 【修复】按名字匹配而不是按index匹配
+          const matchedMember = findMatchingMember(fragment);
+          if (matchedMember) {
             // 匹配到内部作者
             displayAuthors.push({
               type: "internal",
-              id: internalAuthor.id,
-              name_en: internalAuthor.name_en,
-              name_zh: internalAuthor.name_zh,
+              id: matchedMember.id,
+              name_en: matchedMember.name_en,
+              name_zh: matchedMember.name_zh,
               order: index,
-              is_corresponding: internalAuthor.is_corresponding,
+              is_corresponding: matchedMember.is_corresponding,
             });
           } else {
             // 未匹配到内部作者，作为外部作者处理，并格式化
@@ -243,7 +287,11 @@ export async function getPublicationsByMemberIdFormatted(
             if (fragment.includes(",")) {
               const parts = fragment.split(",").map((p) => p.trim());
               if (parts.length === 2 && parts[0] && parts[1]) {
-                formattedText = `${parts[1]} ${parts[0]}`;
+                const lastName = parts[0];
+                const firstName = parts[1];
+                if (!lastName.includes(" ") && firstName.length > 0) {
+                  formattedText = `${firstName} ${lastName}`;
+                }
               }
             }
             displayAuthors.push({

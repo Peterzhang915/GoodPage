@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import prisma from '@/lib/prisma';
 import { Prisma, PublicationType } from '@prisma/client'; // Ensure PublicationType is imported
 import * as z from 'zod'; // Import zod for input validation
+import { getAllPublicationsFormatted } from "@/lib/publications";
 // import { checkPermission, getCurrentUser } from '@/lib/auth'; // Placeholder for actual auth functions
 
 // Define the type for the data returned by the GET request, including authors
@@ -32,8 +33,8 @@ export type PublicationWithAuthors = Prisma.PublicationGetPayload<typeof publica
 export async function GET() {
   console.log("API: Handling GET /api/publications");
   try {
-    // --- Permission Check Placeholder --- 
-    /* 
+    // --- Permission Check Placeholder ---
+    /*
     const currentUser = await getCurrentUser();
     if (!currentUser || !checkPermission(currentUser, 'view_publications')) { // Or 'manage_publications'
       console.warn("API: Unauthorized attempt to fetch publications.");
@@ -47,35 +48,20 @@ export async function GET() {
     console.warn("API: Permission check is currently disabled in GET /api/publications.");
     // --- End Permission Check ---
 
-    const publications = await prisma.publication.findMany({
-      // Include author details via the join table
-      include: publicationWithAuthorsPayload.include,
-      // Default ordering: newest first? Or alphabetical? Let's do year desc, then title asc.
-      orderBy: [
-        { year: 'desc' },
-        { title: 'asc' },
-      ],
-      // TODO: Add pagination in the future (e.g., using take and skip)
+    // 使用 getAllPublicationsFormatted 函数获取格式化的出版物数据
+    const publications = await getAllPublicationsFormatted();
+
+    console.log(`API: Fetched ${publications.length} formatted publications.`);
+
+    return NextResponse.json({
+      data: publications,
+      count: publications.length,
     });
-    
-    // --- TEMPORARY LOGGING --- 
-    const fetchedIds = publications.map(p => p.id);
-    console.log(`[API GET /api/publications] Fetched publication IDs:`, fetchedIds); 
-    // --- END TEMPORARY LOGGING ---
-
-    console.log(`API: Fetched ${publications.length} publications.`);
-    // We need to transform the nested structure slightly for easier frontend consumption if needed,
-    // or return the Prisma structure directly. Let's return directly for now.
-    const responseData: PublicationWithAuthors[] = publications;
-
-    return NextResponse.json({ success: true, data: responseData });
 
   } catch (error) {
-    console.error("API Error fetching all publications:", error);
-    const message = error instanceof Error ? error.message : "Internal Server Error";
-    // Return a standard error response
+    console.error("API Error in GET /api/publications:", error);
     return NextResponse.json(
-      { success: false, error: { code: 'PUBLICATION_FETCH_ALL_FAILED', message } },
+      { error: "Failed to fetch publications" },
       { status: 500 }
     );
   }
@@ -157,15 +143,101 @@ export async function POST(request: Request) {
         type: type,   // Explicitly typed
         // NOTE: Optional fields not provided will default to null or their DB default
       },
-      // Optionally include authors if needed in the response (unlikely for create)
-      // include: publicationWithAuthorsPayload.include 
     });
+
+    // 4. Process and link authors with smart matching
+    if (authors_full_string) {
+      const authorNames = authors_full_string.split(';').map(name => name.trim()).filter(name => name.length > 0);
+
+      // 获取所有members用于智能匹配
+      const allMembers = await prisma.member.findMany({
+        select: { id: true, name_en: true, name_zh: true }
+      });
+
+      let authorOrder = 0;
+      for (const authorName of authorNames) {
+        // 【修复】使用智能匹配逻辑
+        const findMatchingMember = (inputName: string) => {
+          const cleanName = inputName.trim().toLowerCase();
+
+          return allMembers.find((member) => {
+            const nameEn = member.name_en.toLowerCase();
+            const nameZh = member.name_zh?.toLowerCase();
+
+            // 处理两种格式：
+            // 1. "LastName, FirstName" -> "FirstName LastName" (原有数据格式)
+            // 2. "FirstName, LastName" -> "FirstName LastName" (新数据格式)
+            let normalizedAuthorName1 = cleanName; // "LastName, FirstName" -> "FirstName LastName"
+            let normalizedAuthorName2 = cleanName; // "FirstName, LastName" -> "FirstName LastName"
+
+            if (cleanName.includes(',')) {
+              const parts = cleanName.split(',').map(p => p.trim());
+              if (parts.length === 2) {
+                // 尝试两种格式转换
+                normalizedAuthorName1 = `${parts[1]} ${parts[0]}`.toLowerCase(); // "LastName, FirstName" -> "FirstName LastName"
+                normalizedAuthorName2 = `${parts[0]} ${parts[1]}`.toLowerCase(); // "FirstName, LastName" -> "FirstName LastName"
+              }
+            }
+
+            // 多种匹配策略
+            return (
+              // 直接匹配原始名字
+              nameEn === cleanName ||
+              nameEn.includes(cleanName) ||
+              cleanName.includes(nameEn) ||
+              // 匹配转换后的名字格式1 ("LastName, FirstName" -> "FirstName LastName")
+              nameEn === normalizedAuthorName1 ||
+              nameEn.includes(normalizedAuthorName1) ||
+              normalizedAuthorName1.includes(nameEn) ||
+              // 匹配转换后的名字格式2 ("FirstName, LastName" -> "FirstName LastName")
+              nameEn === normalizedAuthorName2 ||
+              nameEn.includes(normalizedAuthorName2) ||
+              normalizedAuthorName2.includes(nameEn) ||
+              // 中文名匹配
+              (nameZh && (nameZh === cleanName || nameZh.includes(cleanName) || cleanName.includes(nameZh)))
+            );
+          });
+        };
+
+        const member = findMatchingMember(authorName);
+
+        if (member) {
+          // Link to existing member
+          await prisma.publicationAuthor.create({
+            data: {
+              publication_id: newPublication.id,
+              member_id: member.id,
+              author_order: authorOrder,
+            },
+          });
+          console.log(`API: Linked author "${authorName}" to member ID ${member.id} (${member.name_en})`);
+        } else {
+          console.warn(`API: Author "${authorName}" from authors_full_string not linked to any existing member.`);
+        }
+        authorOrder++;
+      }
+    }
 
     console.log(`API: Successfully created publication with ID: ${newPublication.id}`);
 
-    // 4. Return success response
+    // 5. 获取完整的publication数据（包含authors关系）用于返回
+    const completePublication = await prisma.publication.findUnique({
+      where: { id: newPublication.id },
+      include: {
+        authors: {
+          include: {
+            author: {
+              select: { id: true, name_en: true, name_zh: true }
+            }
+          },
+          orderBy: { author_order: 'asc' }
+        }
+      }
+    });
+
+    // 6. Return success response with complete data
     return NextResponse.json(
-      { success: true, data: newPublication },
+      { success: true, data: completePublication },
       { status: 201 } // 201 Created
     );
 
