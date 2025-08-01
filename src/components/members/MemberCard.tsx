@@ -125,10 +125,17 @@ export function MemberCard({ member, isEmojiEnabled }: MemberCardProps) {
       <motion.div
         ref={cardRef}
         onMouseEnter={handleMouseEnterConfetti}
-        className={`relative ${themeColors.backgroundWhite ?? "bg-white"} border ${themeColors.borderLight ?? "border-gray-200"} rounded-xl shadow-sm hover:shadow-lg transition-shadow duration-300 p-5 flex flex-col items-center text-center h-full overflow-hidden`}
+        className={`relative ${themeColors.backgroundWhite ?? "bg-white"} border ${themeColors.borderLight ?? "border-gray-200"} rounded-xl shadow-sm hover:shadow-lg transition-shadow duration-300 p-5 flex flex-col items-center text-center h-full overflow-hidden ${member.isGraduated ? 'opacity-75' : ''}`}
         whileHover={{ y: -5 }} // 保留卡片上浮效果
         transition={{ type: "spring", stiffness: 300 }}
       >
+        {/* 毕业标识 */}
+        {member.isGraduated && (
+          <div className="absolute top-2 right-2 bg-gradient-to-r from-amber-400 to-orange-500 text-white text-xs font-bold px-2 py-1 rounded-full shadow-md z-20">
+            🎓 Graduated
+          </div>
+        )}
+
         {/* 头像容器 (保持不变) */}
         <div
           className={`w-20 h-20 rounded-full overflow-hidden mb-4 border-2 ${themeColors.borderLight ?? "border-gray-300"} group-hover:border-${themeColors.primary ?? "blue-600"} group-hover:scale-105 transition-all duration-300 flex-shrink-0 z-10 shadow-sm`}

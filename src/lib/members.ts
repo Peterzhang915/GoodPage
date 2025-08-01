@@ -113,6 +113,32 @@ type EducationFormData = Partial<Omit<Education, 'id' | 'member_id' | 'member'>>
 // --- 数据获取函数 ---
 
 /**
+ * 计算成员是否已毕业
+ * @param member 成员信息
+ * @returns 是否已毕业
+ */
+function calculateGraduationStatus(member: Pick<Member, "status" | "enrollment_year">): boolean {
+  if (!member.enrollment_year) return false;
+
+  const currentYear = new Date().getFullYear();
+  const enrollmentYear = member.enrollment_year;
+  const yearsEnrolled = currentYear - enrollmentYear;
+
+  // 毕业逻辑
+  switch (member.status) {
+    case MemberStatus.UNDERGRADUATE:
+      return yearsEnrolled >= 4; // 本科生4年毕业
+    case MemberStatus.MASTER_STUDENT:
+      return yearsEnrolled >= 3; // 研究生3年毕业
+    case MemberStatus.PHD_STUDENT:
+      // TODO: 博士生毕业逻辑待定，通常需要5-7年且取决于研究进展
+      return false;
+    default:
+      return false; // 教授、博士后等不适用毕业逻辑
+  }
+}
+
+/**
  * 获取所有公开成员信息，用于成员列表页。
  * 在代码中进行分组和排序。
  * @returns 按状态分组的 MemberForCard 数组对象
@@ -144,13 +170,16 @@ export async function getAllMembersGrouped(): Promise<
     // 定义 SelectedMember 类型以注解 map 回调参数 m
     type SelectedMember = (typeof members)[0];
 
-    // 计算显示状态
+    // 计算显示状态和毕业状态
     const membersWithStatus: MemberForCard[] = members.map(
       (m: SelectedMember) => ({
         ...m,
         displayStatus: calculateMemberGradeStatus(
           m as Pick<Member, "status" | "enrollment_year" | "title_zh">,
         ), // 确保类型匹配
+        isGraduated: calculateGraduationStatus(
+          m as Pick<Member, "status" | "enrollment_year">
+        ), // 新增：计算毕业状态
       }),
     );
 

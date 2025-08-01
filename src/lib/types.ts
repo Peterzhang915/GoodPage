@@ -33,7 +33,10 @@ export type MemberForCard = Pick<
   | "enrollment_year"
   | "favorite_emojis"
   | "research_interests"
-> & { displayStatus: string };
+> & {
+  displayStatus: string;
+  isGraduated?: boolean; // 新增：是否已毕业
+};
 
 // 【新增】定义智能作者显示结构
 export type DisplayAuthor =
