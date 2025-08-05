@@ -7,14 +7,15 @@ const prisma = new PrismaClient();
 // Handler for DELETE requests
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } }, // Next.js passes route params here
+  { params }: { params: Promise<{ id: string }> }, // Next.js 15 requires Promise
 ) {
-  const id = params.id;
+  const { id: idString } = await params; // Await params in Next.js 15
+  const id = parseInt(idString, 10); // Convert string to integer
   console.log(`Received DELETE request for pending publication ID: ${id}`);
 
-  if (!id) {
+  if (!id || isNaN(id)) {
     return NextResponse.json(
-      { error: "Publication ID is required" },
+      { error: "Valid publication ID is required" },
       { status: 400 },
     );
   }

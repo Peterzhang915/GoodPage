@@ -15,6 +15,9 @@ export async function getAllPublicationsFormatted(): Promise<
   try {
     // 【修改】调整 include/select 结构以获取所需数据
     const publicationsRaw = await prisma.publication.findMany({
+      where: {
+        status: "published" // 只获取已发布的出版物
+      },
       orderBy: [{ year: "desc" }, { id: "desc" }],
       select: {
         // 选择 Publication 的所有需要字段 + authors 关联
@@ -193,7 +196,12 @@ export async function getPublicationsByMemberIdFormatted(
   try {
     // 【修改】使用与 getAllPublicationsFormatted 相同的 select 结构
     const publicationsRaw = await prisma.publication.findMany({
-      where: { authors: { some: { member_id: memberId } } },
+      where: {
+        AND: [
+          { authors: { some: { member_id: memberId } } },
+          { status: "published" } // 只获取已发布的出版物
+        ]
+      },
       orderBy: [{ year: "desc" }, { id: "desc" }],
       select: {
         // <--- 使用和上面一样的 select 结构

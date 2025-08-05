@@ -351,7 +351,12 @@ export async function getMemberProfileData(
       }),
       prisma.publication.findMany({
         // 获取该成员的论文
-        where: { authors: { some: { member_id: id } } },
+        where: {
+          AND: [
+            { authors: { some: { member_id: id } } },
+            { status: "published" } // 只获取已发布的出版物
+          ]
+        },
         orderBy: [{ year: "desc" }, { id: "desc" }],
         select: {
           // 选择 Publication 的所有需要字段 + authors 关联

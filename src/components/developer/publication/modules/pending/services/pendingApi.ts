@@ -62,6 +62,28 @@ export const pendingApi = {
   },
 
   /**
+   * 批准出版物
+   */
+  async approve(id: number): Promise<void> {
+    const response = await fetch(`/api/publications/pending/${id}/approve`, {
+      method: "POST",
+    });
+
+    if (!response.ok) {
+      let errorMsg = `HTTP error! status: ${response.status}`;
+      try {
+        const errorData = await response.json();
+        if (errorData.error) {
+          errorMsg = errorData.error;
+        }
+      } catch {
+        // 忽略JSON解析错误，使用默认错误消息
+      }
+      throw new Error(errorMsg);
+    }
+  },
+
+  /**
    * 拒绝出版物（删除）
    */
   async reject(id: number): Promise<void> {

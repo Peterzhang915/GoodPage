@@ -24,10 +24,15 @@ const PendingItem: React.FC<PendingItemProps> = ({
   onApprove,
   onReject,
 }) => {
-  // 格式化作者信息
-  const formatAuthors = (authors: any[]) => {
-    if (!authors || authors.length === 0) return "No authors";
-    return authors.map(author => author.name_en || author.name_zh || "Unknown").join(", ");
+  // 格式化作者信息 - 支持 authors_full_string
+  const formatAuthors = () => {
+    if (publication.authors_full_string) {
+      return publication.authors_full_string;
+    }
+    if (publication.authors && publication.authors.length > 0) {
+      return publication.authors.map((author: any) => author.name_en || author.name_zh || "Unknown").join(", ");
+    }
+    return "No authors";
   };
 
   return (
@@ -53,12 +58,10 @@ const PendingItem: React.FC<PendingItemProps> = ({
       </div>
 
       {/* 中部：作者信息 */}
-      {publication.authors && publication.authors.length > 0 && (
-        <div className={`flex items-center gap-2 text-sm ${themeColors.devDescText} mb-2`}>
-          <Users size={14} />
-          <span>{formatAuthors(publication.authors)}</span>
-        </div>
-      )}
+      <div className={`flex items-center gap-2 text-sm ${themeColors.devDescText} mb-2`}>
+        <Users size={14} />
+        <span>{formatAuthors()}</span>
+      </div>
 
       {/* 底部：场所、年份、操作按钮 */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-xs mt-1">

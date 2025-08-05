@@ -345,6 +345,12 @@ model Publication {
   is_peer_reviewed      Boolean?         // 是否经过同行评审 (可选)
   publication_status    String?          // 发表状态 (例如 "Published", "Accepted", "Submitted", "Preprint") (可选)
   authors_full_string   String?          // 完整的、用于直接显示的作者列表字符串（包含格式和机构等）(可选)
+
+  // --- Pending 相关字段 ---
+  status                String?          @default("published") // 审核状态 ("pending_review", "published", "rejected")
+  raw_authors           String?          // 原始作者字符串 (用于 pending 审核)
+  source                String?          // 数据来源 ("manual", "bibtex_import", "yaml_import")
+
   createdAt             DateTime         @default(now()) // 记录创建时间
   updatedAt             DateTime         @updatedAt      // 记录最后更新时间
 
