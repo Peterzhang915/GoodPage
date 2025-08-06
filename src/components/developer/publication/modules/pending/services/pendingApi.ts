@@ -144,4 +144,34 @@ export const pendingApi = {
       updatedAt: result.data.updatedAt ? new Date(result.data.updatedAt) : new Date(),
     };
   },
+
+  /**
+   * 清除所有待审核出版物
+   */
+  async clearAll(): Promise<{ deletedCount: number }> {
+    const response = await fetch("/api/publications/pending/clear-all", {
+      method: "DELETE",
+    });
+
+    if (!response.ok) {
+      let errorMsg = `HTTP error! status: ${response.status}`;
+      try {
+        const errorData = await response.json();
+        if (errorData.error) {
+          errorMsg = errorData.error;
+        }
+      } catch {
+        // 忽略JSON解析错误，使用默认错误消息
+      }
+      throw new Error(errorMsg);
+    }
+
+    const result = await response.json();
+
+    if (!result.success) {
+      throw new Error(result.error || "Clear all failed");
+    }
+
+    return result.data;
+  },
 };

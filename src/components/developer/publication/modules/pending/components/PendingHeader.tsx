@@ -1,14 +1,16 @@
 "use client";
 
 import React from "react";
-import { Clock, RefreshCw, PlusCircle } from "lucide-react";
+import { Clock, RefreshCw, PlusCircle, Trash2 } from "lucide-react";
 import { themeColors } from "@/styles/theme";
 
 interface PendingHeaderProps {
   count: number;
   isLoading: boolean;
+  isClearing?: boolean;
   onRefresh: () => void;
   onAdd: () => void;
+  onClearAll?: () => void;
 }
 
 /**
@@ -18,8 +20,10 @@ interface PendingHeaderProps {
 const PendingHeader: React.FC<PendingHeaderProps> = ({
   count,
   isLoading,
+  isClearing = false,
   onRefresh,
   onAdd,
+  onClearAll,
 }) => {
   return (
     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
@@ -47,7 +51,24 @@ const PendingHeader: React.FC<PendingHeaderProps> = ({
           <RefreshCw size={16} className={isLoading ? "animate-spin" : ""} />
           Refresh
         </button>
-        
+
+        {/* Clear All 按钮 - 只在有记录时显示 */}
+        {count > 0 && onClearAll && (
+          <button
+            onClick={onClearAll}
+            disabled={isClearing}
+            className={`flex items-center gap-2 px-3 py-2 rounded text-sm ${
+              isClearing
+                ? "bg-gray-600 cursor-not-allowed"
+                : "bg-red-600 hover:bg-red-700"
+            } text-white transition-colors disabled:opacity-50`}
+            title="删除所有待审核出版物"
+          >
+            <Trash2 size={16} className={isClearing ? "animate-pulse" : ""} />
+            {isClearing ? "Clearing..." : "Clear All"}
+          </button>
+        )}
+
         <button
           onClick={onAdd}
           className={`flex items-center gap-2 px-4 py-2 rounded text-sm bg-yellow-600 hover:bg-yellow-700 text-white transition-colors`}

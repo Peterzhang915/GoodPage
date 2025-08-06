@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { Upload, FileText, AlertCircle, CheckCircle, Loader2, Trash2, Plus, X } from "lucide-react";
+import { Upload, FileText, AlertCircle, CheckCircle, Loader2, Plus, X } from "lucide-react";
 import { toast } from "sonner";
 import { themeColors } from "@/styles/theme";
 
@@ -26,13 +26,11 @@ interface YamlFile {
  */
 const YamlImportManager: React.FC = () => {
   const [isImporting, setIsImporting] = useState(false);
-  const [isClearing, setIsClearing] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [isLoadingFiles, setIsLoadingFiles] = useState(false);
   const [deletingFiles, setDeletingFiles] = useState<Set<string>>(new Set());
 
   const [importResult, setImportResult] = useState<ImportResult | null>(null);
-  const [clearResult, setClearResult] = useState<{deletedCount: number} | null>(null);
   const [yamlFiles, setYamlFiles] = useState<YamlFile[]>([]);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -194,45 +192,10 @@ const YamlImportManager: React.FC = () => {
   };
 
   /**
-   * 一键清除所有 pending 记录
-   */
-  const handleClearAll = async () => {
-    if (!confirm('确定要删除所有 pending 记录吗？此操作不可撤销！')) {
-      return;
-    }
-
-    setIsClearing(true);
-    setClearResult(null);
-
-    try {
-      const response = await fetch('/api/publications/pending/clear-all', {
-        method: 'DELETE',
-      });
-
-      const result = await response.json();
-
-      if (response.ok && result.success) {
-        setClearResult(result.data);
-        toast.success(`Successfully deleted ${result.data.deletedCount} pending publications!`);
-      } else {
-        throw new Error(result.error || 'Clear failed');
-      }
-
-    } catch (error) {
-      console.error('Clear error:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      toast.error(`Clear failed: ${errorMessage}`);
-    } finally {
-      setIsClearing(false);
-    }
-  };
-
-  /**
    * 重置状态
    */
   const handleReset = () => {
     setImportResult(null);
-    setClearResult(null);
   };
 
   return (
@@ -403,68 +366,18 @@ const YamlImportManager: React.FC = () => {
           </table>
         </div>
 
-        {/* 操作按钮区域 */}
-        <div className="flex gap-4">
-          {/* 重置按钮 */}
-          {(importResult || clearResult) && (
-            <button
-              onClick={handleReset}
-              className={`inline-flex items-center px-4 py-2 border border-gray-600 rounded-md shadow-sm text-sm font-medium ${themeColors.devText} ${themeColors.devCardBg} hover:bg-gray-700 transition-colors`}
-            >
-              Reset Results
-            </button>
-          )}
-
-          {/* 一键清除按钮 */}
+        {/* 重置按钮 */}
+        {importResult && (
           <button
-            onClick={handleClearAll}
-            disabled={isClearing}
-            className={`inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white ${
-              isClearing
-                ? "bg-gray-600 cursor-not-allowed"
-                : "bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-            } transition-colors disabled:opacity-50`}
-            title="Delete all pending publications"
+            onClick={handleReset}
+            className={`inline-flex items-center px-4 py-2 border border-gray-600 rounded-md shadow-sm text-sm font-medium ${themeColors.devText} ${themeColors.devCardBg} hover:bg-gray-700 transition-colors`}
           >
-            {isClearing ? (
-              <>
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Clearing...
-              </>
-            ) : (
-              <>
-                <Trash2 className="w-4 h-4 mr-2" />
-                Clear All Pending
-              </>
-            )}
+            Reset Results
           </button>
-        </div>
+        )}
       </div>
 
-      {/* 清除结果 */}
-      {clearResult && (
-        <div className="space-y-4">
-          <div className={`p-4 rounded-md border ${themeColors.devCardBg} border-red-600`}>
-            <div className="flex items-center gap-2 mb-3">
-              <CheckCircle className="w-5 h-5 text-red-500" />
-              <h4 className={`font-medium ${themeColors.devText}`}>Clear Completed</h4>
-            </div>
 
-            <div className={`space-y-2 text-sm ${themeColors.devDescText}`}>
-              <div>🗑️ Deleted {clearResult.deletedCount} pending publications</div>
-            </div>
-          </div>
-
-          <div className={`p-3 rounded-md bg-green-900/20 border border-green-600`}>
-            <div className="flex items-center gap-2">
-              <AlertCircle className="w-4 h-4 text-green-400" />
-              <span className={`text-sm ${themeColors.devText}`}>
-                All pending publications have been cleared. You can now import fresh data.
-              </span>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* 导入结果 */}
       {importResult && (
@@ -514,7 +427,6 @@ const YamlImportManager: React.FC = () => {
           <li>• <strong>Upload:</strong> Click "Upload YAML File" to add new YAML files to the system</li>
           <li>• <strong>Import:</strong> Click "Import" button for any available YAML file to import publications</li>
           <li>• <strong>Delete:</strong> Click "Delete" button to remove YAML files from the system</li>
-          <li>• <strong>Clear All:</strong> Click "Clear All Pending" to delete all pending publications</li>
           <li>• Files are stored in the /data/yaml directory on the server</li>
           <li>• Only .yml and .yaml files are accepted (max 10MB)</li>
           <li>• The file should have a 'works' array with publication entries</li>

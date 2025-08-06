@@ -18,6 +18,7 @@ export const usePendingActions = (
   updatePublication: (id: number, publication: PublicationWithAuthors) => void,
   removePublication: (id: number) => void,
   addPublication: (publication: PublicationWithAuthors) => void,
+  setClearingState: (clearing: boolean) => void,
 ) => {
 
   // 获取待审核出版物列表
@@ -123,11 +124,37 @@ export const usePendingActions = (
     }
   }, [setSubmittingState, clearError, setErrorState, addPublication]);
 
+  // 清除所有待审核出版物
+  const clearAllPublications = useCallback(async () => {
+    // 确认操作
+    if (!window.confirm("Are you sure you want to delete ALL pending publications? This action cannot be undone.")) {
+      return;
+    }
+
+    setClearingState(true);
+    clearError();
+
+    try {
+      const result = await pendingApi.clearAll();
+      setPublications([]); // 清空列表
+      toast.success(`Successfully deleted ${result.deletedCount} pending publications!`);
+      return result;
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Unknown error";
+      setErrorState(`Failed to clear all publications: ${errorMessage}`);
+      toast.error("Failed to clear all publications");
+      throw error;
+    } finally {
+      setClearingState(false);
+    }
+  }, [setClearingState, clearError, setErrorState, setPublications]);
+
   return {
     fetchPublications,
     approvePublication,
     rejectPublication,
     updatePendingPublication,
     createPublication,
+    clearAllPublications,
   };
 };

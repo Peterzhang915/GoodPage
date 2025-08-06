@@ -36,11 +36,13 @@ const PendingManager: React.FC<PendingManagerProps> = ({ className = "" }) => {
     error,
     processingIds,
     isSubmitting,
+    isClearing,
     refreshPublications,
     createPublication,
     updatePendingPublication,
     approvePublication,
     rejectPublication,
+    clearAllPublications,
     clearError,
   } = usePendingManager();
 
@@ -94,8 +96,10 @@ const PendingManager: React.FC<PendingManagerProps> = ({ className = "" }) => {
       <PendingHeader
         count={publications.length}
         isLoading={isLoading}
+        isClearing={isClearing}
         onRefresh={refreshPublications}
         onAdd={openAddDialog}
+        onClearAll={clearAllPublications}
       />
 
       {/* 搜索栏 */}

@@ -11,6 +11,7 @@ export const usePendingData = () => {
   const [error, setError] = useState<string | null>(null);
   const [processingIds, setProcessingIds] = useState<Set<number>>(new Set());
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [isClearing, setIsClearing] = useState<boolean>(false);
 
   // 设置加载状态
   const setLoadingState = useCallback((loading: boolean) => {
@@ -51,6 +52,11 @@ export const usePendingData = () => {
     setIsSubmitting(submitting);
   }, []);
 
+  // 设置清除状态
+  const setClearingState = useCallback((clearing: boolean) => {
+    setIsClearing(clearing);
+  }, []);
+
   // 更新单个出版物
   const updatePublication = useCallback((id: number, updatedPublication: PublicationWithAuthors) => {
     setPublications(prev => 
@@ -75,6 +81,7 @@ export const usePendingData = () => {
     error,
     processingIds,
     isSubmitting,
+    isClearing,
 
     // 状态更新方法
     setLoadingState,
@@ -84,6 +91,7 @@ export const usePendingData = () => {
     addProcessingId,
     removeProcessingId,
     setSubmittingState,
+    setClearingState,
     updatePublication,
     removePublication,
     addPublication,

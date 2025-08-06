@@ -14,6 +14,7 @@ export const usePendingManager = () => {
     error,
     processingIds,
     isSubmitting,
+    isClearing,
     clearError,
     setLoadingState,
     setErrorState,
@@ -21,6 +22,7 @@ export const usePendingManager = () => {
     addProcessingId,
     removeProcessingId,
     setSubmittingState,
+    setClearingState,
     updatePublication,
     removePublication,
     addPublication,
@@ -33,6 +35,7 @@ export const usePendingManager = () => {
     rejectPublication,
     updatePendingPublication,
     createPublication,
+    clearAllPublications,
   } = usePendingActions(
     setLoadingState,
     setErrorState,
@@ -44,6 +47,7 @@ export const usePendingManager = () => {
     updatePublication,
     removePublication,
     addPublication,
+    setClearingState,
   );
 
   // 初始化时获取数据
@@ -63,7 +67,8 @@ export const usePendingManager = () => {
     error,
     processingIds,
     isSubmitting,
-    
+    isClearing,
+
     // 操作方法
     fetchPublications,
     refreshPublications,
@@ -71,6 +76,7 @@ export const usePendingManager = () => {
     rejectPublication,
     updatePendingPublication,
     createPublication,
+    clearAllPublications,
     clearError,
   };
 };
