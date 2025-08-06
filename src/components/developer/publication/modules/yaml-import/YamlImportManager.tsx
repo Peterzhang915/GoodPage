@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { Upload, FileText, AlertCircle, CheckCircle, Loader2, Plus, X } from "lucide-react";
+import { Upload, FileText, AlertCircle, CheckCircle, Loader2, Plus, X, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { themeColors } from "@/styles/theme";
 
@@ -250,7 +250,7 @@ const YamlImportManager: React.FC = () => {
               {isLoadingFiles ? (
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
               ) : (
-                <Upload className="w-4 h-4 mr-2" />
+                <RefreshCw className="w-4 h-4 mr-2" />
               )}
               Refresh
             </button>
