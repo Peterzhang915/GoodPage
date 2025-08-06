@@ -245,7 +245,7 @@ export async function POST(request: Request) {
     }
 
     // 读取服务器上的 YAML 文件
-    const filePath = path.join(process.cwd(), 'scripts', fileName);
+    const filePath = path.join(process.cwd(), 'data', 'yaml', fileName);
 
     if (!fs.existsSync(filePath)) {
       return NextResponse.json(

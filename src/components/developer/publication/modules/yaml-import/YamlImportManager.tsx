@@ -13,7 +13,7 @@ interface ImportResult {
   fileName: string;
 }
 
-// 可用的 YAML 文件列表（放在 scripts 目录下）
+// 可用的 YAML 文件列表（放在 data/yaml 目录下）
 const AVAILABLE_YAML_FILES = [
   'JiahuiHu.yml',
   // 可以添加更多文件
@@ -157,7 +157,7 @@ const YamlImportManager: React.FC = () => {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`text-sm ${themeColors.devDescText}`}>
-                      /scripts/{fileName}
+                      /data/yaml/{fileName}
                     </span>
                   </td>
                   <td className="px-6 py-4 text-center whitespace-nowrap">
@@ -300,7 +300,7 @@ const YamlImportManager: React.FC = () => {
         <ul className={`text-sm ${themeColors.devDescText} space-y-1`}>
           <li>• <strong>Import:</strong> Click "Import" button for any available YAML file</li>
           <li>• <strong>Clear All:</strong> Click "Clear All Pending" to delete all pending publications</li>
-          <li>• Files should be placed in the /scripts directory</li>
+          <li>• Files should be placed in the /data/yaml directory</li>
           <li>• The file should have a 'works' array with publication entries</li>
           <li>• Author information will be automatically parsed and saved</li>
           <li>• Duplicate titles will be automatically skipped (checks all existing records)</li>
