@@ -2,18 +2,19 @@
 
 import React, { useState } from "react";
 import { themeColors } from "@/styles/theme";
-import { BookUp, Clock, Upload, FileText } from "lucide-react";
+import { BookUp, Clock, Upload, FileText, Database } from "lucide-react";
 
 // 导入管理器组件
 import PublishedManager from "../modules/published/PublishedManager";
 import PendingManager from "../modules/pending/PendingManager";
 import YamlImportManager from "../modules/yaml-import/YamlImportManager";
+import DblpImportManager from "../modules/dblp-import/DblpImportManager";
 
 interface MainPublicationContainerProps {
   className?: string;
 }
 
-type TabType = 'published' | 'pending' | 'import';
+type TabType = 'published' | 'pending' | 'import' | 'dblp-import';
 
 /**
  * 主出版物管理容器组件
@@ -42,6 +43,12 @@ const MainPublicationContainer: React.FC<MainPublicationContainerProps> = ({
       label: 'Import YAML',
       icon: Upload,
       component: YamlImportManager
+    },
+    {
+      id: 'dblp-import' as TabType,
+      label: 'DBLP Import',
+      icon: Database,
+      component: DblpImportManager
     }
   ];
 

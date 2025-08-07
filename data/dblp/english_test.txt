@@ -1,0 +1,13 @@
+2024
+Authors: John Smith, Jane Doe 0001, Alice Johnson 0002, 
+Title: English Test Publication for UI Validation.
+Journal: Test Journal
+Volume: 1
+Pages: 1-10
+Year: 2024
+
+Authors: Bob Wilson 0003, Charlie Brown, David Lee 0004, 
+Title: Another English Test Publication
+Booktitle: Test Conference
+Pages: 11-20
+Year: 2024

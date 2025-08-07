@@ -1,0 +1,541 @@
+2025
+Authors: Linxiao Bai, Shanshan Li 0001, Zhouyang Jia, Yu Jiang 0001, Yuanliang Zhang, Zichen Xu 0001, Bin Lin 0011, Si Zheng, Xiangke Liao, 
+Title: μScope: Evaluating storage stack robustness against SSD's latency variation.
+Journal: J. Syst. Archit.
+Volume: 164
+Pages: 103405
+Year: 2025
+DOI: https://doi.org/10.1016/j.sysarc.2025.103405
+
+Authors: Minh Pham, Yongke Yuan, Hao Li 0071, Chengcheng Mou, Yicheng Tu, Zichen Xu 0001, Jinghan Meng, 
+Title: Dynamic Buffer Management in Massively Parallel Systems: The Power of Randomness.
+Journal: ACM Trans. Parallel Comput.
+Volume: 12, Number: 1
+Pages: 1:1-1:33
+Year: 2025
+DOI: https://doi.org/10.1145/3701623
+
+Authors: Jia-Hui Bi, Shaoshi Yang, Sheng Chen 0001, Ping Zhang 0003, 
+Title: High-Speed Ultra-Energy-Efficient Memristor-Based Massive MIMO SIC Detector Circuit With Hybrid Analog-Digital Computing Architecture.
+Journal: IEEE Trans. Veh. Technol.
+Volume: 74, Number: 7
+Pages: 11495-11500
+Year: 2025
+DOI: https://doi.org/10.1109/TVT.2025.3544093
+
+2024
+Authors: Yan Fu, Tiaozong Xiao, Zichen Xu 0001, 
+Title: Monitoring Rubbish on Roads in Real Time by Deep Neural Network.
+Journal: J. Circuits Syst. Comput.
+Volume: 33, Number: 10
+Year: 2024
+DOI: https://doi.org/10.1142/s0218126624501780
+
+Authors: Tao Zeng, Zichen Xu 0001, Dan Wu 0010, Xiaoling Li 0002, Biyong Liu, Haichuan Hu, Shuang Tan, Yusong Tan, Chenren Xu, Christopher Stewart, Qihe Zhou, Ye Cao, 
+Title: Exploring nonintrusive measurements of spatio-temporal portrait of microservices.
+Journal: Softw. Pract. Exp.
+Volume: 54, Number: 10
+Pages: 2025-2041
+Year: 2024
+DOI: https://doi.org/10.1002/spe.3234
+
+Authors: Jia-Hui Bi, Shaoshi Yang, Ping Zhang 0003, Sheng Chen 0001, 
+Title: In-Memory Massive MIMO Linear Detector Circuit with Extremely High Energy Efficiency and Strong Memristive Conductance Deviation Robustness.
+Booktitle: GLOBECOM
+Pages: 728-733
+Year: 2024
+DOI: https://doi.org/10.1109/GLOBECOM52923.2024.10901825
+
+Authors: Yi-Hang Ren, Shaoshi Yang, Jia-Hui Bi, Yu-Xin Zhang, 
+Title: Accelerating Maximum-Likelihood Detection in Massive MIMO: A New Paradigm With Memristor Crossbar Based In-Memory Computing Circuit.
+Journal: IEEE Trans. Veh. Technol.
+Volume: 73, Number: 12
+Pages: 19745-19750
+Year: 2024
+DOI: https://doi.org/10.1109/TVT.2024.3447714
+
+Authors: Zichen Xu 0001, Shaolei Ren, Omer F. Rana, 
+Title: Editorial.
+Journal: IEEE Trans. Sustain. Comput.
+Volume: 9, Number: 3
+Pages: 234-235
+Year: 2024
+DOI: https://doi.org/10.1109/TSUSC.2023.3336230
+
+Authors: Jiangbo Li, Zichen Xu 0001, Minh Pham, Yicheng Tu, Qihe Zhou, 
+Title: A Comparative Study of Intersection-Based Triangle Counting Algorithms on GPUs.
+Booktitle: IPDPS
+Pages: 1070-1081
+Year: 2024
+DOI: https://doi.org/10.1109/IPDPS57955.2024.00099
+
+Authors: Zichen Xu 0001, Yucong Dong, Junsheng Lou, Yangyang Wang, Yan Fu, 
+Title: Edge AI-driven neural network predictions for replica sync optimization.
+Journal: Appl. Soft Comput.
+Volume: 165
+Pages: 112083
+Year: 2024
+DOI: https://doi.org/10.1016/j.asoc.2024.112083
+
+Authors: Quan Zhang, Chijin Zhou, Gwihwan Go, Binqi Zeng, Heyuan Shi, Zichen Xu 0001, Yu Jiang 0001, 
+Title: Imperceptible Content Poisoning in LLM-Powered Applications.
+Booktitle: ASE
+Pages: 242-254
+Year: 2024
+DOI: https://doi.org/10.1145/3691620.3695001
+
+Authors: Haichuan Hu, Fangming Liu, Qiangyu Pei, Yongjie Yuan, Zichen Xu 0001, Lin Wang 0015, 
+Title: λGrapher: A Resource-Efficient Serverless System for GNN Serving through Graph Sharing.
+Booktitle: WWW
+Pages: 2826-2835
+Year: 2024
+DOI: https://doi.org/10.1145/3589334.3645383
+
+Authors: Xin Dai, Zihan Yu, Chenglin Liang, Cuiying Gao, Qidan He, Dan Wu 0010, Zichen Xu 0001, 
+Title: Detecting Novel Malware Classes with a Foundational Multi-Modality Data Analysis Model.
+Journal: Data Intell.
+Volume: 6, Number: 4
+Pages: 968-993
+Year: 2024
+DOI: https://doi.org/10.3724/2096-7004.di.2024.0056
+
+Authors: Jia-Hui Bi, Shaoshi Yang, Ping Zhang 0003, Sheng Chen 0001, 
+Title: Amplifier-Enhanced Memristive Massive MIMO Linear Detector Circuit: An Ultra-Energy-Efficient and Robust-to-Conductance-Error Design.
+Booktitle: GLOBECOM
+Pages: 3968-3973
+Year: 2024
+DOI: https://doi.org/10.1109/GLOBECOM52923.2024.10901048
+
+Authors: Hao Chen, Yucong Dong, Xin Wen, Zichen Xu 0001, 
+Title: SwitchFlow: Optimizing HPC Workflow Performance with Heterogeneous Serverless Frameworks.
+Booktitle: ICPADS
+Pages: 286-293
+Year: 2024
+DOI: https://doi.org/10.1109/ICPADS63350.2024.00045
+
+Authors: Ke Xu, Hanxiao Yi, Zichen Xu 0001, Dan Wu 0010, 
+Title: Data-driven Contribution-based Disciplinary Assessment System.
+Booktitle: ACM TUR-C
+Year: 2024
+DOI: https://doi.org/10.1145/3674399.3674423
+
+2023
+Authors: Wenting Zou, Li Li 0064, Zichen Xu 0001, Dan Wu 0010, Cheng-Zhong Xu 0001, Yuhao Wang 0001, Haoyang Zhu, Xiao Sun, 
+Title: SmartDL: energy-aware decremental learning in a mobile-based federation for geo-spatial system.
+Journal: Neural Comput. Appl.
+Volume: 35, Number: 5
+Pages: 3677-3696
+Year: 2023
+DOI: https://doi.org/10.1007/s00521-021-06378-9
+
+Authors: Yunxiao Du, Zichen Xu 0001, Kanqi Zhang, Jie Liu, Christopher Stewart, Jiacheng Huang 0002, 
+Title: Cost-Effective Strong Consistency on Scalable Geo-Diverse Data Replicas.
+Journal: IEEE Trans. Cloud Comput.
+Volume: 11, Number: 2
+Pages: 1764-1776
+Year: 2023
+DOI: https://doi.org/10.1109/TCC.2022.3161297
+
+Authors: Jie Cheng, Lu Lian, Zichen Xu 0001, Dan Wu 0010, Haoyang Zhu, Xiao Sun, Yuhao Wang 0001, 
+Title: Geo-SPS: bipartite graph representation for GeoSpatial prenatal survey data.
+Journal: Neural Comput. Appl.
+Volume: 35, Number: 5
+Pages: 3709-3724
+Year: 2023
+DOI: https://doi.org/10.1007/s00521-021-06371-2
+
+Authors: Peng Han 0005, Silin Zhou, Jie Yu, Zichen Xu 0001, Lisi Chen 0001, Shuo Shang, 
+Title: Personalized Re-ranking for Recommendation with Mask Pretraining.
+Journal: Data Sci. Eng.
+Volume: 8, Number: 4
+Pages: 357-367
+Year: 2023
+DOI: https://doi.org/10.1007/s41019-023-00219-6
+
+Authors: Xiaoyong Li 0002, Jingyun Gu, Guolong Tan, Wenjing Jiang, Ao Cui, Leiming Shu, Kaijun Ren, Haoyang Zhu, Jedi S. Shang, Zichen Xu 0001, 
+Title: Distributed processing of spatiotemporal ocean data: a survey.
+Journal: World Wide Web (WWW)
+Volume: 26, Number: 4
+Pages: 1481-1500
+Year: 2023
+DOI: https://doi.org/10.1007/s11280-022-01067-6
+
+Authors: Haichuan Hu, Zichen Xu 0001, Yuhao Wang 0001, Fangming Liu, 
+Title: Fast and Scalable Gate-Level Simulation in Massively Parallel Systems.
+Booktitle: ICCAD
+Pages: 1-9
+Year: 2023
+DOI: https://doi.org/10.1109/ICCAD57390.2023.10323959
+
+Authors: Song Wu, Xiaoyong Li 0002, Wei Dong, Senzhang Wang, Xiaojiang Zhang, Zichen Xu 0001, 
+Title: Multi-source and heterogeneous marine hydrometeorology spatio-temporal data analysis with machine learning: a survey.
+Journal: World Wide Web (WWW)
+Volume: 26, Number: 3
+Pages: 1115-1156
+Year: 2023
+DOI: https://doi.org/10.1007/s11280-022-01069-4
+
+Authors: Jin Li 0031, Wanyun Li, Zichen Xu 0001, Yuhao Wang 0001, Qiegen Liu, 
+Title: Wavelet Transform-Assisted Adaptive Generative Modeling for Colorization.
+Journal: IEEE Trans. Multim.
+Volume: 25
+Pages: 4547-4562
+Year: 2023
+DOI: https://doi.org/10.1109/TMM.2022.3177933
+
+Authors: Xiang Wang 0015, Junxing Zhu, Zichen Xu 0001, Kaijun Ren, Xinwang Liu, Fengyun Wang, 
+Title: Local nonlinear dimensionality reduction via preserving the geometric structure of data.
+Journal: Pattern Recognit.
+Volume: 143
+Pages: 109663
+Year: 2023
+DOI: https://doi.org/10.1016/j.patcog.2023.109663
+
+Authors: Lulu Kong, Zichen Xu 0001, Qiaoying Zhang, Yuhao Wang 0001, 
+Title: Carbon footprint and service coverage tradeoffs in geo-diverse sites.
+Journal: Future Gener. Comput. Syst.
+Volume: 143
+Pages: 1-14
+Year: 2023
+DOI: https://doi.org/10.1016/j.future.2023.01.005
+
+Authors: Junsheng Lou, Zichen Xu 0001, 
+Title: Hydis: A Hybrid Consistent KVS with Effective Sync Among Replicas.
+Booktitle: APPT
+Pages: 147-161
+Year: 2023
+DOI: https://doi.org/10.1007/978-981-99-7872-4_9
+
+2022
+Authors: Minh Pham, Hao Li 0071, Yongke Yuan, Chengcheng Mou, Kandethody Ramachandran, Zichen Xu 0001, Yicheng Tu, 
+Title: Dynamic memory management in massively parallel systems: a case on GPUs.
+Booktitle: ICS
+Pages: 24:1-24:13
+Year: 2022
+DOI: https://doi.org/10.1145/3524059.3532387
+
+Authors: Xiuxiu Wang, Yipei Niu, Fangming Liu, Zichen Xu 0001, 
+Title: When FPGA Meets Cloud: A First Look at Performance.
+Journal: IEEE Trans. Cloud Comput.
+Volume: 10, Number: 2
+Pages: 1344-1357
+Year: 2022
+DOI: https://doi.org/10.1109/TCC.2020.2992548
+
+Authors: Jingze Lu, Kaijun Ren, Xiaoyong Li 0002, Yanlai Zhao, Zichen Xu 0001, Xiaoli Ren, 
+Title: From reanalysis to satellite observations: gap-filling with imbalanced learning.
+Journal: GeoInformatica
+Volume: 26, Number: 2
+Pages: 397-428
+Year: 2022
+DOI: https://doi.org/10.1007/s10707-020-00426-7
+
+Authors: Wei Li 0059, Tuochao Chen, Zhe Ou, Xin Wen, Zichen Xu 0001, Chenren Xu, 
+Title: RetroFlex: enabling intuitive human-robot collaboration with flexible retroreflective tags.
+Journal: CCF Trans. Pervasive Comput. Interact.
+Volume: 4, Number: 4
+Pages: 437-451
+Year: 2022
+DOI: https://doi.org/10.1007/s42486-022-00120-7
+
+Authors: Zichen Xu 0001, Jie Zhou, Wenli Zheng, Yuhao Wang 0001, Minyi Guo, 
+Title: Exploiting big.LITTLE Batteries for Software Defined Management on Mobile Devices.
+Journal: IEEE Trans. Mob. Comput.
+Volume: 21, Number: 6
+Pages: 1998-2012
+Year: 2022
+DOI: https://doi.org/10.1109/TMC.2020.3035236
+
+Authors: Feilong Zuo, Zhengxiong Luo 0002, Junze Yu, Ting Chen 0002, Zichen Xu 0001, Aiguo Cui, Yu Jiang 0001, 
+Title: Vulnerability Detection of ICS Protocols via Cross-State Fuzzing.
+Journal: IEEE Trans. Comput. Aided Des. Integr. Circuits Syst.
+Volume: 41, Number: 11
+Pages: 4457-4468
+Year: 2022
+DOI: https://doi.org/10.1109/TCAD.2022.3201471
+
+Authors: Yuheng Shen, Yiru Xu, Hao Sun 0021, Jianzhong Liu, Zichen Xu 0001, Aiguo Cui, Heyuan Shi, Yu Jiang 0001, 
+Title: Tardis: Coverage-Guided Embedded Operating System Fuzzing.
+Journal: IEEE Trans. Comput. Aided Des. Integr. Circuits Syst.
+Volume: 41, Number: 11
+Pages: 4563-4574
+Year: 2022
+DOI: https://doi.org/10.1109/TCAD.2022.3198910
+
+Authors: Yicheng Tu, Mehrad Eslami, Zichen Xu 0001, Hadi Charkhgard, 
+Title: Multi-Query Optimization Revisited: A Full-Query Algebraic Method.
+Booktitle: IEEE Big Data
+Pages: 252-261
+Year: 2022
+DOI: https://doi.org/10.1109/BigData55660.2022.10020338
+
+Authors: Xiaoling Li 0002, Tao Zeng, Biyong Liu, Haichuan Hu, Zichen Xu 0001, Shuang Tan, Yusong Tan, Chenren Xu, 
+Title: Nonintrusive Measurement on Temporal and Spatial Features of Microservice Inferences.
+Booktitle: SmartWorld/UIC/ScalCom/DigitalTwin/PriComp/Meta
+Pages: 16-24
+Year: 2022
+DOI: https://doi.org/10.1109/SmartWorld-UIC-ATC-ScalCom-DigitalTwin-PriComp-Metaverse56740.2022.00030
+
+Authors: Zichen Xu 0001, Yunxiao Du, Kanqi Zhang, Jiacheng Huang 0002, Jie Liu, Jingxiong Gao, Christopher Stewart, 
+Title: Cost-effective BlackWater Raft on Highly Unreliable Nodes at Scale Out.
+Journal: CoRR
+Volume: abs/2203.07920
+Year: 2022
+DOI: https://doi.org/10.48550/arXiv.2203.07920
+
+2021
+Authors: Zichen Xu 0001, Gele Bai, Ao Cui, Shasha Wang, 
+Title: Power-aware throughput control for containerized relational operation.
+Journal: CCF Trans. High Perform. Comput.
+Volume: 3, Number: 1
+Pages: 70-84
+Year: 2021
+DOI: https://doi.org/10.1007/s42514-020-00061-6
+
+Authors: Wenting Zou, Li Li 0064, Zichen Xu 0001, Chengzhong Xu 0001, 
+Title: DEAL: Decremental Energy-Aware Learning in a Federated System.
+Journal: CoRR
+Volume: abs/2102.03051
+Year: 2021
+DOI: https://arxiv.org/abs/2102.03051
+
+Authors: Xiaoli Ren, Kaijun Ren, Zichen Xu 0001, Xiaoyong Li 0002, Aolong Zhou, Junqiang Song, Kefeng Deng, 
+Title: Improving Ocean Data Services with Semantics and Quick Index.
+Journal: J. Comput. Sci. Technol.
+Volume: 36, Number: 5
+Pages: 963-984
+Year: 2021
+DOI: https://doi.org/10.1007/s11390-021-1374-0
+
+Authors: Xiang Wang 0015, Xiaoyong Li 0002, Junxing Zhu, Zichen Xu 0001, Kaijun Ren, Weiming Zhang, Xinwang Liu, Kui Yu, 
+Title: A Local Similarity-Preserving Framework for Nonlinear Dimensionality Reduction with Neural Networks.
+Booktitle: DASFAA (2)
+Pages: 376-391
+Year: 2021
+DOI: https://doi.org/10.1007/978-3-030-73197-7_25
+
+Authors: Wenjing Jiang, Zichen Xu 0001, Cuiying Gao, Jingyun Gu, Yuhao Wang 0001, 
+Title: Cost risk analysis for instance recommendation in a sustainable Cloud-cyber-physical system framework.
+Journal: Softw. Pract. Exp.
+Volume: 51, Number: 11
+Pages: 2317-2336
+Year: 2021
+DOI: https://doi.org/10.1002/spe.2919
+
+Authors: Xiang Wang 0015, Xiaoyong Li 0002, Junxing Zhu, Zichen Xu 0001, Kaijun Ren, Weiming Zhang, Xinwang Liu, Kui Yu, 
+Title: A Local Similarity-Preserving Framework for Nonlinear Dimensionality Reduction with Neural Networks.
+Journal: CoRR
+Volume: abs/2103.06383
+Year: 2021
+DOI: https://arxiv.org/abs/2103.06383
+
+Authors: Jin Li 0031, Wanyun Li, Zichen Xu 0001, Yuhao Wang 0001, Qiegen Liu, 
+Title: Wavelet Transform-assisted Adaptive Generative Modeling for Colorization.
+Journal: CoRR
+Volume: abs/2107.04261
+Year: 2021
+DOI: https://arxiv.org/abs/2107.04261
+
+Authors: Xiaoli Ren, Xiaoyong Li 0002, Kaijun Ren, Junqiang Song, Zichen Xu 0001, Kefeng Deng, Xiang Wang 0015, 
+Title: Deep Learning-Based Weather Prediction: A Survey.
+Journal: Big Data Res.
+Volume: 23
+Pages: 100178
+Year: 2021
+DOI: https://doi.org/10.1016/j.bdr.2020.100178
+
+2020
+Authors: Serena Barakat, Hong Rao, Roger G. Nyberg, William Wei Song, Yuhao Wang 0001, Zichen Xu 0001, 
+Title: A Three-Stage Periodic Model: An Initial Analysis of Government Preventive Measures against COVID-19 Epidemics.
+Booktitle: ICBDT
+Pages: 26-31
+Year: 2020
+DOI: https://doi.org/10.1145/3422713.3422744
+
+Authors: Haoyang Zhu, Xiaoyong Li 0002, Qiang Liu 0004, Zichen Xu 0001, 
+Title: Top-k Dominating Queries on Skyline Groups.
+Journal: IEEE Trans. Knowl. Data Eng.
+Volume: 32, Number: 7
+Pages: 1431-1444
+Year: 2020
+DOI: https://doi.org/10.1109/TKDE.2019.2904065
+
+Authors: Jie Zhou, Zichen Xu 0001, Wenli Zheng, Yuhao Wang 0001, 
+Title: CAPMAN: Cooling and Active Power Management in big.LITTLE Battery Supported Devices.
+Booktitle: ICDCS
+Pages: 1009-1019
+Year: 2020
+DOI: https://doi.org/10.1109/ICDCS47774.2020.00043
+
+Authors: Zichen Xu 0001, Jie Cheng, Yuhao Wang 0001, Hong Rao, 
+Title: Developing (Almost) Free Distributed System Labs Using Container-based Technique.
+Booktitle: ACM TUR-C
+Pages: 101-106
+Year: 2020
+DOI: https://doi.org/10.1145/3393527.3393545
+
+2019
+Authors: Zichen Xu 0001, Christopher Stewart, Jiacheng Huang 0002, 
+Title: RAFTing Over on Geo-Diverse Spot markets.
+Booktitle: INFOCOM Workshops
+Pages: 490-495
+Year: 2019
+DOI: https://doi.org/10.1109/INFCOMW.2019.8845181
+
+Authors: Haifan Gong, Chaoqin Qian, Yue Wang 0048, Jianfeng Yang, Sheng Yi, Zichen Xu 0001, 
+Title: Opioid Abuse Prediction Based on Multi-output Support Vector Regression.
+Booktitle: ICMLT
+Pages: 36-41
+Year: 2019
+DOI: https://doi.org/10.1145/3340997.3341006
+
+Authors: Mehrad Eslami, Yicheng Tu, Hadi Charkhgard, Zichen Xu 0001, Jiacheng Liu 0006, 
+Title: PsiDB: A Framework for Batched Query Processing and Optimization.
+Booktitle: IEEE BigData
+Pages: 6046-6048
+Year: 2019
+DOI: https://doi.org/10.1109/BigData47090.2019.9005486
+
+Authors: Xiangyuan Sun, Xiaoyong Li 0002, Kaijun Ren, Junqiang Song, Zichen Xu 0001, Jing Chen, 
+Title: Rethinking compact abating probability modeling for open set recognition problem in Cyber-physical systems.
+Journal: J. Syst. Archit.
+Volume: 101
+Year: 2019
+DOI: https://doi.org/10.1016/j.sysarc.2019.101660
+
+Authors: Zichen Xu 0001, Christopher Stewart, Jiacheng Huang 0002, 
+Title: Elastic, geo-distributed RAFT.
+Booktitle: IWQoS
+Pages: 11:1-11:9
+Year: 2019
+DOI: https://doi.org/10.1145/3326285.3329046
+
+Authors: Zichen Xu 0001, Li Li 0064, Wenting Zou, 
+Title: Exploring federated learning on battery-powered devices.
+Booktitle: ACM TUR-C
+Pages: 6:1-6:6
+Year: 2019
+DOI: https://doi.org/10.1145/3321408.3323080
+
+2018
+Authors: Jingyun Gu, Zichen Xu 0001, Cuiying Gao, 
+Title: RISC: Risk Assessment of Instance Selection in Cloud Markets.
+Booktitle: ICA3PP (1)
+Pages: 59-74
+Year: 2018
+DOI: https://doi.org/10.1007/978-3-030-05051-1_5
+
+Authors: Yalin Yang, Linjie Xu, Zichen Xu 0001, Yuhao Wang 0001, 
+Title: Data-Intensive Computing Acceleration with Python in Xilinx FPGA.
+Booktitle: QUAT@WISE
+Pages: 111-124
+Year: 2018
+DOI: https://doi.org/10.1007/978-3-030-19143-6_8
+
+Authors: Weizheng Wu, Yizhi Wei, Cuiying Gao, Zichen Xu 0001, 
+Title: Leavs: A Learning-Enabled Autonomous Vehicle Simulation Platform.
+Booktitle: ICCSIP (2)
+Pages: 93-103
+Year: 2018
+DOI: https://doi.org/10.1007/978-981-13-7986-4_9
+
+2017
+Authors: Peian Wang, Jinyun Gu, Zichen Xu 0001, 
+Title: Exploring Fast Artistic Style Merging on Heterogenous Architecture.
+Booktitle: ICAC
+Pages: 75-76
+Year: 2017
+DOI: https://doi.org/10.1109/ICAC.2017.39
+
+2016
+Authors: Zichen Xu 0001, Christopher Stewart, Nan Deng, Xiaorui Wang, 
+Title: Blending on-demand and spot instances to lower costs for in-memory storage.
+Booktitle: INFOCOM
+Pages: 1-9
+Year: 2016
+DOI: https://doi.org/10.1109/INFOCOM.2016.7524348
+
+2015
+Authors: Zichen Xu 0001, Yi-Cheng Tu, Xiaorui Wang, 
+Title: Online Energy Estimation of Relational Operations in Database Systems.
+Journal: IEEE Trans. Computers
+Volume: 64, Number: 11
+Pages: 3223-3236
+Year: 2015
+DOI: https://doi.org/10.1109/TC.2015.2394309
+
+Authors: Nan Deng, Zichen Xu 0001, Christopher Stewart, Xiaorui Wang, 
+Title: Tell-tale tails: Decomposing response times for live internet services.
+Booktitle: IGSC
+Pages: 1-8
+Year: 2015
+DOI: https://doi.org/10.1109/IGCC.2015.7393717
+
+Authors: Zichen Xu 0001, Nan Deng, Christopher Stewart, Xiaorui Wang, 
+Title: CADRE: Carbon-Aware Data Replication for Geo-Diverse Services.
+Booktitle: ICAC
+Pages: 177-186
+Year: 2015
+DOI: https://doi.org/10.1109/ICAC.2015.15
+
+2014
+Authors: Nan Deng, Zichen Xu 0001, Christopher Stewart, Xiaorui Wang, 
+Title: From the Outside Looking In: Probing Web APIs to Build Detailed Workload Profiles.
+Booktitle: Feedback Computing
+Year: 2014
+DOI: https://www.usenix.org/conference/feedbackcomputing14/workshop-program/presentation/deng
+
+Authors: Zhang Xu, Haining Wang 0001, Zichen Xu 0001, Xiaorui Wang, 
+Title: Power Attack: An Increasing Threat to Data Centers.
+Booktitle: NDSS
+Year: 2014
+DOI: https://www.ndss-symposium.org/ndss2014/power-attack-increasing-threat-data-centers
+
+Authors: Yi-Cheng Tu, Xiaorui Wang, Bo Zeng 0001, Zichen Xu 0001, 
+Title: A system for energy-efficient data management.
+Journal: SIGMOD Rec.
+Volume: 43, Number: 1
+Pages: 21-26
+Year: 2014
+DOI: https://doi.org/10.1145/2627692.2627696
+
+2013
+Authors: Zichen Xu 0001, Yi-Cheng Tu, Xiaorui Wang, 
+Title: Dynamic Energy Estimation of Query Plans in Database Systems.
+Booktitle: ICDCS
+Pages: 83-92
+Year: 2013
+DOI: https://doi.org/10.1109/ICDCS.2013.21
+
+Authors: Zichen Xu 0001, Xiaorui Wang, Yi-Cheng Tu, 
+Title: Power-Aware Throughput Control for Database Management Systems.
+Booktitle: ICAC
+Pages: 315-324
+Year: 2013
+DOI: https://www.usenix.org/conference/icac13/technical-sessions/presentation/xu_zichen
+
+2012
+Authors: Zichen Xu 0001, Yi-Cheng Tu, Xiaorui Wang, 
+Title: PET: Reducing Database Energy Cost via Query Optimization.
+Journal: Proc. VLDB Endow.
+Volume: 5, Number: 12
+Pages: 1954-1957
+Year: 2012
+DOI: http://vldb.org/pvldb/vol5/p1954_zichenxu_vldb2012.pdf
+
+2011
+Authors: Yi-Cheng Tu, Xiaorui Wang, Zichen Xu 0001, 
+Title: Power-Aware DBMS: Potential and Challenges.
+Booktitle: SSDBM
+Pages: 598-599
+Year: 2011
+DOI: https://doi.org/10.1007/978-3-642-22351-8_53
+
+2010
+Authors: Zichen Xu 0001, Yi-Cheng Tu, Xiaorui Wang, 
+Title: Exploring power-performance tradeoffs in database systems.
+Booktitle: ICDE
+Pages: 485-496
+Year: 2010
+DOI: https://doi.org/10.1109/ICDE.2010.5447840
+

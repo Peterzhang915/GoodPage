@@ -9,6 +9,7 @@ export { default as PublicationManagerContainer } from './containers/MainPublica
 // 模块管理器导出
 export { default as PublishedManager } from './modules/published/PublishedManager';
 export { default as PendingManager } from './modules/pending/PendingManager';
+export { default as DblpImportManager } from './modules/dblp-import/DblpImportManager';
 
 // 已发布出版物模块导出
 export {
