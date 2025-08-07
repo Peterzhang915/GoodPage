@@ -15,6 +15,7 @@ import PendingList from "./components/PendingList";
 import { useDialog } from "../../shared/hooks/useDialog";
 import { useSearch } from "../../shared/hooks/useSearch";
 import SearchBar from "../../shared/components/SearchBar";
+import SearchHelp from "../../shared/components/SearchHelp";
 import { PublicationForm } from "../../forms/PublicationForm";
 
 // 导入待审核专用Hook
@@ -103,12 +104,17 @@ const PendingManager: React.FC<PendingManagerProps> = ({ className = "" }) => {
       />
 
       {/* 搜索栏 */}
-      <SearchBar
-        value={searchTerm}
-        onChange={setSearchTerm}
-        onClear={clearSearch}
-        placeholder="Search pending publications..."
-      />
+      <div className="flex gap-3 items-start">
+        <div className="flex-1">
+          <SearchBar
+            value={searchTerm}
+            onChange={setSearchTerm}
+            onClear={clearSearch}
+            placeholder="Search by title, venue, author, year, type, abstract, keywords..."
+          />
+        </div>
+        <SearchHelp />
+      </div>
 
       {/* 搜索结果提示 */}
       {hasSearch && (

@@ -13,7 +13,7 @@ export async function GET(request: Request) {
       orderBy: {
         createdAt: "desc", // Show newest pending items first
       },
-      // Select the necessary fields for the review list
+      // Select the necessary fields for the review list and search
       select: {
         id: true,
         title: true,
@@ -25,14 +25,49 @@ export async function GET(request: Request) {
         pdf_url: true,
         createdAt: true,
         updatedAt: true,
+        // 添加搜索相关字段
+        abstract: true,
+        keywords: true,
+        publisher: true,
+        ccf_rank: true,
+        volume: true,
+        number: true,
+        pages: true,
+        // 添加作者关联数据以支持搜索
+        authors: {
+          select: {
+            author_order: true,
+            is_corresponding_author: true,
+            author: {
+              select: {
+                id: true,
+                name_en: true,
+                name_zh: true,
+              },
+            },
+          },
+          orderBy: {
+            author_order: "asc",
+          },
+        },
       },
     });
 
     console.log(`Found ${pendingPublications.length} pending publications.`);
 
+    // 格式化数据以匹配 PublicationWithAuthors 接口
+    const formattedPublications = pendingPublications.map(pub => ({
+      ...pub,
+      authors: pub.authors.map(author => ({
+        author_order: author.author_order,
+        is_corresponding_author: author.is_corresponding_author,
+        author: author.author,
+      })),
+    }));
+
     return NextResponse.json({
       success: true,
-      data: pendingPublications
+      data: formattedPublications
     }, { status: 200 });
   } catch (error) {
     console.error("Error fetching pending publications:", error);

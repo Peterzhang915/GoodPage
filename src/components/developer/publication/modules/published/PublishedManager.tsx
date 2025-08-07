@@ -14,6 +14,7 @@ import { PublishedHeader, PublishedList, usePublishedManager } from "./index";
 import { useDialog } from "../../shared/hooks/useDialog";
 import { useSearch } from "../../shared/hooks/useSearch";
 import SearchBar from "../../shared/components/SearchBar";
+import SearchHelp from "../../shared/components/SearchHelp";
 import { PublicationForm } from "../../forms/PublicationForm";
 
 interface PublishedManagerProps {
@@ -87,12 +88,17 @@ const PublishedManager: React.FC<PublishedManagerProps> = ({ className = "" }) =
       />
 
       {/* 搜索栏 */}
-      <SearchBar
-        value={searchTerm}
-        onChange={setSearchTerm}
-        onClear={clearSearch}
-        placeholder="Search by title, venue, author, or year..."
-      />
+      <div className="flex gap-3 items-start">
+        <div className="flex-1">
+          <SearchBar
+            value={searchTerm}
+            onChange={setSearchTerm}
+            onClear={clearSearch}
+            placeholder="Search by title, venue, author, year, type, abstract, keywords..."
+          />
+        </div>
+        <SearchHelp />
+      </div>
 
       {/* 搜索结果提示 */}
       {hasSearch && (
