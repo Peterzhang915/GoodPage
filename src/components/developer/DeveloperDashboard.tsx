@@ -22,7 +22,7 @@ import ToolCard from "./ToolCard";
 import HomepageContentEditor from "./homepage/HomepageContentEditor";
 import CodeServerManager from "./codeserver/CodeServerManager";
 import MainPublicationContainer from "./publication/containers/MainPublicationContainer";
-import PhotoManager from "./photo/PhotoManager";
+import { PhotoManager as PhotoManager } from "./photo";
 // Assuming MemberManager is correctly located here for now
 // (You might want to move it to ./members/MemberManager later for consistency)
 import MemberManager from "./user/MemberManager";
