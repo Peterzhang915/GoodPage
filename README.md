@@ -1,6 +1,17 @@
+<div align="center">
+
 # NCU GOOD Lab 主页 (Homepage4good)
 
-本项目是南昌大学 GOOD 实验室新版主页的前端实现，使用 Next.js, TypeScript, Tailwind CSS 和 Framer Motion 构建。
+[![Plugin Version](https://img.shields.io/badge/Latest_Version-v1.0-blue.svg?style=for-the-badge&color=76bad9)](https://github.com/LEtorpedo/GoodPage)
+[![GOODLab](https://img.shields.io/badge/GOODLab-website-ff69b4?style=for-the-badge)](https://good.ncu.edu.cn/)
+
+_✨ 本项目是南昌大学 GOOD 实验室新版主页的前端实现，使用 Next.js, TypeScript, Tailwind CSS 和 Framer Motion 构建。 ✨_
+
+</div>
+
+<br/>
+<br/>
+<br/>
 
 ## 环境要求
 
@@ -31,7 +42,7 @@
    ```
 
 3. **扫描图片库 (Scan Gallery):**
-   如果需要导入图片库中的图片到数据库，运行：
+   （可选）如果需要导入图片库中的图片到数据库，运行：
 
    ```bash
    npm run db:scan-gallery
