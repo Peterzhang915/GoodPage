@@ -162,6 +162,7 @@ export async function getAllMembersGrouped(): Promise<
         enrollment_year: true,
         favorite_emojis: true,
         research_interests: true,
+        display_order: true,
       },
       orderBy: [{ enrollment_year: "asc" }, { name_en: "asc" }], // 数据库层面基础排序
     });
@@ -215,14 +216,17 @@ export async function getAllMembersGrouped(): Promise<
       .forEach((key) => {
         // 组内排序
         sortedGroupedData[key] = grouped[key].sort((a, b) => {
-          if (key === MemberStatus.PROFESSOR) {
-            // 教授分组：按 display_order 升序（数值小的在前）
-            // @ts-ignore: MemberForCard 里有 display_order
+          if (key === MemberStatus.PROFESSOR || key === MemberStatus.PHD_STUDENT) {
+            // 教授/博士生分组：按 display_order 升序（数值小的在前）
+            // @ts-ignore: MemberForCard 包含 display_order（来源于 Member）
             const orderA = a.display_order ?? 0;
             // @ts-ignore
             const orderB = b.display_order ?? 0;
-            return orderA - orderB;
-          } else {
+            const cmp = orderA - orderB;
+            if (cmp !== 0) return cmp;
+            // 次级排序：保持原有逻辑的稳定性（按年份/姓名等）
+          }
+          {
             // 其他分组：原有排序逻辑
             const yearA = a.enrollment_year ?? Infinity;
             const yearB = b.enrollment_year ?? Infinity;
@@ -580,6 +584,7 @@ export async function getMemberProfileData(
             year: p.year,
             venue: p.venue,
             ccf_rank: p.ccf_rank,
+            dblp_url: p.dblp_url,
             pdf_url: p.pdf_url,
             code_repository_url: p.code_repository_url,
             project_page_url: p.project_page_url,
@@ -590,6 +595,7 @@ export async function getMemberProfileData(
             pages: p.pages,
             publisher: p.publisher,
             abstract: p.abstract,
+            keywords: p.keywords,
             type: p.type,
             displayAuthors: displayAuthors,
             isFeatured: authorDetails.isFeatured,
