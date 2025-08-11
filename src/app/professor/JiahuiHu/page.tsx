@@ -2,7 +2,7 @@ import ProfessorProfileContent from "@/components/professor/ProfessorProfileCont
 import prisma from "@/lib/prisma";
 import type { AcademicService, Award, Sponsorship } from "@prisma/client";
 import type { PublicationInfo, DisplayAuthor } from "@/lib/types";
-import { getPublicationsByMemberIdFormatted } from "@/lib/publications";
+import { getAllPublicationsFormatted } from "@/lib/publications";
 
 // 强制动态渲染，确保始终获取最新数据
 export const dynamic = 'force-dynamic';
@@ -29,8 +29,14 @@ export default async function JiahuiHuPage() {
   let dataError: string | null = null;
 
   try {
-    // 获取出版物
-    publications = await getPublicationsByMemberIdFormatted(professorId);
+    // 获取所有出版物，然后过滤出该教授的论文
+    const allPublications = await getAllPublicationsFormatted();
+    publications = allPublications.filter((pub: PublicationInfo) => {
+      // 检查是否有该教授作为作者
+      return pub.displayAuthors.some(author =>
+        author.type === "internal" && author.id === professorId
+      );
+    });
     
     // 获取学术服务
     services = await prisma.academicService.findMany({
