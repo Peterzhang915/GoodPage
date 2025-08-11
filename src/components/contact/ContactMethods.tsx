@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Mail, Phone } from "lucide-react";
 import { themeColors } from "@/styles/theme";
+import ObfuscatedContact from "@/components/common/ObfuscatedContact";
 
 // 单个条目动画变体：控制从下方滑入并淡入的效果
 const itemVariants = {
@@ -15,25 +16,11 @@ const itemVariants = {
   },
 };
 
-// 防爬虫处理：将联系信息拆分为片段
-const emailUser = "xuz";
-const emailDomain = "ncu.edu.cn";
-const phonePart1 = "(0791)";
-const phonePart2 = "8396";
-const phonePart3 = "8516";
+// 联系信息
+const email = "xuz@ncu.edu.cn";
+const phone = "(0791) 8396 8516";
 
 const ContactMethods: React.FC = () => {
-  // 使用状态存储最终生成的、可点击的链接，初始值设为无效链接以防爬虫
-  const [emailHref, setEmailHref] = useState<string>("#");
-  const [phoneHref, setPhoneHref] = useState<string>("#");
-
-  useEffect(() => {
-    // 仅在组件挂载到客户端后执行，动态生成真实的 mailto 和 tel 链接
-    setEmailHref(`mailto:${emailUser}@${emailDomain}`);
-    setPhoneHref(
-      `tel:+86${phonePart1.replace(/\(|\)/g, "")}${phonePart2}${phonePart3}`,
-    );
-  }, []); // 空依赖数组确保此 effect 仅在挂载时运行一次
 
   return (
     // 应用入场动画
@@ -61,13 +48,10 @@ const ContactMethods: React.FC = () => {
             className={`${themeColors.textColorSecondary} group-hover:${themeColors.ccfAText} transition-colors`}
           />
         </motion.div>
-        {/* 邮箱链接，href 动态绑定状态，文本保持可读 */}
-        <a
-          href={emailHref} // 绑定到客户端生成的链接
-          className={`${themeColors.textColorPrimary} group-hover:${themeColors.ccfAText} transition-colors`}
-        >
-          {`${emailUser}@${emailDomain}`}
-        </a>
+        {/* 使用 ObfuscatedContact 组件保护邮箱 */}
+        <div className={`${themeColors.textColorPrimary} group-hover:${themeColors.ccfAText} transition-colors`}>
+          <ObfuscatedContact value={email} type="email" />
+        </div>
       </motion.div>
       {/* 电话区域 */}
       <motion.div
@@ -90,13 +74,10 @@ const ContactMethods: React.FC = () => {
             className={`${themeColors.textColorSecondary} group-hover:${themeColors.ccfAText} transition-colors`}
           />
         </motion.div>
-        {/* 电话链接，href 动态绑定状态，文本保持可读 */}
-        <a
-          href={phoneHref} // 绑定到客户端生成的链接
-          className={`${themeColors.textColorPrimary} group-hover:${themeColors.ccfAText} transition-colors`}
-        >
-          {`${phonePart1} ${phonePart2} ${phonePart3}`}
-        </a>
+        {/* 使用 ObfuscatedContact 组件保护电话 */}
+        <div className={`${themeColors.textColorPrimary} group-hover:${themeColors.ccfAText} transition-colors`}>
+          <ObfuscatedContact value={phone} type="phone" />
+        </div>
       </motion.div>
     </motion.div>
   );

@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { themeColors } from "@/styles/theme";
 import type { Member, MemberStatus } from "@prisma/client"; // Import necessary types
+import ObfuscatedContact from "@/components/common/ObfuscatedContact";
 
 // Define the props based on the fields used in the original aside section
 // We might need a more specific type than just Member if only a subset is needed,
@@ -33,7 +34,8 @@ type MemberSidebarProps = {
     | "personal_website"
     | "linkedin_url"
     | "google_scholar_id"
-    | "dblp_id"
+    | "dblp_url"
+    | "orcid_id"
     | "cv_url"
     | "office_location"
     | "office_hours"
@@ -87,12 +89,14 @@ const MemberSidebar: React.FC<MemberSidebarProps> = ({
         {displayStatus}
       </p>
       {member.email && (
-        <a
-          href={`mailto:${member.email}`}
-          className={`text-sm ${themeColors.linkColor} hover:underline break-all mb-3 block flex items-center justify-center gap-x-1`}
-        >
-          <Mail size={14} /> {member.email}
-        </a>
+        <div className={`text-sm mb-3 flex items-center justify-center gap-x-1 ${themeColors.textColorPrimary}`}>
+          <Mail size={14} />
+          <ObfuscatedContact
+            value={member.email}
+            type="email"
+            className="break-all"
+          />
+        </div>
       )}
 
       {/* Social Icons */}
