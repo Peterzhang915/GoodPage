@@ -5,11 +5,9 @@ import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   BookOpen,
-  Link as LinkIcon,
   FileText as FileIcon,
   Calendar,
   Users,
-  Lightbulb,
   ChevronDown,
   ChevronUp,
 } from "lucide-react";
@@ -68,9 +66,9 @@ function MemberPublicationItem({ pub }: { pub: PublicationInfo }) {
               {author.type === "internal" ? (
                 <Link
                   href={`/members/${author.id}`}
-                  className={`${themeColors.linkColor} hover:underline`}
+                  className={`${themeColors.linkColor} hover:underline font-semibold`}
                 >
-                  {author.name_zh || author.name_en}
+                  {author.name_en || author.name_zh}
                   {author.is_corresponding && (
                     <span
                       title="Corresponding Author"

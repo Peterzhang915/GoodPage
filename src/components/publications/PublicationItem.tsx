@@ -85,9 +85,9 @@ const PublicationItem: React.FC<PublicationItemProps> = ({ pub }) => {
               {author.type === "internal" ? (
                 <Link
                   href={`/members/${author.id}`}
-                  className={`${themeColors.linkColor ?? "text-blue-600"} hover:underline transition-colors`}
+                  className={`${themeColors.linkColor ?? "text-blue-600"} hover:underline transition-colors font-semibold`}
                 >
-                  {author.name_zh || author.name_en}
+                  {author.name_en || author.name_zh}
                   {author.is_corresponding && (
                     <span
                       title="Corresponding Author"
