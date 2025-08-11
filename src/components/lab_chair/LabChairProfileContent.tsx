@@ -12,12 +12,12 @@ import type { PublicationInfo } from "@/lib/types";
 import { themeColors } from "@/styles/theme";
 
 // Import Section Components
-import LabChairHeader from "@/components/lab_leader/LabChairHeader";
-import ResearchInterestsSection from "@/components/lab_leader/ResearchInterestsSection";
-import PublicationsSection from "@/components/lab_leader/PublicationsSection";
-import AcademicServicesSection from "@/components/lab_leader/AcademicServicesSection";
-import AwardsSection from "@/components/lab_leader/AwardsSection";
-import SponsorshipsSection from "@/components/lab_leader/SponsorshipsSection";
+import LabChairHeader from "@/components/lab_chair/LabChairHeader";
+import ResearchInterestsSection from "@/components/lab_chair/ResearchInterestsSection";
+import PublicationsSection from "@/components/lab_chair/PublicationsSection";
+import AcademicServicesSection from "@/components/lab_chair/AcademicServicesSection";
+import AwardsSection from "@/components/lab_chair/AwardsSection";
+import SponsorshipsSection from "@/components/lab_chair/SponsorshipsSection";
 
 // Define Props Interface to receive data from the parent Server Component
 interface LabChairProfileContentProps {

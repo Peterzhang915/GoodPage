@@ -114,7 +114,7 @@ export function MemberCard({ member, isEmojiEnabled }: MemberCardProps) {
   let href = `/members/${member.id}`;
   if (member.status === MemberStatus.PROFESSOR) {
     if (member.id === "ZichenXu") {
-      href = "/lab_leader";
+      href = "/lab_chair";
     } else {
       href = `/professor/${member.id}`;
     }

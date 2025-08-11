@@ -29,9 +29,9 @@
 - **地址信息**：优先显示数据库中的 `office_location`，如无则使用默认地址。
 - **错误处理**：数据获取异常时，页面会显示相应的错误信息，便于调试和用户提示。
 
-### 参考 lab_leader 实现
+### 参考 lab_chair 实现
 
-- 教授页面的数据获取和分组方式与 `lab_leader` 页面保持一致，便于维护和扩展。
+- 教授页面的数据获取和分组方式与 `lab_chair` 页面保持一致，便于维护和扩展。
 - 代码结构清晰，便于后续添加更多教授页面或调整数据展示逻辑。
 
 ---
@@ -43,7 +43,7 @@
 ## 1. 变更背景
 
 为提升教授个人主页的可维护性、可扩展性和数据一致性，对 `src/app/professor/JiahuiHu/page.tsx` 及其相关组件进行了重构和优化。此次变更旨在实现：
-- 统一教授页面与 lab_leader 页面的数据结构和展示风格
+- 统一教授页面与 lab_chair 页面的数据结构和展示风格
 - 支持从数据库动态获取教授信息
 - 组件化各类学术信息展示，便于后续扩展
 
@@ -59,7 +59,7 @@
   4. 将所有数据通过 props 传递给 `ProfessorProfileContent` 组件
 
 ### 2.2 组件拆分
-- 顶层组件：`ProfessorProfileContent`（`src/components/lab_leader/ProfessorProfileContent.tsx`）
+- 顶层组件：`ProfessorProfileContent`（`src/components/lab_chair/ProfessorProfileContent.tsx`）
   - 负责整体页面布局与各分区渲染
   - 接收所有学术数据、错误信息、地址等 props
 - 主要子组件：
@@ -85,17 +85,17 @@
 - 便于后续支持多位教授页面的复用
 
 ### 3.2 组件化与复用
-- 复用 lab_leader 目录下的所有核心展示组件，统一风格
-- 组件 props 设计与 lab_leader 页面对齐，便于后续数据结构统一
+- 复用 lab_chair 目录下的所有核心展示组件，统一风格
+- 组件 props 设计与 lab_chair 页面对齐，便于后续数据结构统一
 - 各分区均支持空数据和错误提示，提升健壮性
 
 ### 3.3 动画与主题
 - 页面整体及各分区引入 framer-motion 动画，提升用户体验
 - 主题色、背景色、字体等均通过 themeColors 统一管理，便于主题切换
 
-### 3.4 与 lab_leader 页面的异同
+### 3.4 与 lab_chair 页面的异同
 - 数据流一致，均为 Server Component 获取数据后传递给同一套组件
-- professor 页面当前仅查 member 主表，lab_leader 页面已支持多表联查
+- professor 页面当前仅查 member 主表，lab_chair 页面已支持多表联查
 - professor 页面可作为模板，后续支持多位教授/PI 主页
 
 ## 4. 后续扩展建议
@@ -106,7 +106,7 @@
 
 ## 5. 相关文件
 - 页面入口：`src/app/professor/JiahuiHu/page.tsx`
-- 主要组件：`src/components/lab_leader/ProfessorProfileContent.tsx` 及其所有子组件
+- 主要组件：`src/components/lab_chair/ProfessorProfileContent.tsx` 及其所有子组件
 - 数据库接口：`@/lib/prisma`
 - 类型定义：`@/lib/types`、`@prisma/client`
 

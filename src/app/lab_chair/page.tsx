@@ -1,4 +1,4 @@
-// src/app/lab_leader/page.tsx
+// src/app/lab_chair/page.tsx
 
 import { getAllPublicationsFormatted } from "@/lib/publications";
 import type { PublicationInfo } from "@/lib/types";
@@ -11,7 +11,7 @@ import type {
 } from "@prisma/client";
 // Import the extracted component
 import prisma from "@/lib/prisma"; // Import Prisma Client instance
-import LabChairProfileContent from "@/components/lab_leader/LabChairProfileContent";
+import LabChairProfileContent from "@/components/lab_chair/LabChairProfileContent";
 
 // Force dynamic rendering (SSR) for this page
 export const dynamic = 'force-dynamic';
