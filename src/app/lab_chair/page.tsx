@@ -11,7 +11,7 @@ import type {
 } from "@prisma/client";
 // Import the extracted component
 import prisma from "@/lib/prisma"; // Import Prisma Client instance
-import LabLeaderProfileContent from "@/components/lab_leader/LabLeaderProfileContent";
+import LabChairProfileContent from "@/components/lab_leader/LabChairProfileContent";
 
 // Force dynamic rendering (SSR) for this page
 export const dynamic = 'force-dynamic';
@@ -84,7 +84,7 @@ export default async function ProfessorPage() {
 
   // --- Render the client component and pass data as props ---
   return (
-    <LabLeaderProfileContent
+    <LabChairProfileContent
       leaderData={leaderData}
       publications={ccfAPubs}
       pubError={pubError}

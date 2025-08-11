@@ -12,7 +12,7 @@ import type { PublicationInfo } from "@/lib/types";
 import { themeColors } from "@/styles/theme";
 
 // Import Section Components
-import LabLeaderHeader from "@/components/lab_leader/LabLeaderHeader";
+import LabChairHeader from "@/components/lab_leader/LabChairHeader";
 import ResearchInterestsSection from "@/components/lab_leader/ResearchInterestsSection";
 import PublicationsSection from "@/components/lab_leader/PublicationsSection";
 import AcademicServicesSection from "@/components/lab_leader/AcademicServicesSection";
@@ -20,7 +20,7 @@ import AwardsSection from "@/components/lab_leader/AwardsSection";
 import SponsorshipsSection from "@/components/lab_leader/SponsorshipsSection";
 
 // Define Props Interface to receive data from the parent Server Component
-interface LabLeaderProfileContentProps {
+interface LabChairProfileContentProps {
   leaderData: Member | null;
   publications: PublicationInfo[];
   pubError: string | null;
@@ -56,7 +56,7 @@ const itemVariants = {
   },
 };
 
-const LabLeaderProfileContent: React.FC<LabLeaderProfileContentProps> = ({
+const LabChairProfileContent: React.FC<LabChairProfileContentProps> = ({
   leaderData,
   publications,
   pubError,
@@ -74,7 +74,7 @@ const LabLeaderProfileContent: React.FC<LabLeaderProfileContentProps> = ({
     // Root element for the content, applying theme background
     <div className={`${themeColors.themePageBg ?? "bg-gray-50"} min-h-screen`}>
       {/* Header Section - Not typically part of staggered animation, rendered directly */}
-      <LabLeaderHeader leaderData={leaderData} addressLine1={addressLine1} addressLine2={addressLine2} />
+      <LabChairHeader leaderData={leaderData} addressLine1={addressLine1} addressLine2={addressLine2} />
 
       {/* Main Content Area with Animation Container */}
       <motion.div
@@ -128,4 +128,4 @@ const LabLeaderProfileContent: React.FC<LabLeaderProfileContentProps> = ({
   );
 };
 
-export default LabLeaderProfileContent;
+export default LabChairProfileContent;

@@ -63,7 +63,7 @@
   - 负责整体页面布局与各分区渲染
   - 接收所有学术数据、错误信息、地址等 props
 - 主要子组件：
-  - `LabLeaderHeader`：教授头像、姓名、职称、联系方式、地址等（支持中英文）
+  - `LabChairHeader`：教授头像、姓名、职称、联系方式、地址等（支持中英文）
   - `ResearchInterestsSection`：研究方向介绍
   - `PublicationsSection`：代表性论文列表
   - `AcademicServicesSection`：学术服务（含 featured/detailed 展开）

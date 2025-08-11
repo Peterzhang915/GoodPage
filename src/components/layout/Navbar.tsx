@@ -16,7 +16,7 @@ interface NavItem {
 //   ];
 
   const navItems: NavItem[] = [
-    { name: "Lab Leader", href: "/lab_leader" },
+    { name: "Lab Chair", href: "/lab_chair" },
      // ... 其他教授
     // ...professorNavItems, // 列出其他教授
     { name: "Lab Members", href: "/members" },

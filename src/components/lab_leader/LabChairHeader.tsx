@@ -6,7 +6,7 @@ import { themeColors } from "@/styles/theme";
 import ObfuscatedContact from "@/components/common/ObfuscatedContact";
 
 // Define the props type, expecting a Member object (or relevant parts)
-type LabLeaderHeaderProps = {
+type LabChairHeaderProps = {
   // Pass the whole Member object or select needed fields
   // Using partial allows flexibility if not all fields are always present
   leaderData: Partial<Member> | null;
@@ -14,7 +14,7 @@ type LabLeaderHeaderProps = {
   addressLine2?: string;
 };
 
-const LabLeaderHeader: React.FC<LabLeaderHeaderProps> = ({ leaderData, addressLine1, addressLine2 }) => {
+const LabChairHeader: React.FC<LabChairHeaderProps> = ({ leaderData, addressLine1, addressLine2 }) => {
   // Provide default values or handle null case gracefully
   // 强制添加 Dr. 前缀
   const rawNameEn = leaderData?.name_en;
@@ -95,4 +95,4 @@ const LabLeaderHeader: React.FC<LabLeaderHeaderProps> = ({ leaderData, addressLi
   );
 };
 
-export default LabLeaderHeader;
+export default LabChairHeader;
