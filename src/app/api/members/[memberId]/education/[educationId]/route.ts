@@ -9,10 +9,11 @@ import {
 // GET handler for fetching a single education record
 export async function GET(
   request: NextRequest,
-  { params }: { params: { memberId: string; educationId: string } } // Define type directly
+  { params }: { params: Promise<{ memberId: string; educationId: string }> } // Define type directly
 ) {
   // TODO: Check read permissions?
-  const { educationId: educationIdStr } = params;
+  const resolvedParams = await params;
+  const { educationId: educationIdStr } = resolvedParams;
   const educationId = parseInt(educationIdStr, 10);
 
   if (isNaN(educationId)) {
@@ -47,10 +48,11 @@ export async function GET(
 // PATCH handler for updating an existing education record
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { memberId: string; educationId: string } } // Define type directly
+  { params }: { params: Promise<{ memberId: string; educationId: string }> } // Define type directly
 ) {
   // TODO: Check update permissions
-  const { educationId: educationIdStr } = params;
+  const resolvedParams = await params;
+  const { educationId: educationIdStr } = resolvedParams;
   const educationId = parseInt(educationIdStr, 10);
 
   if (isNaN(educationId)) {
@@ -89,10 +91,11 @@ export async function PATCH(
 // DELETE handler for deleting an education record
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { memberId: string; educationId: string } } // Define type directly
+  { params }: { params: Promise<{ memberId: string; educationId: string }> } // Define type directly
 ) {
   // TODO: Check delete permissions
-  const { educationId: educationIdStr } = params;
+  const resolvedParams = await params;
+  const { educationId: educationIdStr } = resolvedParams;
   const educationId = parseInt(educationIdStr, 10);
 
   if (isNaN(educationId)) {

@@ -3,12 +3,13 @@ import { createEducationRecord } from "@/lib/members";
 // TODO: Add authentication and authorization checks
 
 interface Params {
-  params: { memberId: string };
+  params: Promise<{ memberId: string }>;
 }
 
 export async function POST(request: NextRequest, { params }: Params) {
   // TODO: Check user permission (e.g., is admin or the member themselves?)
-  const { memberId } = params;
+  const resolvedParams = await params;
+  const { memberId } = resolvedParams;
   if (!memberId) {
     return NextResponse.json(
       { success: false, error: { message: "Member ID is required" } },

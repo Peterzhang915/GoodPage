@@ -28,10 +28,11 @@ const getIdFromParams = (params: { id?: string }) => {
 // GET handler for a single project
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const id = getIdFromParams(params);
+    const resolvedParams = await params;
+    const id = getIdFromParams(resolvedParams);
     const project = await prisma.homepageProject.findUnique({
       where: { id },
       include: {
@@ -52,7 +53,8 @@ export async function GET(
 
     return NextResponse.json({ success: true, data: project });
   } catch (error: any) {
-    console.error(`Failed to fetch project ${params.id}:`, error);
+    const resolvedParams = await params;
+    console.error(`Failed to fetch project ${resolvedParams.id}:`, error);
     const status = error.message.includes("Invalid ID") ? 400 : 500;
     return NextResponse.json(
       {
@@ -71,10 +73,11 @@ export async function GET(
 // PUT handler to update a specific project
 export async function PUT(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const id = getIdFromParams(params);
+    const resolvedParams = await params;
+    const id = getIdFromParams(resolvedParams);
     const body = await request.json();
 
     // Validate input
@@ -116,7 +119,8 @@ export async function PUT(
 
     return NextResponse.json({ success: true, data: updatedProject });
   } catch (error: any) {
-    console.error(`Failed to update project ${params.id}:`, error);
+    const resolvedParams = await params;
+    console.error(`Failed to update project ${resolvedParams.id}:`, error);
     if (error instanceof Error && error.message.includes("Invalid ID")) {
       return NextResponse.json(
         { success: false, error: { message: error.message } },
@@ -140,7 +144,7 @@ export async function PUT(
       return NextResponse.json(
         {
           success: false,
-          error: { message: `Project with ID ${params.id} not found.` },
+          error: { message: `Project with ID ${resolvedParams.id} not found.` },
         },
         { status: 404 }
       );
@@ -157,10 +161,11 @@ export async function PUT(
 // DELETE handler to remove a specific project
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const id = getIdFromParams(params);
+    const resolvedParams = await params;
+    const id = getIdFromParams(resolvedParams);
 
     await prisma.homepageProject.delete({
       where: { id },
@@ -171,7 +176,8 @@ export async function DELETE(
       { status: 200 }
     );
   } catch (error: any) {
-    console.error(`Failed to delete project ${params.id}:`, error);
+    const resolvedParams = await params;
+    console.error(`Failed to delete project ${resolvedParams.id}:`, error);
     if (error instanceof Error && error.message.includes("Invalid ID")) {
       return NextResponse.json(
         { success: false, error: { message: error.message } },
@@ -183,7 +189,7 @@ export async function DELETE(
       return NextResponse.json(
         {
           success: false,
-          error: { message: `Project with ID ${params.id} not found.` },
+          error: { message: `Project with ID ${resolvedParams.id} not found.` },
         },
         { status: 404 }
       );

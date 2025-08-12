@@ -29,7 +29,7 @@ const publicationWithAuthorsPayload =
   });
 
 interface RouteParams {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
 // You might want to export this type if needed elsewhere, but primarily for internal use here
@@ -37,7 +37,8 @@ interface RouteParams {
 
 // GET Handler for fetching a specific publication by ID
 export async function GET(request: Request, { params }: RouteParams) {
-  const id = params.id;
+  const resolvedParams = await params;
+  const id = resolvedParams.id;
   const publicationId = parseInt(id, 10);
 
   if (isNaN(publicationId)) {
@@ -81,7 +82,8 @@ export async function GET(request: Request, { params }: RouteParams) {
 
 // DELETE Handler for deleting a specific publication
 export async function DELETE(request: Request, { params }: RouteParams) {
-  const id = params.id;
+  const resolvedParams = await params;
+  const id = resolvedParams.id;
 
   // Validate ID
   const publicationId = parseInt(id, 10);

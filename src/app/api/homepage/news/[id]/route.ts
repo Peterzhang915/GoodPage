@@ -23,10 +23,11 @@ const getIdFromParams = (params: { id?: string }) => {
 // GET handler for a single news item (optional, but good practice)
 export async function GET(
   request: Request, // Keep request parameter even if unused for consistency
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const id = getIdFromParams(params);
+    const resolvedParams = await params;
+    const id = getIdFromParams(resolvedParams);
     const newsItem = await prisma.homepageNews.findUnique({
       where: { id },
     });
@@ -43,7 +44,8 @@ export async function GET(
 
     return NextResponse.json({ success: true, data: newsItem });
   } catch (error: any) {
-    console.error(`Failed to fetch news item ${params.id}:`, error);
+    const resolvedParams = await params;
+    console.error(`Failed to fetch news item ${resolvedParams.id}:`, error);
     const status = error.message.includes("Invalid ID") ? 400 : 500;
     return NextResponse.json(
       {
@@ -63,10 +65,11 @@ export async function GET(
 // PUT handler to update a specific news item
 export async function PUT(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const id = getIdFromParams(params);
+    const resolvedParams = await params;
+    const id = getIdFromParams(resolvedParams);
     const body = await request.json();
 
     // Validate input
@@ -102,7 +105,8 @@ export async function PUT(
 
     return NextResponse.json({ success: true, data: updatedNewsItem });
   } catch (error: any) {
-    console.error(`Failed to update news item ${params.id}:`, error);
+    const resolvedParams = await params;
+    console.error(`Failed to update news item ${resolvedParams.id}:`, error);
     if (error instanceof Error && error.message.includes("Invalid ID")) {
       return NextResponse.json(
         { success: false, error: { message: error.message } },
@@ -115,7 +119,7 @@ export async function PUT(
       return NextResponse.json(
         {
           success: false,
-          error: { message: `News item with ID ${params.id} not found.` },
+          error: { message: `News item with ID ${resolvedParams.id} not found.` },
         },
         { status: 404 }
       );
@@ -132,10 +136,11 @@ export async function PUT(
 // DELETE handler to remove a specific news item
 export async function DELETE(
   request: Request, // Keep request parameter even if unused for consistency
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const id = getIdFromParams(params);
+    const resolvedParams = await params;
+    const id = getIdFromParams(resolvedParams);
 
     await prisma.homepageNews.delete({
       where: { id },
@@ -146,7 +151,8 @@ export async function DELETE(
       { status: 200 }
     ); // Can also use 204 No Content
   } catch (error: any) {
-    console.error(`Failed to delete news item ${params.id}:`, error);
+    const resolvedParams = await params;
+    console.error(`Failed to delete news item ${resolvedParams.id}:`, error);
     if (error instanceof Error && error.message.includes("Invalid ID")) {
       return NextResponse.json(
         { success: false, error: { message: error.message } },
@@ -158,7 +164,7 @@ export async function DELETE(
       return NextResponse.json(
         {
           success: false,
-          error: { message: `News item with ID ${params.id} not found.` },
+          error: { message: `News item with ID ${resolvedParams.id} not found.` },
         },
         { status: 404 }
       );
