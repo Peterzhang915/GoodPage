@@ -15,7 +15,7 @@ _✨ 本项目是南昌大学 GOOD 实验室新版主页的前端实现，使用
 
 ## 环境要求
 
-在开始之前，请确保您的开发环境中安装了以下软件：
+
 
 - [Node.js](https://nodejs.org/) (建议使用 LTS 版本，例如 v18 或 v20)
 - [npm](https://www.npmjs.com/) (通常随 Node.js 一起安装)
