@@ -67,8 +67,12 @@ export const publishedApi = {
     const result = await response.json();
     return {
       ...result.data,
-      createdAt: result.data.createdAt ? new Date(result.data.createdAt) : new Date(),
-      updatedAt: result.data.updatedAt ? new Date(result.data.updatedAt) : new Date(),
+      createdAt: result.data.createdAt
+        ? new Date(result.data.createdAt)
+        : new Date(),
+      updatedAt: result.data.updatedAt
+        ? new Date(result.data.updatedAt)
+        : new Date(),
     };
   },
 
@@ -100,8 +104,12 @@ export const publishedApi = {
     const result = await response.json();
     return {
       ...result.data,
-      createdAt: result.data.createdAt ? new Date(result.data.createdAt) : new Date(),
-      updatedAt: result.data.updatedAt ? new Date(result.data.updatedAt) : new Date(),
+      createdAt: result.data.createdAt
+        ? new Date(result.data.createdAt)
+        : new Date(),
+      updatedAt: result.data.updatedAt
+        ? new Date(result.data.updatedAt)
+        : new Date(),
     };
   },
 

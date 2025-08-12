@@ -16,7 +16,7 @@ export async function getAllPublicationsFormatted(): Promise<
     // 【修改】调整 include/select 结构以获取所需数据
     const publicationsRaw = await prisma.publication.findMany({
       where: {
-        status: "published" // 只获取已发布的出版物
+        status: "published", // 只获取已发布的出版物
       },
       orderBy: [{ year: "desc" }, { id: "desc" }],
       select: {
@@ -83,8 +83,8 @@ export async function getAllPublicationsFormatted(): Promise<
           let normalizedAuthorName1 = cleanName; // "LastName, FirstName" -> "FirstName LastName"
           let normalizedAuthorName2 = cleanName; // "FirstName, LastName" -> "FirstName LastName"
 
-          if (cleanName.includes(',')) {
-            const parts = cleanName.split(',').map(p => p.trim());
+          if (cleanName.includes(",")) {
+            const parts = cleanName.split(",").map((p) => p.trim());
             if (parts.length === 2) {
               // 尝试两种格式转换
               normalizedAuthorName1 = `${parts[1]} ${parts[0]}`.toLowerCase(); // "LastName, FirstName" -> "FirstName LastName"
@@ -107,7 +107,10 @@ export async function getAllPublicationsFormatted(): Promise<
             nameEn.includes(normalizedAuthorName2) ||
             normalizedAuthorName2.includes(nameEn) ||
             // 中文名匹配
-            (nameZh && (nameZh === cleanName || nameZh.includes(cleanName) || cleanName.includes(nameZh)))
+            (nameZh &&
+              (nameZh === cleanName ||
+                nameZh.includes(cleanName) ||
+                cleanName.includes(nameZh)))
           );
         });
       };
@@ -155,7 +158,7 @@ export async function getAllPublicationsFormatted(): Promise<
       } else {
         // 回退逻辑：如果缺少原始字符串，仅用内部作者
         console.warn(
-          `Publication ID ${p.id} missing authors_full_string. Using internal authors only.`,
+          `Publication ID ${p.id} missing authors_full_string. Using internal authors only.`
         );
         p.authors.forEach((ap) => {
           displayAuthors.push({
@@ -188,10 +191,10 @@ export async function getAllPublicationsFormatted(): Promise<
  * @returns PublicationInfo 数组
  */
 export async function getPublicationsByMemberIdFormatted(
-  memberId: string,
+  memberId: string
 ): Promise<PublicationInfo[]> {
   console.log(
-    `DB: Fetching publications for member ${memberId} with smart author formatting.`,
+    `DB: Fetching publications for member ${memberId} with smart author formatting.`
   );
   try {
     // 【修改】使用与 getAllPublicationsFormatted 相同的 select 结构
@@ -199,8 +202,8 @@ export async function getPublicationsByMemberIdFormatted(
       where: {
         AND: [
           { authors: { some: { member_id: memberId } } },
-          { status: "published" } // 只获取已发布的出版物
-        ]
+          { status: "published" }, // 只获取已发布的出版物
+        ],
       },
       orderBy: [{ year: "desc" }, { id: "desc" }],
       select: {
@@ -237,7 +240,7 @@ export async function getPublicationsByMemberIdFormatted(
       },
     });
     console.log(
-      `DB: Fetched ${publicationsRaw.length} raw publications for member ${memberId}.`,
+      `DB: Fetched ${publicationsRaw.length} raw publications for member ${memberId}.`
     );
 
     // 【修改】应用相同的 displayAuthors 生成逻辑，包含外部作者格式化
@@ -263,7 +266,10 @@ export async function getPublicationsByMemberIdFormatted(
             nameEn === cleanName ||
             nameEn.includes(cleanName) ||
             cleanName.includes(nameEn) ||
-            (nameZh && (nameZh === cleanName || nameZh.includes(cleanName) || cleanName.includes(nameZh)))
+            (nameZh &&
+              (nameZh === cleanName ||
+                nameZh.includes(cleanName) ||
+                cleanName.includes(nameZh)))
           );
         });
       };
@@ -311,7 +317,7 @@ export async function getPublicationsByMemberIdFormatted(
         });
       } else {
         console.warn(
-          `Publication ID ${p.id} missing authors_full_string. Using internal authors only.`,
+          `Publication ID ${p.id} missing authors_full_string. Using internal authors only.`
         );
         p.authors.forEach((ap) => {
           displayAuthors.push({

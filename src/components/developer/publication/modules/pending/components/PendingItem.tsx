@@ -1,7 +1,15 @@
 "use client";
 
 import React from "react";
-import { ExternalLink, Users, Calendar, Edit3, Check, X, Loader2 } from "lucide-react";
+import {
+  ExternalLink,
+  Users,
+  Calendar,
+  Edit3,
+  Check,
+  X,
+  Loader2,
+} from "lucide-react";
 import { themeColors } from "@/styles/theme";
 import { PublicationWithAuthors } from "@/app/api/publications/route";
 
@@ -30,7 +38,9 @@ const PendingItem: React.FC<PendingItemProps> = ({
       return publication.authors_full_string;
     }
     if (publication.authors && publication.authors.length > 0) {
-      return publication.authors.map((author: any) => author.name_en || author.name_zh || "Unknown").join(", ");
+      return publication.authors
+        .map((author: any) => author.name_en || author.name_zh || "Unknown")
+        .join(", ");
     }
     return "No authors";
   };
@@ -41,7 +51,9 @@ const PendingItem: React.FC<PendingItemProps> = ({
     >
       {/* 顶部：标题和外部链接 */}
       <div className="flex items-start justify-between gap-3 mb-2">
-        <h3 className={`text-lg font-medium ${themeColors.devText} flex-1 leading-tight`}>
+        <h3
+          className={`text-lg font-medium ${themeColors.devText} flex-1 leading-tight`}
+        >
           {publication.title}
         </h3>
         {publication.pdf_url && (
@@ -58,7 +70,9 @@ const PendingItem: React.FC<PendingItemProps> = ({
       </div>
 
       {/* 中部：作者信息 */}
-      <div className={`flex items-center gap-2 text-sm ${themeColors.devDescText} mb-2`}>
+      <div
+        className={`flex items-center gap-2 text-sm ${themeColors.devDescText} mb-2`}
+      >
         <Users size={14} />
         <span>{formatAuthors()}</span>
       </div>
@@ -68,14 +82,16 @@ const PendingItem: React.FC<PendingItemProps> = ({
         <div className={`flex items-center gap-2 ${themeColors.devDescText}`}>
           <Calendar size={14} />
           <span>{publication.year || "N/A"}</span>
-          {publication.venue && <span className="italic"> - {publication.venue}</span>}
+          {publication.venue && (
+            <span className="italic"> - {publication.venue}</span>
+          )}
         </div>
-        
+
         {/* 操作按钮 */}
         <div className="flex items-center gap-2 flex-shrink-0">
           <button
-            onClick={() => onEdit(publication)} 
-            disabled={isProcessing} 
+            onClick={() => onEdit(publication)}
+            disabled={isProcessing}
             className={`p-1.5 rounded text-indigo-400 hover:bg-gray-600 transition-colors disabled:opacity-50`}
             title="编辑出版物"
           >

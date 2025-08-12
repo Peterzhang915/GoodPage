@@ -33,10 +33,10 @@ const AwardsSection: React.FC<AwardsSectionProps> = ({
 
   // 对奖项按显示顺序进行排序
   const sortedFeatured = [...featuredAwards].sort(
-    (a, b) => a.display_order - b.display_order,
+    (a, b) => a.display_order - b.display_order
   );
   const sortedDetailed = [...detailedAwards].sort(
-    (a, b) => a.display_order - b.display_order,
+    (a, b) => a.display_order - b.display_order
   );
 
   return (

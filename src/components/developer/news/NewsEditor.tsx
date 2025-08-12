@@ -75,18 +75,23 @@ const NewsEditor: React.FC<NewsEditorProps> = ({ onClose }) => {
           if (errorData && errorData.error && errorData.error.message) {
             errorMsg = errorData.error.message;
           }
-        } catch (e) { /* Ignore parsing error, use status code message */ }
+        } catch (e) {
+          /* Ignore parsing error, use status code message */
+        }
         throw new Error(errorMsg);
       }
-      
+
       // Parse the JSON response
-      const result = await res.json(); 
+      const result = await res.json();
 
       // Check for standard success format
       if (result.success && result.data) {
         const newsData = result.data as NewsData; // Type assertion
         // Validate the inner data structure
-        if (typeof newsData.title === "string" && Array.isArray(newsData.news)) {
+        if (
+          typeof newsData.title === "string" &&
+          Array.isArray(newsData.news)
+        ) {
           setTitle(newsData.title);
           setNewsContent(newsData.news.join("\n"));
           if (showLoadingMessage) {
@@ -100,7 +105,7 @@ const NewsEditor: React.FC<NewsEditorProps> = ({ onClose }) => {
       } else {
         // Handle cases where API didn't return { success: true, data: ... }
         // Or potentially handle legacy format if needed, though API seems to handle it
-        throw new Error("Unexpected response format from API."); 
+        throw new Error("Unexpected response format from API.");
       }
     } catch (err) {
       console.error("Fetch live news error:", err);
@@ -146,7 +151,7 @@ const NewsEditor: React.FC<NewsEditorProps> = ({ onClose }) => {
     } catch (err) {
       console.error("Save news error:", err);
       setStatusMessage(
-        err instanceof Error ? err.message : "An unknown error occurred",
+        err instanceof Error ? err.message : "An unknown error occurred"
       );
       setMessageType("error");
     } finally {

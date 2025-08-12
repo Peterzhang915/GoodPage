@@ -15,18 +15,26 @@ type ProfessorHeaderProps = {
 };
 
 // 教授页面头部组件
-const ProfessorHeader: React.FC<ProfessorHeaderProps> = ({ professorData, addressLine1, addressLine2 }) => {
+const ProfessorHeader: React.FC<ProfessorHeaderProps> = ({
+  professorData,
+  addressLine1,
+  addressLine2,
+}) => {
   // 提供默认值或优雅地处理null情况
   // 添加 Dr. 前缀（如果不存在）
   const rawNameEn = professorData?.name_en;
   const nameEn =
     rawNameEn && rawNameEn.trim().startsWith("Dr.")
       ? rawNameEn
-      : rawNameEn ? `Dr. ${rawNameEn}` : "Professor"; // 如果没有名字，则使用通用称呼
+      : rawNameEn
+        ? `Dr. ${rawNameEn}`
+        : "Professor"; // 如果没有名字，则使用通用称呼
   const nameZh = professorData?.name_zh; // 中文名（如果有）
   const titleEn = professorData?.title_en ?? "Professor"; // 英文职称，默认为"教授"
   const titleZh = professorData?.title_zh; // 中文职称（如果有）
-  const school = professorData?.research_group ?? "School of Mathematics and Computer Science"; // 学院/研究组名，优先使用数据库中的研究组信息
+  const school =
+    professorData?.research_group ??
+    "School of Mathematics and Computer Science"; // 学院/研究组名，优先使用数据库中的研究组信息
   const university = "The Nanchang University"; // 大学名，后续可能动态获取
   const email = professorData?.email ?? ""; // 邮箱，如果没有则留空
   const phone = professorData?.phone_number ?? ""; // 电话，如果没有则留空

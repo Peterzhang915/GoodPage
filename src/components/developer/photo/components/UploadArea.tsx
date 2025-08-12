@@ -1,15 +1,15 @@
 /**
  * 图片上传区域组件
- * 
+ *
  * 提供拖拽上传和文件选择功能
  */
 
-import React from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Upload, Loader2, Type, Calendar } from 'lucide-react';
-import type { UploadAreaProps } from '../types';
-import { usePhotoUpload } from '../hooks/usePhotoUpload';
-import { PLACEHOLDERS, UPLOAD_CONFIG } from '../constants';
+import React from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Upload, Loader2, Type, Calendar } from "lucide-react";
+import type { UploadAreaProps } from "../types";
+import { usePhotoUpload } from "../hooks/usePhotoUpload";
+import { PLACEHOLDERS, UPLOAD_CONFIG } from "../constants";
 
 /**
  * 上传区域组件
@@ -17,7 +17,7 @@ import { PLACEHOLDERS, UPLOAD_CONFIG } from '../constants';
 const UploadArea: React.FC<UploadAreaProps> = ({
   category,
   onUploadComplete,
-  onError
+  onError,
 }) => {
   const {
     uploading,
@@ -34,11 +34,11 @@ const UploadArea: React.FC<UploadAreaProps> = ({
     uploadPhoto,
     cancelUpload,
     dragHandlers,
-    fileInputRef
+    fileInputRef,
   } = usePhotoUpload({
     category,
     onUploadSuccess: onUploadComplete,
-    onError
+    onError,
   });
 
   // 如果不显示上传区域，返回 null
@@ -63,9 +63,11 @@ const UploadArea: React.FC<UploadAreaProps> = ({
   return (
     <div className="mb-8 space-y-4">
       {/* 拖拽上传区域 */}
-      <div 
+      <div
         className={`bg-gray-800 border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors hover:border-green-500 hover:bg-gray-750 ${
-          isDragging ? 'border-green-500 bg-green-500 bg-opacity-10' : 'border-gray-600'
+          isDragging
+            ? "border-green-500 bg-green-500 bg-opacity-10"
+            : "border-gray-600"
         }`}
         onClick={triggerFileSelect}
         onDragOver={dragHandlers.onDragOver}
@@ -85,12 +87,14 @@ const UploadArea: React.FC<UploadAreaProps> = ({
             <span className="text-green-400">{file.name}</span>
           ) : (
             <>
-              <span className="text-green-400">Click to upload</span> or drag and drop images here
+              <span className="text-green-400">Click to upload</span> or drag
+              and drop images here
             </>
           )}
         </div>
         <p className="text-sm text-gray-500">
-          Supports {UPLOAD_CONFIG.ACCEPTED_TYPES_TEXT} formats, up to {UPLOAD_CONFIG.MAX_FILE_SIZE_TEXT}
+          Supports {UPLOAD_CONFIG.ACCEPTED_TYPES_TEXT} formats, up to{" "}
+          {UPLOAD_CONFIG.MAX_FILE_SIZE_TEXT}
         </p>
       </div>
 
@@ -136,7 +140,8 @@ const UploadArea: React.FC<UploadAreaProps> = ({
                   className="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-gray-100 focus:ring-2 focus:ring-green-500 focus:border-transparent"
                 />
                 <p className="mt-1 text-xs text-gray-500">
-                  Used for photo sorting and display, recommend YYYY.MM.DD format
+                  Used for photo sorting and display, recommend YYYY.MM.DD
+                  format
                 </p>
               </div>
             </div>

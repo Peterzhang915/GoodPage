@@ -21,13 +21,13 @@ const formatAuthors = (publication: PublicationWithAuthors): string => {
   // 优先使用 authors 关系中的英文名字
   if (publication.authors && publication.authors.length > 0) {
     const authors = publication.authors
-      .map(pa => {
+      .map((pa) => {
         const nameEn = pa.author?.name_en;
-        if (!nameEn) return 'Unknown Author';
+        if (!nameEn) return "Unknown Author";
 
         // 处理 "Last, First" 格式，转换为 "First Last"
-        if (nameEn.includes(',')) {
-          const parts = nameEn.split(',').map(part => part.trim());
+        if (nameEn.includes(",")) {
+          const parts = nameEn.split(",").map((part) => part.trim());
           if (parts.length === 2 && parts[0] && parts[1]) {
             // 转换 "Last, First" 为 "First Last"
             return `${parts[1]} ${parts[0]}`;
@@ -37,19 +37,21 @@ const formatAuthors = (publication: PublicationWithAuthors): string => {
         // 如果不包含逗号或格式不匹配，直接返回原始英文名字
         return nameEn;
       })
-      .filter(name => name !== 'Unknown Author' || publication.authors!.length === 1);
+      .filter(
+        (name) => name !== "Unknown Author" || publication.authors!.length === 1
+      );
 
-    return authors.join(', ');
+    return authors.join(", ");
   }
 
   // 回退到 authors_full_string 字段
   if (publication.authors_full_string) {
     // 【修复】保持原始的分号分隔符，不要替换成逗号
     return publication.authors_full_string
-      .split(';')
-      .map(author => author.trim())
-      .filter(author => author)
-      .join('; '); // 保持分号分隔
+      .split(";")
+      .map((author) => author.trim())
+      .filter((author) => author)
+      .join("; "); // 保持分号分隔
   }
 
   return "No authors listed";
@@ -67,7 +69,9 @@ const PublishedItem: React.FC<PublishedItemProps> = ({
   onDelete,
 }) => {
   return (
-    <li className={`p-4 rounded-md border ${themeColors.devBorder} bg-gray-700/30 flex flex-col gap-3`}>
+    <li
+      className={`p-4 rounded-md border ${themeColors.devBorder} bg-gray-700/30 flex flex-col gap-3`}
+    >
       {/* Top section: Title and Links */}
       <div className="flex justify-between items-start gap-2">
         <h5 className={`font-medium flex-1 ${themeColors.devTitleText}`}>
@@ -99,11 +103,11 @@ const PublishedItem: React.FC<PublishedItemProps> = ({
       </div>
 
       {/* Middle section: Authors (Formatted) */}
-      <div className={`text-xs flex items-start gap-1.5 ${themeColors.devDescText}`}>
+      <div
+        className={`text-xs flex items-start gap-1.5 ${themeColors.devDescText}`}
+      >
         <Users size={14} className="flex-shrink-0 mt-0.5" />
-        <span className="flex-1 break-words">
-          {formatAuthors(publication)}
-        </span>
+        <span className="flex-1 break-words">{formatAuthors(publication)}</span>
       </div>
 
       {/* Bottom section: Venue, Year, Actions */}
@@ -111,7 +115,9 @@ const PublishedItem: React.FC<PublishedItemProps> = ({
         <div className={`flex items-center gap-2 ${themeColors.devDescText}`}>
           <Calendar size={14} />
           <span>{publication.year || "N/A"}</span>
-          {publication.venue && <span className="italic"> - {publication.venue}</span>}
+          {publication.venue && (
+            <span className="italic"> - {publication.venue}</span>
+          )}
         </div>
         {/* Action Buttons */}
         <div className="flex items-center gap-2 flex-shrink-0">

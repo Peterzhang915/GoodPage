@@ -1,14 +1,14 @@
 "use client";
 
-import React, { useEffect, useRef, useState, useCallback } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import { motion } from "framer-motion";
-import styles from './dino.module.css';
+import styles from "./dino.module.css";
 
 // Constants for the game
 const CANVAS_WIDTH = 600; // Logical width
 const CANVAS_HEIGHT = 250; // Logical height (Increased for more vertical space)
 const FPS = 60; // Target FPS (though requestAnimationFrame controls timing)
-const SPRITE_PATH = '/images/icons/200-offline-sprite.png';
+const SPRITE_PATH = "/images/icons/200-offline-sprite.png";
 
 // Speed constants (slowed down further)
 const INITIAL_SPEED = 2.0;
@@ -31,9 +31,15 @@ type SpriteRect = {
   h: number;
 };
 
-type ObstacleType = 'CACTUS_SMALL_1' | 'CACTUS_SMALL_2' | 'CACTUS_SMALL_3' | 
-                  'CACTUS_LARGE_1' | 'CACTUS_LARGE_2' | 'CACTUS_LARGE_3' |
-                  'PTERODACTYL_1' | 'PTERODACTYL_2';
+type ObstacleType =
+  | "CACTUS_SMALL_1"
+  | "CACTUS_SMALL_2"
+  | "CACTUS_SMALL_3"
+  | "CACTUS_LARGE_1"
+  | "CACTUS_LARGE_2"
+  | "CACTUS_LARGE_3"
+  | "PTERODACTYL_1"
+  | "PTERODACTYL_2";
 
 type Obstacle = {
   type: ObstacleType;
@@ -120,7 +126,7 @@ export default function DinoPage(): JSX.Element {
     hitTimer: 0,
   });
 
-  // --- Resize Handler --- 
+  // --- Resize Handler ---
   const handleResize = useCallback(() => {
     if (containerRef.current && canvasRef.current) {
       const containerWidth = containerRef.current.offsetWidth;
@@ -133,88 +139,136 @@ export default function DinoPage(): JSX.Element {
     }
   }, []);
 
-  // --- Render Game --- 
-  const renderGame = useCallback((ctx: CanvasRenderingContext2D, spriteImage: HTMLImageElement, currentScale: number) => {
-    const game = gameRef.current;
-    const groundHeight1x = getGroundHeight();
-    
-    ctx.save();
-    ctx.scale(currentScale, currentScale);
+  // --- Render Game ---
+  const renderGame = useCallback(
+    (
+      ctx: CanvasRenderingContext2D,
+      spriteImage: HTMLImageElement,
+      currentScale: number
+    ) => {
+      const game = gameRef.current;
+      const groundHeight1x = getGroundHeight();
 
-    ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
-    
-    if (game.nightMode) {
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-      ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
-    }
-    
-    const cloudWidth1x = SPRITE_CONFIG.CLOUD.w / 2;
-    const cloudHeight1x = SPRITE_CONFIG.CLOUD.h / 2;
-    game.clouds.forEach((cloud: Cloud) => {
-      ctx.drawImage(spriteImage,
-        SPRITE_CONFIG.CLOUD.x, SPRITE_CONFIG.CLOUD.y, SPRITE_CONFIG.CLOUD.w, SPRITE_CONFIG.CLOUD.h,
-        cloud.x, cloud.y, cloudWidth1x, cloudHeight1x
-      );
-    });
-    
-    const groundY = CANVAS_HEIGHT - groundHeight1x;
-    const groundWidth1x = SPRITE_CONFIG.GROUND.w / 2;
-    ctx.drawImage(spriteImage,
-      SPRITE_CONFIG.GROUND.x, SPRITE_CONFIG.GROUND.y, SPRITE_CONFIG.GROUND.w, SPRITE_CONFIG.GROUND.h,
-      game.groundPos, groundY, groundWidth1x, groundHeight1x
-    );
-    ctx.drawImage(spriteImage,
-      SPRITE_CONFIG.GROUND.x, SPRITE_CONFIG.GROUND.y, SPRITE_CONFIG.GROUND.w, SPRITE_CONFIG.GROUND.h,
-      game.groundPos + groundWidth1x, groundY, groundWidth1x, groundHeight1x
-    );
-    
-    let dinoSprite: SpriteRect;
-    let dinoDrawY = game.dinoY;
-    if (game.isHit) {
-      dinoSprite = SPRITE_CONFIG.DINO_DEAD;
-    } else if (!game.isPlaying) { 
-      dinoSprite = SPRITE_CONFIG.DINO_WAITING;
-    } else if (game.isJumping) {
-      dinoSprite = SPRITE_CONFIG.DINO_JUMPING;
-    } else if (game.isDucking) {
-      dinoSprite = game.frameCount % 10 < 5 ? SPRITE_CONFIG.DINO_DUCKING_1 : SPRITE_CONFIG.DINO_DUCKING_2;
-      dinoDrawY = CANVAS_HEIGHT - (dinoSprite.h / 2) - groundHeight1x;
-    } else { 
-      dinoSprite = game.frameCount % 12 < 6 ? SPRITE_CONFIG.DINO_RUNNING_1 : SPRITE_CONFIG.DINO_RUNNING_2;
-    }
-    const dinoWidth1x = dinoSprite.w / 2;
-    const dinoHeight1x = dinoSprite.h / 2;
-    ctx.drawImage(spriteImage,
-      dinoSprite.x, dinoSprite.y, dinoSprite.w, dinoSprite.h,
-      50, dinoDrawY, dinoWidth1x, dinoHeight1x
-    );
-    
-    if (game.isPlaying) {
-      game.obstacles.forEach((obs: Obstacle) => {
-        const sprite = SPRITE_CONFIG[obs.type];
-        const obsWidth1x = sprite.w / 2;
-        const obsHeight1x = sprite.h / 2;
-        const obsY = obs.y ?? (CANVAS_HEIGHT - obsHeight1x - groundHeight1x);
-        ctx.drawImage(spriteImage,
-          sprite.x, sprite.y, sprite.w, sprite.h,
-          obs.x, obsY, obsWidth1x, obsHeight1x
+      ctx.save();
+      ctx.scale(currentScale, currentScale);
+
+      ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+
+      if (game.nightMode) {
+        ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
+        ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+      }
+
+      const cloudWidth1x = SPRITE_CONFIG.CLOUD.w / 2;
+      const cloudHeight1x = SPRITE_CONFIG.CLOUD.h / 2;
+      game.clouds.forEach((cloud: Cloud) => {
+        ctx.drawImage(
+          spriteImage,
+          SPRITE_CONFIG.CLOUD.x,
+          SPRITE_CONFIG.CLOUD.y,
+          SPRITE_CONFIG.CLOUD.w,
+          SPRITE_CONFIG.CLOUD.h,
+          cloud.x,
+          cloud.y,
+          cloudWidth1x,
+          cloudHeight1x
         );
       });
-    }
 
-    if (game.isPlaying && game.isPaused) {
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
-      ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
-      ctx.fillStyle = '#f7f7f7';
-      ctx.font = 'bold 30px "Press Start 2P", Arial, sans-serif';
-      ctx.textAlign = 'center';
-      ctx.fillText('II', CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 + 10);
-    }
-    
-    ctx.restore();
-  }, []);
+      const groundY = CANVAS_HEIGHT - groundHeight1x;
+      const groundWidth1x = SPRITE_CONFIG.GROUND.w / 2;
+      ctx.drawImage(
+        spriteImage,
+        SPRITE_CONFIG.GROUND.x,
+        SPRITE_CONFIG.GROUND.y,
+        SPRITE_CONFIG.GROUND.w,
+        SPRITE_CONFIG.GROUND.h,
+        game.groundPos,
+        groundY,
+        groundWidth1x,
+        groundHeight1x
+      );
+      ctx.drawImage(
+        spriteImage,
+        SPRITE_CONFIG.GROUND.x,
+        SPRITE_CONFIG.GROUND.y,
+        SPRITE_CONFIG.GROUND.w,
+        SPRITE_CONFIG.GROUND.h,
+        game.groundPos + groundWidth1x,
+        groundY,
+        groundWidth1x,
+        groundHeight1x
+      );
 
-  // --- Effect for Loading and Initial Resize --- 
+      let dinoSprite: SpriteRect;
+      let dinoDrawY = game.dinoY;
+      if (game.isHit) {
+        dinoSprite = SPRITE_CONFIG.DINO_DEAD;
+      } else if (!game.isPlaying) {
+        dinoSprite = SPRITE_CONFIG.DINO_WAITING;
+      } else if (game.isJumping) {
+        dinoSprite = SPRITE_CONFIG.DINO_JUMPING;
+      } else if (game.isDucking) {
+        dinoSprite =
+          game.frameCount % 10 < 5
+            ? SPRITE_CONFIG.DINO_DUCKING_1
+            : SPRITE_CONFIG.DINO_DUCKING_2;
+        dinoDrawY = CANVAS_HEIGHT - dinoSprite.h / 2 - groundHeight1x;
+      } else {
+        dinoSprite =
+          game.frameCount % 12 < 6
+            ? SPRITE_CONFIG.DINO_RUNNING_1
+            : SPRITE_CONFIG.DINO_RUNNING_2;
+      }
+      const dinoWidth1x = dinoSprite.w / 2;
+      const dinoHeight1x = dinoSprite.h / 2;
+      ctx.drawImage(
+        spriteImage,
+        dinoSprite.x,
+        dinoSprite.y,
+        dinoSprite.w,
+        dinoSprite.h,
+        50,
+        dinoDrawY,
+        dinoWidth1x,
+        dinoHeight1x
+      );
+
+      if (game.isPlaying) {
+        game.obstacles.forEach((obs: Obstacle) => {
+          const sprite = SPRITE_CONFIG[obs.type];
+          const obsWidth1x = sprite.w / 2;
+          const obsHeight1x = sprite.h / 2;
+          const obsY = obs.y ?? CANVAS_HEIGHT - obsHeight1x - groundHeight1x;
+          ctx.drawImage(
+            spriteImage,
+            sprite.x,
+            sprite.y,
+            sprite.w,
+            sprite.h,
+            obs.x,
+            obsY,
+            obsWidth1x,
+            obsHeight1x
+          );
+        });
+      }
+
+      if (game.isPlaying && game.isPaused) {
+        ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
+        ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+        ctx.fillStyle = "#f7f7f7";
+        ctx.font = 'bold 30px "Press Start 2P", Arial, sans-serif';
+        ctx.textAlign = "center";
+        ctx.fillText("II", CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 + 10);
+      }
+
+      ctx.restore();
+    },
+    []
+  );
+
+  // --- Effect for Loading and Initial Resize ---
   useEffect(() => {
     const image = new Image();
     image.src = SPRITE_PATH;
@@ -222,13 +276,13 @@ export default function DinoPage(): JSX.Element {
       spriteImageRef.current = image;
       handleResize(); // Set initial size/scale
 
-      // --- Render initial frame --- 
+      // --- Render initial frame ---
       if (canvasRef.current && containerRef.current) {
-        const ctx = canvasRef.current.getContext('2d');
+        const ctx = canvasRef.current.getContext("2d");
         const initialScale = containerRef.current.offsetWidth / CANVAS_WIDTH;
         if (ctx) {
           // Re-fetch game state directly before rendering initial frame
-          const initialGame = gameRef.current; 
+          const initialGame = gameRef.current;
           // Directly call the render logic (or a dedicated initial render function)
           // Using a direct call avoids useCallback dependency issues
           const groundHeight1x = getGroundHeight();
@@ -236,35 +290,75 @@ export default function DinoPage(): JSX.Element {
           ctx.scale(initialScale, initialScale);
           ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
           if (initialGame.nightMode) {
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+            ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
             ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
           }
           // Draw initial clouds (if any in initial state)
           const cloudWidth1x = SPRITE_CONFIG.CLOUD.w / 2;
           const cloudHeight1x = SPRITE_CONFIG.CLOUD.h / 2;
           initialGame.clouds.forEach((cloud: Cloud) => {
-            ctx.drawImage(image, SPRITE_CONFIG.CLOUD.x, SPRITE_CONFIG.CLOUD.y, SPRITE_CONFIG.CLOUD.w, SPRITE_CONFIG.CLOUD.h, cloud.x, cloud.y, cloudWidth1x, cloudHeight1x);
+            ctx.drawImage(
+              image,
+              SPRITE_CONFIG.CLOUD.x,
+              SPRITE_CONFIG.CLOUD.y,
+              SPRITE_CONFIG.CLOUD.w,
+              SPRITE_CONFIG.CLOUD.h,
+              cloud.x,
+              cloud.y,
+              cloudWidth1x,
+              cloudHeight1x
+            );
           });
           // Draw initial ground
           const groundY = CANVAS_HEIGHT - groundHeight1x;
           const groundWidth1x = SPRITE_CONFIG.GROUND.w / 2;
-          ctx.drawImage(image, SPRITE_CONFIG.GROUND.x, SPRITE_CONFIG.GROUND.y, SPRITE_CONFIG.GROUND.w, SPRITE_CONFIG.GROUND.h, initialGame.groundPos, groundY, groundWidth1x, groundHeight1x);
-          ctx.drawImage(image, SPRITE_CONFIG.GROUND.x, SPRITE_CONFIG.GROUND.y, SPRITE_CONFIG.GROUND.w, SPRITE_CONFIG.GROUND.h, initialGame.groundPos + groundWidth1x, groundY, groundWidth1x, groundHeight1x);
+          ctx.drawImage(
+            image,
+            SPRITE_CONFIG.GROUND.x,
+            SPRITE_CONFIG.GROUND.y,
+            SPRITE_CONFIG.GROUND.w,
+            SPRITE_CONFIG.GROUND.h,
+            initialGame.groundPos,
+            groundY,
+            groundWidth1x,
+            groundHeight1x
+          );
+          ctx.drawImage(
+            image,
+            SPRITE_CONFIG.GROUND.x,
+            SPRITE_CONFIG.GROUND.y,
+            SPRITE_CONFIG.GROUND.w,
+            SPRITE_CONFIG.GROUND.h,
+            initialGame.groundPos + groundWidth1x,
+            groundY,
+            groundWidth1x,
+            groundHeight1x
+          );
           // Draw waiting dino
           const dinoSprite = SPRITE_CONFIG.DINO_WAITING;
           const dinoWidth1x = dinoSprite.w / 2;
           const dinoHeight1x = dinoSprite.h / 2;
-          ctx.drawImage(image, dinoSprite.x, dinoSprite.y, dinoSprite.w, dinoSprite.h, 50, initialGame.dinoY, dinoWidth1x, dinoHeight1x);
+          ctx.drawImage(
+            image,
+            dinoSprite.x,
+            dinoSprite.y,
+            dinoSprite.w,
+            dinoSprite.h,
+            50,
+            initialGame.dinoY,
+            dinoWidth1x,
+            dinoHeight1x
+          );
           ctx.restore();
         }
       }
       // ---------------------------
     };
 
-    window.addEventListener('resize', handleResize);
+    window.addEventListener("resize", handleResize);
 
     return () => {
-      window.removeEventListener('resize', handleResize);
+      window.removeEventListener("resize", handleResize);
       if (animationFrameId.current) {
         cancelAnimationFrame(animationFrameId.current);
       }
@@ -272,23 +366,23 @@ export default function DinoPage(): JSX.Element {
     };
   }, [handleResize]);
 
-  // --- Update Game Logic --- 
+  // --- Update Game Logic ---
   const updateGame = useCallback(() => {
     const game = gameRef.current;
     const groundHeight1x = getGroundHeight();
-    
+
     game.frameCount++;
-    
+
     if (game.isHit) {
       game.hitTimer--;
       if (game.hitTimer <= 0) {
         game.isHit = false;
       }
     }
-    
+
     const groundWidth1x = SPRITE_CONFIG.GROUND.w / 2;
     game.groundPos = (game.groundPos - game.speed) % groundWidth1x;
-    
+
     if (game.isJumping) {
       game.dinoY += game.jumpVelocity;
       game.jumpVelocity += GRAVITY;
@@ -298,26 +392,34 @@ export default function DinoPage(): JSX.Element {
         game.jumpVelocity = 0;
       }
     }
-    
+
     if (game.frameCount % 150 === 0 && Math.random() > 0.5) {
-      const cloudY = Math.random() * (CANVAS_HEIGHT * 0.5 - 20) + 20; 
+      const cloudY = Math.random() * (CANVAS_HEIGHT * 0.5 - 20) + 20;
       game.clouds.push({ x: CANVAS_WIDTH, y: cloudY });
     }
     const cloudWidth1x = SPRITE_CONFIG.CLOUD.w / 2;
     game.clouds = game.clouds
       .map((cloud: Cloud) => ({ ...cloud, x: cloud.x - game.speed / 3 }))
       .filter((cloud: Cloud) => cloud.x > -cloudWidth1x);
-    
+
     const lastObstacle = game.obstacles[game.obstacles.length - 1];
-    const shouldGenerateObstacle = !lastObstacle || (CANVAS_WIDTH - lastObstacle.x > 200 + Math.random() * 200);
+    const shouldGenerateObstacle =
+      !lastObstacle ||
+      CANVAS_WIDTH - lastObstacle.x > 200 + Math.random() * 200;
     if (shouldGenerateObstacle && game.frameCount > 60) {
       const obstacleTypes: ObstacleType[] = [
-        'CACTUS_SMALL_1', 'CACTUS_SMALL_2', 'CACTUS_SMALL_3',
-        'CACTUS_LARGE_1', 'CACTUS_LARGE_2', 'CACTUS_LARGE_3',
-        'PTERODACTYL_1', 'PTERODACTYL_2', 
+        "CACTUS_SMALL_1",
+        "CACTUS_SMALL_2",
+        "CACTUS_SMALL_3",
+        "CACTUS_LARGE_1",
+        "CACTUS_LARGE_2",
+        "CACTUS_LARGE_3",
+        "PTERODACTYL_1",
+        "PTERODACTYL_2",
       ];
-      const type = obstacleTypes[Math.floor(Math.random() * obstacleTypes.length)];
-      const isPterodactyl = type.startsWith('PTERODACTYL');
+      const type =
+        obstacleTypes[Math.floor(Math.random() * obstacleTypes.length)];
+      const isPterodactyl = type.startsWith("PTERODACTYL");
       let pteroY: number | undefined = undefined;
       if (isPterodactyl) {
         pteroY = Math.random() > 0.5 ? 60 : 90;
@@ -331,39 +433,45 @@ export default function DinoPage(): JSX.Element {
     game.obstacles = game.obstacles
       .map((obs: Obstacle) => ({ ...obs, x: obs.x - game.speed }))
       .filter((obs: Obstacle) => obs.x > -(SPRITE_CONFIG[obs.type].w / 2));
-    
+
     if (!game.isHit && game.isPlaying) {
       let currentDinoSprite: SpriteRect;
       let dinoDrawY = game.dinoY;
       if (game.isJumping) {
         currentDinoSprite = SPRITE_CONFIG.DINO_JUMPING;
       } else if (game.isDucking) {
-        currentDinoSprite = game.frameCount % 10 < 5 ? SPRITE_CONFIG.DINO_DUCKING_1 : SPRITE_CONFIG.DINO_DUCKING_2;
-        dinoDrawY = CANVAS_HEIGHT - (currentDinoSprite.h / 2) - groundHeight1x; 
+        currentDinoSprite =
+          game.frameCount % 10 < 5
+            ? SPRITE_CONFIG.DINO_DUCKING_1
+            : SPRITE_CONFIG.DINO_DUCKING_2;
+        dinoDrawY = CANVAS_HEIGHT - currentDinoSprite.h / 2 - groundHeight1x;
       } else {
-        currentDinoSprite = game.frameCount % 12 < 6 ? SPRITE_CONFIG.DINO_RUNNING_1 : SPRITE_CONFIG.DINO_RUNNING_2;
+        currentDinoSprite =
+          game.frameCount % 12 < 6
+            ? SPRITE_CONFIG.DINO_RUNNING_1
+            : SPRITE_CONFIG.DINO_RUNNING_2;
       }
       const dinoWidth1x = currentDinoSprite.w / 2;
       const dinoHeight1x = currentDinoSprite.h / 2;
       const dinoPadding = 5;
-      const dinoRect = { 
-          x: 50 + dinoPadding, 
-          y: dinoDrawY + dinoPadding, 
-          w: dinoWidth1x - 2 * dinoPadding, 
-          h: dinoHeight1x - 2 * dinoPadding 
+      const dinoRect = {
+        x: 50 + dinoPadding,
+        y: dinoDrawY + dinoPadding,
+        w: dinoWidth1x - 2 * dinoPadding,
+        h: dinoHeight1x - 2 * dinoPadding,
       };
 
       for (const obs of game.obstacles) {
         const sprite = SPRITE_CONFIG[obs.type];
         const obsWidth1x = sprite.w / 2;
         const obsHeight1x = sprite.h / 2;
-        const obsY = obs.y ?? (CANVAS_HEIGHT - obsHeight1x - groundHeight1x);
+        const obsY = obs.y ?? CANVAS_HEIGHT - obsHeight1x - groundHeight1x;
         const obsPadding = 2;
-        const obsRect = { 
-            x: obs.x + obsPadding, 
-            y: obsY + obsPadding, 
-            w: obsWidth1x - 2 * obsPadding, 
-            h: obsHeight1x - 2 * obsPadding 
+        const obsRect = {
+          x: obs.x + obsPadding,
+          y: obsY + obsPadding,
+          w: obsWidth1x - 2 * obsPadding,
+          h: obsHeight1x - 2 * obsPadding,
         };
 
         if (
@@ -378,19 +486,22 @@ export default function DinoPage(): JSX.Element {
         }
       }
     }
-    
+
     game.nightModeTimer++;
     if (game.nightModeTimer >= NIGHT_MODE_DURATION) {
       game.nightMode = !game.nightMode;
       game.nightModeTimer = 0;
     }
-    
-    if (game.frameCount % SPEED_INCREASE_INTERVAL === 0 && game.speed < MAX_SPEED) {
+
+    if (
+      game.frameCount % SPEED_INCREASE_INTERVAL === 0 &&
+      game.speed < MAX_SPEED
+    ) {
       game.speed = Math.min(MAX_SPEED, game.speed + SPEED_INCREASE_AMOUNT);
     }
   }, [initialDinoY]);
 
-  // --- Game Loop --- 
+  // --- Game Loop ---
   const gameLoop = useCallback(() => {
     if (!gameRef.current.isPlaying || gameRef.current.isPaused) {
       animationFrameId.current = null;
@@ -399,7 +510,7 @@ export default function DinoPage(): JSX.Element {
 
     updateGame();
     if (canvasRef.current && spriteImageRef.current) {
-      const ctx = canvasRef.current.getContext('2d');
+      const ctx = canvasRef.current.getContext("2d");
       if (ctx) {
         renderGame(ctx, spriteImageRef.current, scale);
       }
@@ -408,7 +519,7 @@ export default function DinoPage(): JSX.Element {
     animationFrameId.current = requestAnimationFrame(gameLoop);
   }, [scale, updateGame, renderGame]);
 
-  // --- Start Game Function --- 
+  // --- Start Game Function ---
   const startGame = useCallback(() => {
     if (!gameRef.current.isPlaying) {
       gameRef.current = {
@@ -432,7 +543,7 @@ export default function DinoPage(): JSX.Element {
     }
   }, [gameLoop, initialDinoY]);
 
-  // --- Effect for Input Handling --- 
+  // --- Effect for Input Handling ---
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent): void => {
       if (!spriteImageRef.current) return;
@@ -440,32 +551,32 @@ export default function DinoPage(): JSX.Element {
       const game = gameRef.current;
 
       // 1. Handle starting the game
-      if (!game.isPlaying && (e.code === 'Space' || e.code === 'ArrowUp')) {
+      if (!game.isPlaying && (e.code === "Space" || e.code === "ArrowUp")) {
         startGame();
-        return; 
+        return;
       }
 
       // 2. Handle pause/unpause with ESC
-      if (e.code === 'Escape') {
+      if (e.code === "Escape") {
         e.preventDefault();
         if (game.isPlaying) {
           game.isPaused = !game.isPaused;
           if (!game.isPaused) {
-            gameLoop(); 
+            gameLoop();
           }
         }
-        return; 
+        return;
       }
 
       // If game isn't playing, ignore other keys
       if (!game.isPlaying) {
-          return;
+        return;
       }
 
-      // --- From here, game is playing --- 
+      // --- From here, game is playing ---
 
       // 3. Handle jump OR unpause with Space/Up
-      if (e.code === 'Space' || e.code === 'ArrowUp') {
+      if (e.code === "Space" || e.code === "ArrowUp") {
         e.preventDefault();
         if (game.isPaused) {
           // Unpause the game
@@ -478,7 +589,7 @@ export default function DinoPage(): JSX.Element {
         }
       }
       // 4. Handle duck (only if not paused)
-      else if (e.code === 'ArrowDown' && !game.isPaused) {
+      else if (e.code === "ArrowDown" && !game.isPaused) {
         e.preventDefault();
         if (!game.isJumping) {
           game.isDucking = true;
@@ -490,32 +601,29 @@ export default function DinoPage(): JSX.Element {
       // Only handle key up if the game is actively playing and not paused
       if (!gameRef.current.isPlaying || gameRef.current.isPaused) return;
 
-      if (e.code === 'ArrowDown') {
+      if (e.code === "ArrowDown") {
         gameRef.current.isDucking = false;
       }
     };
 
-    window.addEventListener('keydown', handleKeyDown);
-    window.addEventListener('keyup', handleKeyUp);
+    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("keyup", handleKeyUp);
 
     return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-      window.removeEventListener('keyup', handleKeyUp);
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("keyup", handleKeyUp);
     };
   }, [startGame, gameLoop]);
 
   return (
-    <motion.div 
-      ref={containerRef} 
+    <motion.div
+      ref={containerRef}
       className={styles.canvasContainer}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.7 }}
     >
-      <canvas 
-        ref={canvasRef} 
-        className={styles.runnerCanvas}
-      />
+      <canvas ref={canvasRef} className={styles.runnerCanvas} />
     </motion.div>
   );
 }

@@ -97,10 +97,7 @@ const ObfuscatedContact: React.FC<ObfuscatedContactProps> = ({
   return (
     <span className={`inline-flex items-center gap-2 ${className}`}>
       {type === "email" ? (
-        <a
-          href={`mailto:${value}`}
-          className="hover:underline"
-        >
+        <a href={`mailto:${value}`} className="hover:underline">
           {value}
         </a>
       ) : (
@@ -112,7 +109,10 @@ const ObfuscatedContact: React.FC<ObfuscatedContactProps> = ({
           className="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
           title="Hide Address"
         >
-          <EyeOff size={14} className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300" />
+          <EyeOff
+            size={14}
+            className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+          />
         </button>
         <button
           onClick={handleCopy}

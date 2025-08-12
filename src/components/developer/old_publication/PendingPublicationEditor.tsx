@@ -77,7 +77,7 @@ const PendingPublicationEditor: React.FC<PendingPublicationEditorProps> = ({
   const [ccfRankings, setCcfRankings] = useState<Record<string, string>>({}); // Use Record<string, string>
   const [isLoadingMembers, setIsLoadingMembers] = useState<boolean>(true);
   const [initialRawAuthors, setInitialRawAuthors] = useState<string | null>(
-    null,
+    null
   ); // Store initial raw authors for comparison
 
   // --- Data Fetching ---
@@ -89,7 +89,7 @@ const PendingPublicationEditor: React.FC<PendingPublicationEditorProps> = ({
     try {
       // Adjust API endpoint if necessary - assuming it returns full Publication
       const response = await fetch(
-        `/api/publications/pending/${publicationId}`,
+        `/api/publications/pending/${publicationId}`
       );
       if (!response.ok) {
         const errData = await response.json();
@@ -124,9 +124,9 @@ const PendingPublicationEditor: React.FC<PendingPublicationEditorProps> = ({
         setSelectedAuthors(preSelected);
         console.log(
           "Pre-selected authors based on fetched relation:",
-          preSelected,
+          preSelected
         );
-      /* Remove the fallback logic based on raw_authors
+        /* Remove the fallback logic based on raw_authors
       } else if (data?.raw_authors && memberOptions.length > 0) {
         // Fallback: Attempt pre-selection based on raw_authors if relation not present
         // (Keep existing logic or refine)
@@ -162,7 +162,7 @@ const PendingPublicationEditor: React.FC<PendingPublicationEditorProps> = ({
     } catch (err) {
       console.error("Editor: Failed to fetch publication data:", err);
       setError(
-        err instanceof Error ? err.message : "Failed to load publication data.",
+        err instanceof Error ? err.message : "Failed to load publication data."
       );
       setFormData(null); // Clear form data on error
     } finally {
@@ -237,7 +237,7 @@ const PendingPublicationEditor: React.FC<PendingPublicationEditorProps> = ({
   const handleInputChange = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >,
+    >
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => (prev ? { ...prev, [name]: value } : null));
@@ -252,7 +252,7 @@ const PendingPublicationEditor: React.FC<PendingPublicationEditorProps> = ({
             ...prev,
             [name]: isNaN(yearValue!) ? prev.year : yearValue,
           }
-        : null,
+        : null
     );
   };
 
@@ -287,7 +287,7 @@ const PendingPublicationEditor: React.FC<PendingPublicationEditorProps> = ({
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
-        },
+        }
       );
 
       if (!response.ok) {
@@ -304,7 +304,7 @@ const PendingPublicationEditor: React.FC<PendingPublicationEditorProps> = ({
       setError(
         err instanceof Error
           ? err.message
-          : "Failed to save publication changes.",
+          : "Failed to save publication changes."
       );
     } finally {
       setIsSaving(false);

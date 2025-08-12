@@ -68,7 +68,7 @@ export async function POST(request: Request) {
       console.error("Invalid file type:", file.type, file.name);
       return NextResponse.json(
         { error: "Invalid file type. Please upload a .bib file." },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -81,7 +81,7 @@ export async function POST(request: Request) {
     try {
       parsedEntries = bibtexParse.toJSON(fileContent);
       console.log(
-        `Successfully parsed ${parsedEntries.length} entries from BibTeX file.`,
+        `Successfully parsed ${parsedEntries.length} entries from BibTeX file.`
       );
     } catch (parseError) {
       console.error("Error parsing BibTeX file:", parseError);
@@ -91,7 +91,7 @@ export async function POST(request: Request) {
       // Optionally return error immediately, or try processing successfully parsed entries
       // return NextResponse.json({ error: 'Failed to parse BibTeX file. Check format.' }, { status: 400 });
       console.warn(
-        "Parsing error encountered, attempting to process successfully parsed entries before error.",
+        "Parsing error encountered, attempting to process successfully parsed entries before error."
       );
     }
 
@@ -99,7 +99,7 @@ export async function POST(request: Request) {
       console.error("Parsed data is not an array:", parsedEntries);
       return NextResponse.json(
         { error: "Parsed BibTeX data is not in the expected format (array)." },
-        { status: 500 },
+        { status: 500 }
       );
     }
 
@@ -121,19 +121,19 @@ export async function POST(request: Request) {
             p.doi_url
               ?.toLowerCase()
               .replace(/^(https?:\/\/)?(dx\.)?doi\.org\//i, "")
-              .trim(),
+              .trim()
           )
-          .filter((doi): doi is string => !!doi), // Filter out null/undefined DOIs
+          .filter((doi): doi is string => !!doi) // Filter out null/undefined DOIs
       );
       // 创建一个 Set 用于快速检查 Title+Year 是否存在 (忽略大小写和空格)
       const existingTitleYears = new Set(
         existingPublications
           .map((p) => `${p.title?.toLowerCase().trim()}|${p.year}`)
-          .filter((ty) => ty && ty !== "|null"), // Filter out entries without title or year
+          .filter((ty) => ty && ty !== "|null") // Filter out entries without title or year
       );
 
       console.log(
-        `Found ${existingDois.size} existing DOIs and ${existingTitleYears.size} existing Title+Years in the database.`,
+        `Found ${existingDois.size} existing DOIs and ${existingTitleYears.size} existing Title+Years in the database.`
       );
 
       // 2. 遍历解析出的 BibTeX 条目
@@ -199,7 +199,7 @@ export async function POST(request: Request) {
             isNaN(newPublicationData.year)
           ) {
             console.warn(
-              `Invalid year format for title "${title}", setting to null.`,
+              `Invalid year format for title "${title}", setting to null.`
             );
             newPublicationData.year = null;
           }
@@ -215,7 +215,7 @@ export async function POST(request: Request) {
         } catch (dbError) {
           console.error(
             `Error saving publication "${title}" to database:`,
-            dbError,
+            dbError
           );
           skippedOrExisting++; // 保存失败也算跳过
         }
@@ -223,7 +223,7 @@ export async function POST(request: Request) {
     }
 
     console.log(
-      `BibTeX processing complete. Added: ${processedForReview}, Skipped/Existing: ${skippedOrExisting}`,
+      `BibTeX processing complete. Added: ${processedForReview}, Skipped/Existing: ${skippedOrExisting}`
     );
 
     let message = `File processed successfully. Found ${parsedEntries.length} entries. ${processedForReview} new entries added for review. ${skippedOrExisting} entries were skipped (already exist or error).`;
@@ -239,19 +239,19 @@ export async function POST(request: Request) {
         processedForReview: processedForReview,
         skippedOrExisting: skippedOrExisting,
       },
-      { status: 200 },
+      { status: 200 }
     );
   } catch (error) {
     console.error("Error processing BibTeX upload:", error);
     if (error instanceof Error) {
       return NextResponse.json(
         { error: `Internal server error: ${error.message}` },
-        { status: 500 },
+        { status: 500 }
       );
     }
     return NextResponse.json(
       { error: "Internal server error during file upload." },
-      { status: 500 },
+      { status: 500 }
     );
   } finally {
     // 确保 Prisma Client 连接被断开 (在 serverless 环境中可能不是必须的，但良好实践)

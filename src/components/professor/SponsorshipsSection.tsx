@@ -35,7 +35,9 @@ const SponsorshipsSection: React.FC<SponsorshipsSectionProps> = ({
         >
           Grants & Sponsorships
         </h2>
-        <p className={`text-red-600 dark:text-red-400 ${themeColors.backgroundWhite ?? "bg-red-50"} p-3 rounded-md`}>
+        <p
+          className={`text-red-600 dark:text-red-400 ${themeColors.backgroundWhite ?? "bg-red-50"} p-3 rounded-md`}
+        >
           Error loading sponsorships: {fetchError}
         </p>
       </section>
@@ -50,10 +52,10 @@ const SponsorshipsSection: React.FC<SponsorshipsSectionProps> = ({
 
   // 对资助项按显示顺序进行排序
   const sortedFeatured = [...featuredSponsorships].sort(
-    (a, b) => a.display_order - b.display_order,
+    (a, b) => a.display_order - b.display_order
   );
   const sortedDetailed = [...detailedSponsorships].sort(
-    (a, b) => a.display_order - b.display_order,
+    (a, b) => a.display_order - b.display_order
   );
 
   // 切换详细视图的展开/收起状态

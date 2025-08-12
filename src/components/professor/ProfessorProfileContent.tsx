@@ -76,7 +76,11 @@ const ProfessorProfileContent: React.FC<ProfessorProfileContentProps> = ({
     // 内容的根元素，应用主题背景
     <div className={`${themeColors.themePageBg ?? "bg-gray-50"} min-h-screen`}>
       {/* 头部部分 - 通常不作为交错动画的一部分，直接渲染 */}
-      <ProfessorHeader professorData={professorData} addressLine1={addressLine1} addressLine2={addressLine2} />
+      <ProfessorHeader
+        professorData={professorData}
+        addressLine1={addressLine1}
+        addressLine2={addressLine2}
+      />
 
       {/* 主内容区域，带有动画容器 */}
       <motion.div
@@ -88,7 +92,7 @@ const ProfessorProfileContent: React.FC<ProfessorProfileContentProps> = ({
         {/* 各部分容器 */}
         <div className="flex flex-col space-y-8 md:space-y-12">
           {/* 每个部分都用motion.div包裹以实现项目动画效果 */}
-          
+
           {/* 研究兴趣部分 */}
           <motion.div variants={itemVariants}>
             <ResearchInterestsSection

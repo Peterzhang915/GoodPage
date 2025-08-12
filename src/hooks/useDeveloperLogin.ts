@@ -15,7 +15,7 @@ import {
 // Only import the data, not the type
 import { developerMotd } from "@/config/developerMotd";
 // Import the Zustand store hook
-import { useAuthStore } from '@/store/authStore';
+import { useAuthStore } from "@/store/authStore";
 
 // Define MotdLine locally
 interface MotdLine {
@@ -111,18 +111,18 @@ const calculateRemainingLockout = (lockoutTime: number | null): number => {
 };
 
 // Define localStorage keys
-const AUTH_DETAILS_KEY = 'developerAuthDetails';
+const AUTH_DETAILS_KEY = "developerAuthDetails";
 
 // Define type for temporary auth data storage
 interface TempAuthData {
-    permissions: string[];
-    isFullAccess: boolean;
-    username: string; // Keep username for potential use
+  permissions: string[];
+  isFullAccess: boolean;
+  username: string; // Keep username for potential use
 }
 
 // Define type for persisted auth data in localStorage
 interface PersistedAuthData extends TempAuthData {
-    timestamp: number; // Add timestamp for potential expiry logic later
+  timestamp: number; // Add timestamp for potential expiry logic later
 }
 
 export const useDeveloperLogin = (): UseDeveloperLoginReturn => {
@@ -140,14 +140,19 @@ export const useDeveloperLogin = (): UseDeveloperLoginReturn => {
   // Initialize loginStage based on persisted state
   const [loginStage, setLoginStage] = useState<LoginStage>(() => {
     // Check localStorage only on the client side
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       const storedAuth = localStorage.getItem(AUTH_DETAILS_KEY);
       if (storedAuth) {
         try {
           // Use the more specific type for parsing
           const parsedAuth: PersistedAuthData = JSON.parse(storedAuth);
           // Check for required fields including username
-          if (parsedAuth && parsedAuth.username && parsedAuth.permissions && typeof parsedAuth.isFullAccess === 'boolean') {
+          if (
+            parsedAuth &&
+            parsedAuth.username &&
+            parsedAuth.permissions &&
+            typeof parsedAuth.isFullAccess === "boolean"
+          ) {
             // Don't update Zustand here, do it in useEffect
             return "loginComplete"; // Start in complete state
           }
@@ -162,8 +167,12 @@ export const useDeveloperLogin = (): UseDeveloperLoginReturn => {
   const [error, setError] = useState<string | null>(null);
   const [motdContent] = useState<MotdLine[]>(developerMotd);
   // Adjust initial MOTD display based on initial login stage
-  const [displayMotd, setDisplayMotd] = useState(loginStage === 'awaitingPassword');
-  const [isMotdComplete, setIsMotdComplete] = useState(loginStage !== 'awaitingPassword');
+  const [displayMotd, setDisplayMotd] = useState(
+    loginStage === "awaitingPassword"
+  );
+  const [isMotdComplete, setIsMotdComplete] = useState(
+    loginStage !== "awaitingPassword"
+  );
   const [motdIndex, setMotdIndex] = useState(0);
   const [processingIndex, setProcessingIndex] = useState(0);
   const [spinnerChar, setSpinnerChar] = useState(SPINNER_CHARS[0]);
@@ -171,11 +180,11 @@ export const useDeveloperLogin = (): UseDeveloperLoginReturn => {
 
   const [loginAttempts, setLoginAttempts] = useSessionStorage<number>(
     "devLoginAttempts",
-    MAX_LOGIN_ATTEMPTS,
+    MAX_LOGIN_ATTEMPTS
   );
   const [lockoutTime, setLockoutTime] = useSessionStorage<number | null>(
     "devLockoutTime",
-    null,
+    null
   );
 
   // --- Refs ---
@@ -189,7 +198,9 @@ export const useDeveloperLogin = (): UseDeveloperLoginReturn => {
   // --- Refs for timers to clear them on skip ---
   const bootMessageIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const bootTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const welcomeKeyListenerRef = useRef<((event: KeyboardEvent) => void) | null>(null);
+  const welcomeKeyListenerRef = useRef<((event: KeyboardEvent) => void) | null>(
+    null
+  );
 
   // --- Derived State ---
   const attemptsRemaining = loginAttempts;
@@ -203,22 +214,32 @@ export const useDeveloperLogin = (): UseDeveloperLoginReturn => {
 
   // Effect to initialize Zustand state from localStorage on mount
   useEffect(() => {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       const storedAuth = localStorage.getItem(AUTH_DETAILS_KEY);
       if (storedAuth) {
         try {
           // Use the specific type
           const parsedAuth: PersistedAuthData = JSON.parse(storedAuth);
           // Only update Zustand if it's not already authenticated and parsed data is valid
-          if (parsedAuth && parsedAuth.username && parsedAuth.permissions && typeof parsedAuth.isFullAccess === 'boolean' && !isAuthenticated) {
+          if (
+            parsedAuth &&
+            parsedAuth.username &&
+            parsedAuth.permissions &&
+            typeof parsedAuth.isFullAccess === "boolean" &&
+            !isAuthenticated
+          ) {
             console.log("Restoring auth state from localStorage...");
             // Pass username to zustandLogin
-            zustandLogin(parsedAuth.username, parsedAuth.permissions, parsedAuth.isFullAccess);
+            zustandLogin(
+              parsedAuth.username,
+              parsedAuth.permissions,
+              parsedAuth.isFullAccess
+            );
             // Ensure login stage reflects the restored state
-            if (loginStage !== 'loginComplete') {
-                setLoginStage('loginComplete');
-                setIsMotdComplete(true);
-                setDisplayMotd(false);
+            if (loginStage !== "loginComplete") {
+              setLoginStage("loginComplete");
+              setIsMotdComplete(true);
+              setDisplayMotd(false);
             }
           }
         } catch (e) {
@@ -227,7 +248,7 @@ export const useDeveloperLogin = (): UseDeveloperLoginReturn => {
         }
       }
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Keep dependencies minimal for mount effect
 
   useEffect(() => {
@@ -238,7 +259,7 @@ export const useDeveloperLogin = (): UseDeveloperLoginReturn => {
         (prev) =>
           SPINNER_CHARS[
             (SPINNER_CHARS.indexOf(prev) + 1) % SPINNER_CHARS.length
-          ],
+          ]
       );
     }, MOTD_SPINNER_DELAY);
 
@@ -294,12 +315,7 @@ export const useDeveloperLogin = (): UseDeveloperLoginReturn => {
         lockoutTimerRef.current = null;
       }
     };
-  }, [
-    isLocked,
-    lockoutTime,
-    setLoginAttempts,
-    isMotdComplete,
-  ]);
+  }, [isLocked, lockoutTime, setLoginAttempts, isMotdComplete]);
 
   useEffect(() => {
     if (isMotdComplete && !isLocked && loginStage === "awaitingPassword") {
@@ -323,15 +339,15 @@ export const useDeveloperLogin = (): UseDeveloperLoginReturn => {
           if (nextIndex >= bootMessages.length) {
             // Last message shown, clear interval and set timeout for welcome stage
             if (bootInterval) clearInterval(bootInterval);
-            
-            // --- MODIFICATION --- 
+
+            // --- MODIFICATION ---
             // Just set the stage to welcome. DO NOT update Zustand/localStorage here.
             welcomeTimeout = setTimeout(() => {
               console.log("Boot sequence complete. Setting stage to welcome.");
               setLoginStage("welcome");
             }, FINAL_BOOT_PAUSE);
-            // --- END MODIFICATION --- 
-            
+            // --- END MODIFICATION ---
+
             return prevIndex; // Stay at the last index
           } else {
             return nextIndex;
@@ -340,7 +356,7 @@ export const useDeveloperLogin = (): UseDeveloperLoginReturn => {
       }, BOOT_MESSAGE_INTERVAL);
     } else {
       // Reset index if stage changes away from unlocking
-      setCurrentBootMessageIndex(-1); 
+      setCurrentBootMessageIndex(-1);
     }
 
     // Cleanup function
@@ -348,8 +364,8 @@ export const useDeveloperLogin = (): UseDeveloperLoginReturn => {
       if (bootInterval) clearInterval(bootInterval);
       if (welcomeTimeout) clearTimeout(welcomeTimeout);
     };
-  // REMOVED zustandLogin from dependencies here
-  }, [loginStage]); 
+    // REMOVED zustandLogin from dependencies here
+  }, [loginStage]);
 
   // --- Helper to finalize login (used by skip and welcome Enter) ---
   const finalizeLogin = useCallback(() => {
@@ -357,18 +373,22 @@ export const useDeveloperLogin = (): UseDeveloperLoginReturn => {
       console.log("Finalizing login...");
       // Persist auth details to localStorage
       const authDataToPersist: PersistedAuthData = {
-          ...tempAuthData,
-          timestamp: Date.now(),
+        ...tempAuthData,
+        timestamp: Date.now(),
       };
       localStorage.setItem(AUTH_DETAILS_KEY, JSON.stringify(authDataToPersist));
 
       // Update Zustand store with the temporarily stored auth data
-      zustandLogin(tempAuthData.username, tempAuthData.permissions, tempAuthData.isFullAccess);
+      zustandLogin(
+        tempAuthData.username,
+        tempAuthData.permissions,
+        tempAuthData.isFullAccess
+      );
 
       setLoginStage("loginComplete"); // Mark login as fully complete
       setTempAuthData(null); // Clear temporary data
     } else {
-        console.warn("Attempted to finalize login without tempAuthData.");
+      console.warn("Attempted to finalize login without tempAuthData.");
     }
   }, [tempAuthData, zustandLogin]);
 
@@ -392,7 +412,10 @@ export const useDeveloperLogin = (): UseDeveloperLoginReturn => {
 
   // --- Skip Animation Handler ---
   const handleSkipAnimation = useCallback(() => {
-    if ((loginStage === "unlocking" || loginStage === "welcome") && tempAuthData) {
+    if (
+      (loginStage === "unlocking" || loginStage === "welcome") &&
+      tempAuthData
+    ) {
       console.log(`Skip requested during stage: ${loginStage}. Finalizing...`);
 
       // Clear any running animation timers
@@ -404,14 +427,16 @@ export const useDeveloperLogin = (): UseDeveloperLoginReturn => {
         clearTimeout(bootTimeoutRef.current);
         bootTimeoutRef.current = null;
       }
-       if (welcomeKeyListenerRef.current) {
-          window.removeEventListener("keydown", welcomeKeyListenerRef.current);
-          welcomeKeyListenerRef.current = null;
+      if (welcomeKeyListenerRef.current) {
+        window.removeEventListener("keydown", welcomeKeyListenerRef.current);
+        welcomeKeyListenerRef.current = null;
       }
 
       finalizeLogin();
     } else {
-        console.log(`Skip ignored. Stage: ${loginStage}, TempAuthData: ${!!tempAuthData}`);
+      console.log(
+        `Skip ignored. Stage: ${loginStage}, TempAuthData: ${!!tempAuthData}`
+      );
     }
   }, [loginStage, tempAuthData, finalizeLogin]);
 
@@ -426,7 +451,7 @@ export const useDeveloperLogin = (): UseDeveloperLoginReturn => {
       setCurrentBootMessageIndex(-1);
 
       try {
-        await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate delay
+        await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate delay
 
         const response = await fetch("/api/auth/developer", {
           method: "POST",
@@ -437,26 +462,29 @@ export const useDeveloperLogin = (): UseDeveloperLoginReturn => {
         const data: LoginApiResponse = await response.json();
 
         if (!response.ok || !data.success) {
-            // ... (error handling: set error, decrement attempts, potential lockout)
-            const errorMessage = data.success === false
-                ? data.error.message
-                : `API Error: ${response.status} ${response.statusText}`;
-            setError(errorMessage);
-            const newAttempts = loginAttempts - 1;
-            setLoginAttempts(newAttempts);
-            if (newAttempts <= 0) {
-                const newLockoutTime = Date.now() + LOCKOUT_DURATION;
-                setLockoutTime(newLockoutTime);
-                setError(`Too many failed attempts. Account locked for ${LOCKOUT_DURATION / 1000 / 60} minutes.`);
-            } else {
-                setError(`${errorMessage} ${newAttempts} attempts remaining.`);
-            }
-            setLoginStage("awaitingPassword");
-            passwordInputRef.current?.select();
-            return;
+          // ... (error handling: set error, decrement attempts, potential lockout)
+          const errorMessage =
+            data.success === false
+              ? data.error.message
+              : `API Error: ${response.status} ${response.statusText}`;
+          setError(errorMessage);
+          const newAttempts = loginAttempts - 1;
+          setLoginAttempts(newAttempts);
+          if (newAttempts <= 0) {
+            const newLockoutTime = Date.now() + LOCKOUT_DURATION;
+            setLockoutTime(newLockoutTime);
+            setError(
+              `Too many failed attempts. Account locked for ${LOCKOUT_DURATION / 1000 / 60} minutes.`
+            );
+          } else {
+            setError(`${errorMessage} ${newAttempts} attempts remaining.`);
+          }
+          setLoginStage("awaitingPassword");
+          passwordInputRef.current?.select();
+          return;
         }
 
-        // --- Login Successful --- 
+        // --- Login Successful ---
         if (data.success === true) {
           console.log("Login successful. API Response:", data);
           setTempAuthData({
@@ -468,7 +496,9 @@ export const useDeveloperLogin = (): UseDeveloperLoginReturn => {
           setLoginAttempts(MAX_LOGIN_ATTEMPTS);
           setLockoutTime(null);
           setLoginStage("unlocking"); // Move to unlocking stage
-          console.log("Stage set to unlocking. Temp Auth Data:", { /* ... */ });
+          console.log("Stage set to unlocking. Temp Auth Data:", {
+            /* ... */
+          });
         }
       } catch (err: any) {
         console.error("Login fetch error:", err);
@@ -484,24 +514,24 @@ export const useDeveloperLogin = (): UseDeveloperLoginReturn => {
       loginAttempts,
       setLoginAttempts,
       setLockoutTime,
-    ],
+    ]
   );
 
   const handleUsernameChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
       setUsername(event.target.value);
     },
-    [],
+    []
   );
 
   const handlePasswordChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
       setPassword(event.target.value);
     },
-    [],
+    []
   );
 
-  // --- Implement Logout Logic --- 
+  // --- Implement Logout Logic ---
   const handleLogout = useCallback(() => {
     console.log("Handling logout...");
     localStorage.removeItem(AUTH_DETAILS_KEY); // Clear persisted auth
@@ -521,23 +551,30 @@ export const useDeveloperLogin = (): UseDeveloperLoginReturn => {
     // router.push('/'); // Example redirect
   }, [zustandLogout, setLoginAttempts, setLockoutTime]);
 
-  // --- Konami Code Effect (Moved after handler definitions) --- 
+  // --- Konami Code Effect (Moved after handler definitions) ---
   // (Should only reveal login prompt now)
   useEffect(() => {
     const konamiSequence = [
-      'ArrowUp', 'ArrowUp',
-      'ArrowDown', 'ArrowDown',
-      'ArrowLeft', 'ArrowRight',
-      'ArrowLeft', 'ArrowRight',
-      'b', 'a'
+      "ArrowUp",
+      "ArrowUp",
+      "ArrowDown",
+      "ArrowDown",
+      "ArrowLeft",
+      "ArrowRight",
+      "ArrowLeft",
+      "ArrowRight",
+      "b",
+      "a",
     ];
     let currentIndex = 0;
 
     const handleKonami = (event: KeyboardEvent) => {
       // Only process if awaiting password and not locked
-      if (loginStage !== 'awaitingPassword' || isLocked) return;
+      if (loginStage !== "awaitingPassword" || isLocked) return;
 
-      if (event.key.toLowerCase() === konamiSequence[currentIndex].toLowerCase()) {
+      if (
+        event.key.toLowerCase() === konamiSequence[currentIndex].toLowerCase()
+      ) {
         currentIndex++;
         if (currentIndex === konamiSequence.length) {
           console.log("Konami Code detected! Revealing login prompt.");
@@ -564,14 +601,13 @@ export const useDeveloperLogin = (): UseDeveloperLoginReturn => {
     };
 
     // Add listener only when awaiting password and not locked
-    document.addEventListener('keydown', handleKonami);
-    if (loginStage === 'awaitingPassword' && !isLocked) {
-        console.log("Konami Code listener active (Reveal Mode).");
+    document.addEventListener("keydown", handleKonami);
+    if (loginStage === "awaitingPassword" && !isLocked) {
+      console.log("Konami Code listener active (Reveal Mode).");
     }
 
-
     return () => {
-      document.removeEventListener('keydown', handleKonami);
+      document.removeEventListener("keydown", handleKonami);
     };
     // Dependencies are correct now
   }, [loginStage, isLocked, skipMotd, isMotdComplete]);
@@ -583,7 +619,7 @@ export const useDeveloperLogin = (): UseDeveloperLoginReturn => {
     if (loginStage === "welcome") {
       specificListener = (event: KeyboardEvent) => {
         if (event.key === "Enter") {
-           finalizeLogin();
+          finalizeLogin();
         }
       };
       welcomeKeyListenerRef.current = specificListener; // Store the listener
@@ -596,7 +632,7 @@ export const useDeveloperLogin = (): UseDeveloperLoginReturn => {
         window.removeEventListener("keydown", specificListener);
         // Check if the ref still holds the listener we are cleaning up
         if (welcomeKeyListenerRef.current === specificListener) {
-             welcomeKeyListenerRef.current = null; // Assign null on cleanup
+          welcomeKeyListenerRef.current = null; // Assign null on cleanup
         }
       }
     };
@@ -610,7 +646,7 @@ export const useDeveloperLogin = (): UseDeveloperLoginReturn => {
       // --- Key listener for early Enter skip during unlocking ---
       const handleEarlyEnter = (event: KeyboardEvent) => {
         if (event.key === "Enter") {
-           handleSkipAnimation();
+          handleSkipAnimation();
         }
       };
       window.addEventListener("keydown", handleEarlyEnter);
@@ -619,10 +655,10 @@ export const useDeveloperLogin = (): UseDeveloperLoginReturn => {
       // Start showing boot messages
       setCurrentBootMessageIndex(0);
 
-      bootMessageIntervalRef.current = setInterval(() => { // Store interval ID
-          // ... (boot message interval logic) ...
+      bootMessageIntervalRef.current = setInterval(() => {
+        // Store interval ID
+        // ... (boot message interval logic) ...
       }, BOOT_MESSAGE_INTERVAL);
-
 
       // Define cleanup for this effect
       cleanupFunc = () => {

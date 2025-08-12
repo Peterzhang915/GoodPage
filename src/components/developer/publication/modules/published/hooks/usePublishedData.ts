@@ -7,10 +7,12 @@ import { PublicationWithAuthors } from "@/app/api/publications/route";
  */
 export const usePublishedData = () => {
   // 数据状态
-  const [publications, setPublications] = useState<PublicationWithAuthors[]>([]);
+  const [publications, setPublications] = useState<PublicationWithAuthors[]>(
+    []
+  );
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  
+
   // 操作状态
   const [deletingIds, setDeletingIds] = useState<Set<number>>(new Set());
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
@@ -32,24 +34,27 @@ export const usePublishedData = () => {
 
   // 添加出版物
   const addPublication = useCallback((publication: PublicationWithAuthors) => {
-    setPublications(prev => [...prev, publication]);
+    setPublications((prev) => [...prev, publication]);
   }, []);
 
   // 更新出版物
-  const updatePublication = useCallback((id: number, updatedPublication: PublicationWithAuthors) => {
-    setPublications(prev => 
-      prev.map(pub => pub.id === id ? updatedPublication : pub)
-    );
-  }, []);
+  const updatePublication = useCallback(
+    (id: number, updatedPublication: PublicationWithAuthors) => {
+      setPublications((prev) =>
+        prev.map((pub) => (pub.id === id ? updatedPublication : pub))
+      );
+    },
+    []
+  );
 
   // 删除出版物
   const removePublication = useCallback((id: number) => {
-    setPublications(prev => prev.filter(pub => pub.id !== id));
+    setPublications((prev) => prev.filter((pub) => pub.id !== id));
   }, []);
 
   // 设置删除状态
   const setDeletingState = useCallback((id: number, isDeleting: boolean) => {
-    setDeletingIds(prev => {
+    setDeletingIds((prev) => {
       const newSet = new Set(prev);
       if (isDeleting) {
         newSet.add(id);
@@ -80,7 +85,7 @@ export const usePublishedData = () => {
     error,
     deletingIds,
     isSubmitting,
-    
+
     // 状态设置方法
     setPublications,
     setLoadingState,
@@ -89,7 +94,7 @@ export const usePublishedData = () => {
     setDeletingState,
     setSubmittingState,
     resetStates,
-    
+
     // 数据操作方法
     addPublication,
     updatePublication,

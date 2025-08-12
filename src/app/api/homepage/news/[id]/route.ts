@@ -1,6 +1,6 @@
-import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
-import { z } from 'zod';
+import { NextResponse } from "next/server";
+import { PrismaClient } from "@prisma/client";
+import { z } from "zod";
 
 const prisma = new PrismaClient();
 
@@ -13,129 +13,161 @@ const updateNewsSchema = z.object({
 
 // Helper to get ID from params
 const getIdFromParams = (params: { id?: string }) => {
-    const id = parseInt(params.id || '');
-    if (isNaN(id)) {
-        throw new Error('Invalid ID parameter');
-    }
-    return id;
+  const id = parseInt(params.id || "");
+  if (isNaN(id)) {
+    throw new Error("Invalid ID parameter");
+  }
+  return id;
 };
-
 
 // GET handler for a single news item (optional, but good practice)
 export async function GET(
-    request: Request, // Keep request parameter even if unused for consistency
-    { params }: { params: { id: string } }
+  request: Request, // Keep request parameter even if unused for consistency
+  { params }: { params: { id: string } }
 ) {
-    try {
-        const id = getIdFromParams(params);
-        const newsItem = await prisma.homepageNews.findUnique({
-            where: { id },
-        });
+  try {
+    const id = getIdFromParams(params);
+    const newsItem = await prisma.homepageNews.findUnique({
+      where: { id },
+    });
 
-        if (!newsItem) {
-            return NextResponse.json(
-                { success: false, error: { message: `News item with ID ${id} not found.` } },
-                { status: 404 }
-            );
-        }
-
-        return NextResponse.json({ success: true, data: newsItem });
-    } catch (error: any) {
-        console.error(`Failed to fetch news item ${params.id}:`, error);
-        const status = error.message.includes('Invalid ID') ? 400 : 500;
-        return NextResponse.json(
-            { success: false, error: { message: status === 400 ? error.message : 'Failed to fetch news item.' } },
-            { status }
-        );
-    } finally {
-        await prisma.$disconnect();
+    if (!newsItem) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: { message: `News item with ID ${id} not found.` },
+        },
+        { status: 404 }
+      );
     }
-}
 
+    return NextResponse.json({ success: true, data: newsItem });
+  } catch (error: any) {
+    console.error(`Failed to fetch news item ${params.id}:`, error);
+    const status = error.message.includes("Invalid ID") ? 400 : 500;
+    return NextResponse.json(
+      {
+        success: false,
+        error: {
+          message:
+            status === 400 ? error.message : "Failed to fetch news item.",
+        },
+      },
+      { status }
+    );
+  } finally {
+    await prisma.$disconnect();
+  }
+}
 
 // PUT handler to update a specific news item
 export async function PUT(
-    request: Request,
-    { params }: { params: { id: string } }
+  request: Request,
+  { params }: { params: { id: string } }
 ) {
-    try {
-        const id = getIdFromParams(params);
-        const body = await request.json();
+  try {
+    const id = getIdFromParams(params);
+    const body = await request.json();
 
-        // Validate input
-        const validation = updateNewsSchema.safeParse(body);
-        if (!validation.success) {
-            return NextResponse.json(
-                { success: false, error: { message: 'Invalid input.', details: validation.error.errors } },
-                { status: 400 }
-            );
-        }
-
-        // Check if there's anything to update
-        if (Object.keys(validation.data).length === 0) {
-             return NextResponse.json(
-                { success: false, error: { message: 'No valid fields provided for update.' } },
-                { status: 400 }
-            );
-        }
-
-        const updatedNewsItem = await prisma.homepageNews.update({
-            where: { id },
-            data: validation.data, // Use validated data
-        });
-
-        return NextResponse.json({ success: true, data: updatedNewsItem });
-    } catch (error: any) {
-        console.error(`Failed to update news item ${params.id}:`, error);
-         if (error instanceof Error && error.message.includes('Invalid ID')) {
-             return NextResponse.json({ success: false, error: { message: error.message } }, { status: 400 });
-         }
-        // Handle potential Prisma errors like record not found
-        if (error.code === 'P2025') { // Prisma error code for record not found on update/delete
-             return NextResponse.json(
-                { success: false, error: { message: `News item with ID ${params.id} not found.` } },
-                { status: 404 }
-            );
-        }
-        return NextResponse.json(
-            { success: false, error: { message: 'Failed to update news item.' } },
-            { status: 500 }
-        );
-    } finally {
-        await prisma.$disconnect();
+    // Validate input
+    const validation = updateNewsSchema.safeParse(body);
+    if (!validation.success) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            message: "Invalid input.",
+            details: validation.error.errors,
+          },
+        },
+        { status: 400 }
+      );
     }
+
+    // Check if there's anything to update
+    if (Object.keys(validation.data).length === 0) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: { message: "No valid fields provided for update." },
+        },
+        { status: 400 }
+      );
+    }
+
+    const updatedNewsItem = await prisma.homepageNews.update({
+      where: { id },
+      data: validation.data, // Use validated data
+    });
+
+    return NextResponse.json({ success: true, data: updatedNewsItem });
+  } catch (error: any) {
+    console.error(`Failed to update news item ${params.id}:`, error);
+    if (error instanceof Error && error.message.includes("Invalid ID")) {
+      return NextResponse.json(
+        { success: false, error: { message: error.message } },
+        { status: 400 }
+      );
+    }
+    // Handle potential Prisma errors like record not found
+    if (error.code === "P2025") {
+      // Prisma error code for record not found on update/delete
+      return NextResponse.json(
+        {
+          success: false,
+          error: { message: `News item with ID ${params.id} not found.` },
+        },
+        { status: 404 }
+      );
+    }
+    return NextResponse.json(
+      { success: false, error: { message: "Failed to update news item." } },
+      { status: 500 }
+    );
+  } finally {
+    await prisma.$disconnect();
+  }
 }
 
 // DELETE handler to remove a specific news item
 export async function DELETE(
-    request: Request, // Keep request parameter even if unused for consistency
-    { params }: { params: { id: string } }
+  request: Request, // Keep request parameter even if unused for consistency
+  { params }: { params: { id: string } }
 ) {
-    try {
-        const id = getIdFromParams(params);
+  try {
+    const id = getIdFromParams(params);
 
-        await prisma.homepageNews.delete({
-            where: { id },
-        });
+    await prisma.homepageNews.delete({
+      where: { id },
+    });
 
-        return NextResponse.json({ success: true, message: `News item with ID ${id} deleted.` }, { status: 200 }); // Can also use 204 No Content
-    } catch (error: any) {
-        console.error(`Failed to delete news item ${params.id}:`, error);
-         if (error instanceof Error && error.message.includes('Invalid ID')) {
-             return NextResponse.json({ success: false, error: { message: error.message } }, { status: 400 });
-         }
-        // Handle potential Prisma errors like record not found
-        if (error.code === 'P2025') {
-             return NextResponse.json(
-                { success: false, error: { message: `News item with ID ${params.id} not found.` } },
-                { status: 404 }
-            );
-        }
-        return NextResponse.json(
-            { success: false, error: { message: 'Failed to delete news item.' } },
-            { status: 500 }
-        );
-    } finally {
-        await prisma.$disconnect();
+    return NextResponse.json(
+      { success: true, message: `News item with ID ${id} deleted.` },
+      { status: 200 }
+    ); // Can also use 204 No Content
+  } catch (error: any) {
+    console.error(`Failed to delete news item ${params.id}:`, error);
+    if (error instanceof Error && error.message.includes("Invalid ID")) {
+      return NextResponse.json(
+        { success: false, error: { message: error.message } },
+        { status: 400 }
+      );
     }
+    // Handle potential Prisma errors like record not found
+    if (error.code === "P2025") {
+      return NextResponse.json(
+        {
+          success: false,
+          error: { message: `News item with ID ${params.id} not found.` },
+        },
+        { status: 404 }
+      );
+    }
+    return NextResponse.json(
+      { success: false, error: { message: "Failed to delete news item." } },
+      { status: 500 }
+    );
+  } finally {
+    await prisma.$disconnect();
+  }
 }

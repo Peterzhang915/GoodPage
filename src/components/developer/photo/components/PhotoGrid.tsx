@@ -1,15 +1,15 @@
 /**
  * 图片网格组件
- * 
+ *
  * 显示图片列表，分为可见和隐藏两个区域
  */
 
-import React from 'react';
-import { Loader2, Image } from 'lucide-react';
-import type { PhotoGridProps } from '../types';
-import { photoSortUtils } from '../utils';
-import { isAlbumsView } from '../constants';
-import PhotoCard from './PhotoCard';
+import React from "react";
+import { Loader2, Image } from "lucide-react";
+import type { PhotoGridProps } from "../types";
+import { photoSortUtils } from "../utils";
+import { isAlbumsView } from "../constants";
+import PhotoCard from "./PhotoCard";
 
 /**
  * 图片网格组件
@@ -21,12 +21,12 @@ const PhotoGrid: React.FC<PhotoGridProps> = ({
   onDelete,
   onToggleVisibility,
   onOrderChange,
-  onUpdateMetadata
+  onUpdateMetadata,
 }) => {
   // 获取可见和隐藏的图片
   const visiblePhotos = photoSortUtils.getVisiblePhotos(photos, category);
   const hiddenPhotos = photoSortUtils.getHiddenPhotos(photos, category);
-  
+
   // 判断是否为相册视图
   const albumsView = isAlbumsView(category);
 
@@ -46,7 +46,9 @@ const PhotoGrid: React.FC<PhotoGridProps> = ({
         <Image size={48} className="mx-auto mb-4 opacity-50" />
         <p>No photos in this category yet</p>
         {!albumsView && (
-          <p className="text-sm mt-2">Click the upload area above to add new photos</p>
+          <p className="text-sm mt-2">
+            Click the upload area above to add new photos
+          </p>
         )}
       </div>
     );
@@ -64,7 +66,7 @@ const PhotoGrid: React.FC<PhotoGridProps> = ({
             {visiblePhotos.length} photos
           </span>
         </div>
-        
+
         {visiblePhotos.length > 0 ? (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {visiblePhotos.map((photo) => (
@@ -89,14 +91,12 @@ const PhotoGrid: React.FC<PhotoGridProps> = ({
       {/* 隐藏照片区域 */}
       <div>
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-medium text-gray-300">
-            Hidden Photos
-          </h3>
+          <h3 className="text-lg font-medium text-gray-300">Hidden Photos</h3>
           <span className="text-sm text-gray-500">
             {hiddenPhotos.length} photos
           </span>
         </div>
-        
+
         {hiddenPhotos.length > 0 ? (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {hiddenPhotos.map((photo) => (

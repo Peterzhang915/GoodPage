@@ -40,7 +40,7 @@ export const usePublishedManager = () => {
     updatePublicationState,
     removePublication,
     setDeletingState,
-    setSubmittingState,
+    setSubmittingState
   );
 
   // 初始化时获取数据
@@ -60,7 +60,7 @@ export const usePublishedManager = () => {
     error,
     deletingIds,
     isSubmitting,
-    
+
     // 操作方法
     fetchPublications,
     refreshPublications,

@@ -14,45 +14,46 @@ interface MainPublicationContainerProps {
   className?: string;
 }
 
-type TabType = 'published' | 'pending' | 'import' | 'dblp-import';
+type TabType = "published" | "pending" | "import" | "dblp-import";
 
 /**
  * 主出版物管理容器组件
  * 包含已发布、待审核和导入功能的标签页
  */
 const MainPublicationContainer: React.FC<MainPublicationContainerProps> = ({
-  className = ""
+  className = "",
 }) => {
-  const [activeTab, setActiveTab] = useState<TabType>('published');
+  const [activeTab, setActiveTab] = useState<TabType>("published");
 
   const tabs = [
     {
-      id: 'published' as TabType,
-      label: 'Published',
+      id: "published" as TabType,
+      label: "Published",
       icon: BookUp,
-      component: PublishedManager
+      component: PublishedManager,
     },
     {
-      id: 'pending' as TabType,
-      label: 'Pending Review',
+      id: "pending" as TabType,
+      label: "Pending Review",
       icon: Clock,
-      component: PendingManager
+      component: PendingManager,
     },
     {
-      id: 'import' as TabType,
-      label: 'Import YAML',
+      id: "import" as TabType,
+      label: "Import YAML",
       icon: Upload,
-      component: YamlImportManager
+      component: YamlImportManager,
     },
     {
-      id: 'dblp-import' as TabType,
-      label: 'DBLP Import',
+      id: "dblp-import" as TabType,
+      label: "DBLP Import",
       icon: Database,
-      component: DblpImportManager
-    }
+      component: DblpImportManager,
+    },
   ];
 
-  const ActiveComponent = tabs.find(tab => tab.id === activeTab)?.component || PublishedManager;
+  const ActiveComponent =
+    tabs.find((tab) => tab.id === activeTab)?.component || PublishedManager;
 
   return (
     <div className={`w-full space-y-6 ${className}`}>
@@ -73,7 +74,9 @@ const MainPublicationContainer: React.FC<MainPublicationContainerProps> = ({
                     : `border-transparent ${themeColors.devDescText} hover:${themeColors.devText} hover:border-gray-600`
                 }`}
               >
-                <Icon className={`mr-2 h-5 w-5 ${isActive ? 'text-blue-400' : 'text-gray-500 group-hover:text-gray-400'}`} />
+                <Icon
+                  className={`mr-2 h-5 w-5 ${isActive ? "text-blue-400" : "text-gray-500 group-hover:text-gray-400"}`}
+                />
                 {tab.label}
               </button>
             );

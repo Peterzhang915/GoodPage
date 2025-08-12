@@ -1,12 +1,12 @@
-import React from 'react';
-import { getMemberProfileData } from '@/lib/members'; // Import the server-side fetch function
-import MemberProfileEditor from '@/components/developer/members/MemberProfileEditor'; // Import the editor component
-import { notFound } from 'next/navigation';
+import React from "react";
+import { getMemberProfileData } from "@/lib/members"; // Import the server-side fetch function
+import MemberProfileEditor from "@/components/developer/members/MemberProfileEditor"; // Import the editor component
+import { notFound } from "next/navigation";
 // import prisma from '@/lib/prisma'; // Prisma might not be directly needed here if getMemberProfileData handles it
-import { Toaster } from 'sonner'; // Import Toaster for notifications
-import Link from 'next/link';
-import { Button } from '@/components/ui/button';
-import { ArrowLeft } from 'lucide-react';
+import { Toaster } from "sonner"; // Import Toaster for notifications
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { ArrowLeft } from "lucide-react";
 // --- Auth imports (Keep commented for now or restore if ready) ---
 // import { getCurrentUser, checkPermission } from '@/lib/auth';
 
@@ -41,28 +41,33 @@ export default async function MemberEditPage({ params }: MemberEditPageProps) {
      );
   }
   */
-  console.warn("Auth & Permission checks are temporarily disabled in MemberEditPage.");
+  console.warn(
+    "Auth & Permission checks are temporarily disabled in MemberEditPage."
+  );
 
   // --- Fetch member data ON THE SERVER ---
   let memberData;
   try {
-     // Use the dedicated function to fetch data
-     memberData = await getMemberProfileData(id, true);
-     if (!memberData) {
-         // If data is null/undefined after fetching, it means member not found
-         console.error(`Member data not found for ID: ${id} in edit page.`);
-         notFound(); // Trigger Next.js 404 page
-     }
+    // Use the dedicated function to fetch data
+    memberData = await getMemberProfileData(id, true);
+    if (!memberData) {
+      // If data is null/undefined after fetching, it means member not found
+      console.error(`Member data not found for ID: ${id} in edit page.`);
+      notFound(); // Trigger Next.js 404 page
+    }
   } catch (error) {
-      // Handle potential errors during data fetching (e.g., database connection issues)
-      console.error(`Error fetching member data for edit page (ID: ${id}):`, error);
-      // Render a generic error message or a dedicated error component
-      return (
-        <div className="container mx-auto p-4 text-center text-red-500">
-            <h1>Error Loading Data</h1>
-            <p>Could not load member profile data. Please try again later.</p>
-        </div>
-       );
+    // Handle potential errors during data fetching (e.g., database connection issues)
+    console.error(
+      `Error fetching member data for edit page (ID: ${id}):`,
+      error
+    );
+    // Render a generic error message or a dedicated error component
+    return (
+      <div className="container mx-auto p-4 text-center text-red-500">
+        <h1>Error Loading Data</h1>
+        <p>Could not load member profile data. Please try again later.</p>
+      </div>
+    );
   }
 
   // --- Optional: Fetch auxiliary data if needed by the editor ---
@@ -76,13 +81,12 @@ export default async function MemberEditPage({ params }: MemberEditPageProps) {
   // --- Render the Editor Component ---
   return (
     <div className="container mx-auto p-4 md:p-6 lg:p-8 bg-gray-900 text-gray-100 min-h-screen">
-
       {/* Back Button - Changed to primary blue style */}
       <div className="mb-4">
         <Link href="/developer" passHref>
-          <Button 
+          <Button
             variant="default" // CHANGED to default
-            size="sm" 
+            size="sm"
             // CHANGED to blue style
             className="inline-flex items-center text-xs bg-blue-600 hover:bg-blue-700 text-white focus-visible:ring-blue-500 disabled:opacity-50 disabled:bg-blue-800"
           >
@@ -94,7 +98,7 @@ export default async function MemberEditPage({ params }: MemberEditPageProps) {
 
       {/* Page Title - Ensure text color is appropriate for dark bg */}
       <h1 className="text-2xl font-bold mb-6 border-b pb-2 text-green-400 border-gray-700">
-        Edit Profile: {memberData.name_en} ({memberData.name_zh || 'N/A'})
+        Edit Profile: {memberData.name_en} ({memberData.name_zh || "N/A"})
       </h1>
 
       {/* Include Toaster for notifications from Server Actions */}
@@ -106,7 +110,7 @@ export default async function MemberEditPage({ params }: MemberEditPageProps) {
         // Pass auxiliary data if fetched and needed
         // allMembers={allMembersForSupervisorSelect}
         // allPublications={allPublicationsForFeaturedSelect}
-       />
+      />
     </div>
   );
 }

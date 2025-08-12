@@ -12,15 +12,16 @@ type PublicationsBrowserProps = {
 };
 
 // 预设作者/姓名关键词以便快速过滤
-const presetKeywords: string[] = [
-  "Zichen Xu",
-  "Jiahui Hu",
-];
+const presetKeywords: string[] = ["Zichen Xu", "Jiahui Hu"];
 
-export default function PublicationsBrowser({ publications, className = "" }: PublicationsBrowserProps) {
+export default function PublicationsBrowser({
+  publications,
+  className = "",
+}: PublicationsBrowserProps) {
   const [searchTerm, setSearchTerm] = useState<string>("");
   // 来自解耦的 FiltersSection 的结果（服务器支持）
-  const [serverFiltered, setServerFiltered] = useState<PublicationInfo[]>(publications);
+  const [serverFiltered, setServerFiltered] =
+    useState<PublicationInfo[]>(publications);
 
   const handlePresetClick = (keyword: string) => {
     // 切换行为：如果关键词已存在，则移除；否则追加
@@ -28,7 +29,7 @@ export default function PublicationsBrowser({ publications, className = "" }: Pu
     const exists = parts.some((p) => p.toLowerCase() === keyword.toLowerCase());
     const updated = exists
       ? parts.filter((p) => p.toLowerCase() !== keyword.toLowerCase()).join(" ")
-      : (parts.concat(keyword)).join(" ");
+      : parts.concat(keyword).join(" ");
     setSearchTerm(updated.trim());
   };
 
@@ -50,7 +51,8 @@ export default function PublicationsBrowser({ publications, className = "" }: Pu
         const typeMatch = pub.type?.toLowerCase().includes(t) ?? false;
         const abstractMatch = pub.abstract?.toLowerCase().includes(t) ?? false;
         const keywordsMatch = pub.keywords?.toLowerCase().includes(t) ?? false;
-        const publisherMatch = pub.publisher?.toLowerCase().includes(t) ?? false;
+        const publisherMatch =
+          pub.publisher?.toLowerCase().includes(t) ?? false;
         const authorMatch = (pub.displayAuthors || []).some((a) => {
           if (a.type === "internal") {
             return (
@@ -61,7 +63,7 @@ export default function PublicationsBrowser({ publications, className = "" }: Pu
           return a.text?.toLowerCase().includes(t);
         });
 
-        const tokenMatched = (
+        const tokenMatched =
           titleMatch ||
           venueMatch ||
           authorMatch ||
@@ -70,8 +72,7 @@ export default function PublicationsBrowser({ publications, className = "" }: Pu
           typeMatch ||
           abstractMatch ||
           keywordsMatch ||
-          publisherMatch
-        );
+          publisherMatch;
         return tokenMatched;
       });
     });
@@ -86,7 +87,10 @@ export default function PublicationsBrowser({ publications, className = "" }: Pu
       map[year].push(pub);
     }
     const years = Object.keys(map).sort((a, b) => parseInt(b) - parseInt(a));
-    return { map, years } as { map: Record<string, PublicationInfo[]>; years: string[] };
+    return { map, years } as {
+      map: Record<string, PublicationInfo[]>;
+      years: string[];
+    };
   }, [filteredPublications]);
 
   return (
@@ -104,7 +108,10 @@ export default function PublicationsBrowser({ publications, className = "" }: Pu
             {/* 预设关键词（左侧） */}
             <div className="flex flex-nowrap gap-2">
               {presetKeywords.map((kw) => {
-                const active = searchTerm.toLowerCase().split(/\s+/).includes(kw.toLowerCase());
+                const active = searchTerm
+                  .toLowerCase()
+                  .split(/\s+/)
+                  .includes(kw.toLowerCase());
                 return (
                   <button
                     key={kw}
@@ -122,10 +129,16 @@ export default function PublicationsBrowser({ publications, className = "" }: Pu
               })}
             </div>
             {/* CCF 过滤标签（右侧） */}
-            <FiltersSection initialPublications={publications} onResults={setServerFiltered} />
+            <FiltersSection
+              initialPublications={publications}
+              onResults={setServerFiltered}
+            />
           </div>
-          <div className={`text-xs ${themeColors.textColorTertiary ?? "text-gray-500"}`}>
-            Showing {filteredPublications.length} / {serverFiltered.length} publications (filtered from {publications.length} total)
+          <div
+            className={`text-xs ${themeColors.textColorTertiary ?? "text-gray-500"}`}
+          >
+            Showing {filteredPublications.length} / {serverFiltered.length}{" "}
+            publications (filtered from {publications.length} total)
           </div>
         </div>
       </div>
@@ -142,18 +155,21 @@ export default function PublicationsBrowser({ publications, className = "" }: Pu
             </h2>
             <ul className="list-none p-0">
               {grouped.map[year].map((pub) => (
-                <PublicationItem key={pub.id ?? pub.dblp_url ?? pub.title} pub={pub} />
+                <PublicationItem
+                  key={pub.id ?? pub.dblp_url ?? pub.title}
+                  pub={pub}
+                />
               ))}
             </ul>
           </section>
         ))
       ) : (
-        <p className={`${themeColors.textColorTertiary ?? "text-gray-500"} text-lg mt-8`}>
+        <p
+          className={`${themeColors.textColorTertiary ?? "text-gray-500"} text-lg mt-8`}
+        >
           No matching publications.
         </p>
       )}
     </div>
   );
 }
-
-

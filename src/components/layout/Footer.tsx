@@ -50,7 +50,7 @@ const Footer: React.FC = () => {
   useEffect(() => {
     // Initial check
     setIsDeveloperMode(
-      document.body.classList.contains("developer-mode-active"),
+      document.body.classList.contains("developer-mode-active")
     );
 
     // Optional: Use MutationObserver to detect class changes if needed
@@ -62,7 +62,7 @@ const Footer: React.FC = () => {
           mutation.attributeName === "class"
         ) {
           setIsDeveloperMode(
-            document.body.classList.contains("developer-mode-active"),
+            document.body.classList.contains("developer-mode-active")
           );
         }
       }
@@ -79,7 +79,8 @@ const Footer: React.FC = () => {
         await fetch("/api/visit", { method: "POST" });
         // 再获取
         const response = await fetch("/api/visit");
-        if (!response.ok) throw new Error(`API request failed with status ${response.status}`);
+        if (!response.ok)
+          throw new Error(`API request failed with status ${response.status}`);
         const data = await response.json();
         setTotalVisits(data.total ?? 0);
         setDeveloperVisits(data.developer ?? 0);

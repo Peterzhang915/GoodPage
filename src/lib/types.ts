@@ -59,9 +59,24 @@ export type DisplayAuthor =
 // 【修改】 使用 displayAuthors 替代旧的 authors, 移除 isHighlyCited from Pick, 添加 publicationAuthors
 export type PublicationInfo = Pick<
   Publication,
-  'id' | 'title' | 'year' | 'venue' | 'ccf_rank' |
-  'pdf_url' | 'code_repository_url' | 'project_page_url' | 'video_url' | 'slides_url' |
-  'number' | 'volume' | 'pages' | 'publisher' | 'abstract' | 'type' | 'dblp_url' | 'keywords'
+  | "id"
+  | "title"
+  | "year"
+  | "venue"
+  | "ccf_rank"
+  | "pdf_url"
+  | "code_repository_url"
+  | "project_page_url"
+  | "video_url"
+  | "slides_url"
+  | "number"
+  | "volume"
+  | "pages"
+  | "publisher"
+  | "abstract"
+  | "type"
+  | "dblp_url"
+  | "keywords"
 > & {
   displayAuthors: DisplayAuthor[];
   isFeatured: boolean;

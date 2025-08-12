@@ -46,7 +46,8 @@ const availableTools: ToolConfig[] = [
   {
     id: "news",
     title: "Manage Homepage",
-    description: "Edit news, interests, projects, teaching, and section settings.",
+    description:
+      "Edit news, interests, projects, teaching, and section settings.",
     icon: Edit,
     requiredPermission: "manage_news",
     buttonText: "Manage Homepage",
@@ -122,12 +123,12 @@ const DeveloperDashboard: React.FC<DeveloperDashboardProps> = ({
 
   // Handler to select a tool
   const handleToolSelect = (toolId: string) => {
-    if (toolId === 'news') {
-        // Open Homepage Editor as a modal
-        setIsHomepageEditorOpen(true);
+    if (toolId === "news") {
+      // Open Homepage Editor as a modal
+      setIsHomepageEditorOpen(true);
     } else {
-        // Set active tool for other components
-        setActiveTool(toolId);
+      // Set active tool for other components
+      setActiveTool(toolId);
     }
   };
 
@@ -146,7 +147,7 @@ const DeveloperDashboard: React.FC<DeveloperDashboardProps> = ({
       // Assuming isFullAccess is true for Admin/Root
       return isFullAccess || (permissions || []).includes(perm);
     },
-    [permissions, isFullAccess],
+    [permissions, isFullAccess]
   );
 
   // Find the configuration for the currently active tool
@@ -166,17 +167,20 @@ const DeveloperDashboard: React.FC<DeveloperDashboardProps> = ({
     }
 
     // Handle cases where the tool might not have a component (e.g., logs TBD)
-    if (activeTool !== "db") { // Exclude Prisma Studio link case
-        return (
-            <div>
-                <h3 className={`text-lg font-semibold mb-4 ${themeColors.devTitleText ?? "text-green-400"}`}>
-                    Tool Not Implemented
-                </h3>
-                <p className={`${themeColors.devDescText ?? "text-gray-300"}`}>
-                    The tool '{currentToolConfig.title}' is not yet available.
-                </p>
-            </div>
-        );
+    if (activeTool !== "db") {
+      // Exclude Prisma Studio link case
+      return (
+        <div>
+          <h3
+            className={`text-lg font-semibold mb-4 ${themeColors.devTitleText ?? "text-green-400"}`}
+          >
+            Tool Not Implemented
+          </h3>
+          <p className={`${themeColors.devDescText ?? "text-gray-300"}`}>
+            The tool '{currentToolConfig.title}' is not yet available.
+          </p>
+        </div>
+      );
     }
 
     return null; // Should not be reached for valid tools with components or 'db'
@@ -235,9 +239,7 @@ const DeveloperDashboard: React.FC<DeveloperDashboardProps> = ({
                 buttonText={tool.buttonText}
                 icon={<tool.icon size={16} className="mr-2" />}
                 onButtonClick={
-                  isDisabled
-                    ? undefined 
-                    : () => handleToolSelect(tool.id)
+                  isDisabled ? undefined : () => handleToolSelect(tool.id)
                 }
                 externalLink={tool.externalLink}
                 disabled={isDisabled}
@@ -257,25 +259,26 @@ const DeveloperDashboard: React.FC<DeveloperDashboardProps> = ({
           className={`p-4 sm:p-6 rounded-lg border ${themeColors.devBorder ?? "border-gray-700"} ${themeColors.devCardBg ?? "bg-gray-800"} shadow-md`}
         >
           {/* --- Always render Back button in active view --- */}
-           <button
-             onClick={handleGoBack}
-             className={`mb-4 sm:mb-6 inline-flex items-center px-3 py-1.5 sm:px-4 sm:py-2 border border-gray-600 rounded-md shadow-sm text-xs sm:text-sm font-medium ${themeColors.devDescText ?? "text-gray-300"} hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 focus:ring-indigo-500 transition-colors`}
-           >
-             <ArrowLeft size={16} className="mr-1 sm:mr-2" /> Back to Tools
-           </button>
+          <button
+            onClick={handleGoBack}
+            className={`mb-4 sm:mb-6 inline-flex items-center px-3 py-1.5 sm:px-4 sm:py-2 border border-gray-600 rounded-md shadow-sm text-xs sm:text-sm font-medium ${themeColors.devDescText ?? "text-gray-300"} hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 focus:ring-indigo-500 transition-colors`}
+          >
+            <ArrowLeft size={16} className="mr-1 sm:mr-2" /> Back to Tools
+          </button>
 
           {/* Render the active tool using the simplified logic */}
           {renderActiveTool()}
-
         </motion.div>
       )}
 
-       {/* --- Homepage Editor Modal --- */}
-       <AnimatePresence>
-         {isHomepageEditorOpen && (
-           <HomepageContentEditor onClose={() => setIsHomepageEditorOpen(false)} />
-         )}
-       </AnimatePresence>
+      {/* --- Homepage Editor Modal --- */}
+      <AnimatePresence>
+        {isHomepageEditorOpen && (
+          <HomepageContentEditor
+            onClose={() => setIsHomepageEditorOpen(false)}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 };

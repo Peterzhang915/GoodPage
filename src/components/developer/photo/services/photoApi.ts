@@ -1,17 +1,17 @@
 /**
  * 相册管理 API 服务层
- * 
+ *
  * 封装所有与相册管理相关的 API 调用逻辑
  */
 
-import type { 
-  GalleryImage, 
-  Category, 
-  ApiResponse, 
-  PhotoUploadData, 
-  PhotoUpdateData 
-} from '../types';
-import { API_ENDPOINTS, ERROR_MESSAGES } from '../constants';
+import type {
+  GalleryImage,
+  Category,
+  ApiResponse,
+  PhotoUploadData,
+  PhotoUpdateData,
+} from "../types";
+import { API_ENDPOINTS, ERROR_MESSAGES } from "../constants";
 
 /**
  * 相册 API 服务类
@@ -29,9 +29,10 @@ export class PhotoApiService {
   ): Promise<GalleryImage[]> {
     try {
       // 对于 Albums 视图，获取所有图片；对于其他分类，只获取该分类的图片
-      const url = category === "Albums"
-        ? `${API_ENDPOINTS.PHOTOS}?category=${category}&include_hidden=${includeHidden}`
-        : `${API_ENDPOINTS.PHOTOS}?category=${category}&include_hidden=${includeHidden}`;
+      const url =
+        category === "Albums"
+          ? `${API_ENDPOINTS.PHOTOS}?category=${category}&include_hidden=${includeHidden}`
+          : `${API_ENDPOINTS.PHOTOS}?category=${category}&include_hidden=${includeHidden}`;
 
       const response = await fetch(url);
       const data: ApiResponse<GalleryImage[]> = await response.json();
@@ -42,7 +43,7 @@ export class PhotoApiService {
 
       throw new Error(data.error?.message || ERROR_MESSAGES.LOAD_FAILED);
     } catch (error) {
-      console.error('Failed to fetch photos:', error);
+      console.error("Failed to fetch photos:", error);
       throw new Error(ERROR_MESSAGES.LOAD_FAILED);
     }
   }
@@ -55,31 +56,31 @@ export class PhotoApiService {
   static async uploadPhoto(uploadData: PhotoUploadData): Promise<GalleryImage> {
     try {
       const formData = new FormData();
-      formData.append('file', uploadData.file);
-      formData.append('category', uploadData.category);
-      
+      formData.append("file", uploadData.file);
+      formData.append("category", uploadData.category);
+
       if (uploadData.caption) {
-        formData.append('caption', uploadData.caption);
+        formData.append("caption", uploadData.caption);
       }
-      
+
       if (uploadData.date) {
-        formData.append('date', uploadData.date);
+        formData.append("date", uploadData.date);
       }
 
       const response = await fetch(API_ENDPOINTS.UPLOAD, {
-        method: 'POST',
-        body: formData
+        method: "POST",
+        body: formData,
       });
 
       const data: ApiResponse<GalleryImage> = await response.json();
-      
+
       if (data.success && data.data) {
         return data.data;
       }
-      
+
       throw new Error(data.error?.message || ERROR_MESSAGES.UPLOAD_FAILED);
     } catch (error) {
-      console.error('Failed to upload photo:', error);
+      console.error("Failed to upload photo:", error);
       throw new Error(ERROR_MESSAGES.UPLOAD_FAILED);
     }
   }
@@ -92,16 +93,16 @@ export class PhotoApiService {
   static async deletePhoto(photoId: string): Promise<void> {
     try {
       const response = await fetch(`${API_ENDPOINTS.DELETE}?id=${photoId}`, {
-        method: 'DELETE'
+        method: "DELETE",
       });
 
       const data: ApiResponse = await response.json();
-      
+
       if (!data.success) {
         throw new Error(data.error?.message || ERROR_MESSAGES.DELETE_FAILED);
       }
     } catch (error) {
-      console.error('Failed to delete photo:', error);
+      console.error("Failed to delete photo:", error);
       throw new Error(ERROR_MESSAGES.DELETE_FAILED);
     }
   }
@@ -114,22 +115,22 @@ export class PhotoApiService {
   static async updatePhoto(updateData: PhotoUpdateData): Promise<GalleryImage> {
     try {
       const response = await fetch(API_ENDPOINTS.UPDATE, {
-        method: 'PATCH',
+        method: "PATCH",
         headers: {
-          'Content-Type': 'application/json'
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify(updateData)
+        body: JSON.stringify(updateData),
       });
 
       const data: ApiResponse<GalleryImage> = await response.json();
-      
+
       if (data.success && data.data) {
         return data.data;
       }
-      
+
       throw new Error(data.error?.message || ERROR_MESSAGES.UPDATE_FAILED);
     } catch (error) {
-      console.error('Failed to update photo:', error);
+      console.error("Failed to update photo:", error);
       throw new Error(ERROR_MESSAGES.UPDATE_FAILED);
     }
   }
@@ -141,15 +142,14 @@ export class PhotoApiService {
    * @returns 更新后的图片对象
    */
   static async togglePhotoVisibility(
-    photo: GalleryImage, 
+    photo: GalleryImage,
     isAlbumsView: boolean
   ): Promise<GalleryImage> {
     const updateData: PhotoUpdateData = {
       id: photo.id,
-      ...(isAlbumsView 
+      ...(isAlbumsView
         ? { show_in_albums: !photo.show_in_albums }
-        : { is_visible: !photo.is_visible }
-      )
+        : { is_visible: !photo.is_visible }),
     };
 
     return this.updatePhoto(updateData);
@@ -163,16 +163,15 @@ export class PhotoApiService {
    * @returns 更新后的图片对象
    */
   static async updatePhotoOrder(
-    photo: GalleryImage, 
-    newOrder: number, 
+    photo: GalleryImage,
+    newOrder: number,
     isAlbumsView: boolean
   ): Promise<GalleryImage> {
     const updateData: PhotoUpdateData = {
       id: photo.id,
-      ...(isAlbumsView 
+      ...(isAlbumsView
         ? { albums_order: newOrder }
-        : { display_order: newOrder }
-      )
+        : { display_order: newOrder }),
     };
 
     return this.updatePhoto(updateData);
@@ -186,14 +185,14 @@ export class PhotoApiService {
    * @returns 更新后的图片对象
    */
   static async updatePhotoMetadata(
-    photo: GalleryImage, 
-    caption: string | null, 
+    photo: GalleryImage,
+    caption: string | null,
     date: string | null
   ): Promise<GalleryImage> {
     const updateData: PhotoUpdateData = {
       id: photo.id,
       caption,
-      date
+      date,
     };
 
     return this.updatePhoto(updateData);
@@ -206,24 +205,23 @@ export class PhotoApiService {
    * @returns 更新结果
    */
   static async batchUpdateOrder(
-    photos: GalleryImage[], 
+    photos: GalleryImage[],
     isAlbumsView: boolean
   ): Promise<void> {
     try {
       const updatePromises = photos.map((photo, index) => {
         const updateData: PhotoUpdateData = {
           id: photo.id,
-          ...(isAlbumsView 
+          ...(isAlbumsView
             ? { albums_order: index }
-            : { display_order: index }
-          )
+            : { display_order: index }),
         };
         return this.updatePhoto(updateData);
       });
 
       await Promise.all(updatePromises);
     } catch (error) {
-      console.error('Failed to batch update photo order:', error);
+      console.error("Failed to batch update photo order:", error);
       throw new Error(ERROR_MESSAGES.UPDATE_FAILED);
     }
   }
@@ -240,7 +238,7 @@ export const photoApi = {
   toggleVisibility: PhotoApiService.togglePhotoVisibility,
   updateOrder: PhotoApiService.updatePhotoOrder,
   updateMetadata: PhotoApiService.updatePhotoMetadata,
-  batchUpdateOrder: PhotoApiService.batchUpdateOrder
+  batchUpdateOrder: PhotoApiService.batchUpdateOrder,
 };
 
 export default photoApi;

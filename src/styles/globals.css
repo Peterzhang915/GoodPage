@@ -6,8 +6,13 @@
 
 /* --- Add Blinking Caret --- */
 @keyframes blink {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
 }
 
 /* Apply blinking animation to focused inputs */
@@ -25,11 +30,11 @@ input:focus {
 .my-masonry-grid_column {
   /* ... masonry styles ... */
 }
-.my-masonry-grid_column > div { 
+.my-masonry-grid_column > div {
   /* ... masonry styles ... */
 }
 
 /* Add other global styles or overrides here */
 body.developer-mode-active {
   /* ... body style ... */
-} 
+}

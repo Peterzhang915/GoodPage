@@ -119,7 +119,8 @@ const PendingManager: React.FC<PendingManagerProps> = ({ className = "" }) => {
       {/* 搜索结果提示 */}
       {hasSearch && (
         <div className={`text-sm ${themeColors.devDescText}`}>
-          Found {resultCount} pending publication{resultCount !== 1 ? 's' : ''} matching "{searchTerm}"
+          Found {resultCount} pending publication{resultCount !== 1 ? "s" : ""}{" "}
+          matching "{searchTerm}"
         </div>
       )}
 
@@ -140,7 +141,9 @@ const PendingManager: React.FC<PendingManagerProps> = ({ className = "" }) => {
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
-              {isEditMode ? "Edit Pending Publication" : "Add New Pending Publication"}
+              {isEditMode
+                ? "Edit Pending Publication"
+                : "Add New Pending Publication"}
             </DialogTitle>
           </DialogHeader>
           <PublicationForm

@@ -1,6 +1,6 @@
-import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
-import { z } from 'zod';
+import { NextResponse } from "next/server";
+import { PrismaClient } from "@prisma/client";
+import { z } from "zod";
 
 const prisma = new PrismaClient();
 
@@ -14,124 +14,165 @@ const updateTeachingSchema = z.object({
 
 // Helper to get ID from params
 const getIdFromParams = (params: { id?: string }) => {
-    const id = parseInt(params.id || '');
-    if (isNaN(id)) {
-        throw new Error('Invalid ID parameter');
-    }
-    return id;
+  const id = parseInt(params.id || "");
+  if (isNaN(id)) {
+    throw new Error("Invalid ID parameter");
+  }
+  return id;
 };
 
 // GET handler for a single teaching entry
 export async function GET(
-    request: Request,
-    { params }: { params: { id: string } }
+  request: Request,
+  { params }: { params: { id: string } }
 ) {
-    try {
-        const id = getIdFromParams(params);
-        const teachingEntry = await prisma.homepageTeaching.findUnique({
-            where: { id },
-        });
+  try {
+    const id = getIdFromParams(params);
+    const teachingEntry = await prisma.homepageTeaching.findUnique({
+      where: { id },
+    });
 
-        if (!teachingEntry) {
-            return NextResponse.json(
-                { success: false, error: { message: `Teaching entry with ID ${id} not found.` } },
-                { status: 404 }
-            );
-        }
-
-        return NextResponse.json({ success: true, data: teachingEntry });
-    } catch (error: any) {
-        console.error(`Failed to fetch teaching entry ${params.id}:`, error);
-        const status = error.message.includes('Invalid ID') ? 400 : 500;
-        return NextResponse.json(
-            { success: false, error: { message: status === 400 ? error.message : 'Failed to fetch teaching entry.' } },
-            { status }
-        );
-    } finally {
-        await prisma.$disconnect();
+    if (!teachingEntry) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: { message: `Teaching entry with ID ${id} not found.` },
+        },
+        { status: 404 }
+      );
     }
+
+    return NextResponse.json({ success: true, data: teachingEntry });
+  } catch (error: any) {
+    console.error(`Failed to fetch teaching entry ${params.id}:`, error);
+    const status = error.message.includes("Invalid ID") ? 400 : 500;
+    return NextResponse.json(
+      {
+        success: false,
+        error: {
+          message:
+            status === 400 ? error.message : "Failed to fetch teaching entry.",
+        },
+      },
+      { status }
+    );
+  } finally {
+    await prisma.$disconnect();
+  }
 }
 
 // PUT handler to update a specific teaching entry
 export async function PUT(
-    request: Request,
-    { params }: { params: { id: string } }
+  request: Request,
+  { params }: { params: { id: string } }
 ) {
-    try {
-        const id = getIdFromParams(params);
-        const body = await request.json();
+  try {
+    const id = getIdFromParams(params);
+    const body = await request.json();
 
-        // Validate input
-        const validation = updateTeachingSchema.safeParse(body);
-        if (!validation.success) {
-            return NextResponse.json(
-                { success: false, error: { message: 'Invalid input.', details: validation.error.errors } },
-                { status: 400 }
-            );
-        }
-
-        if (Object.keys(validation.data).length === 0) {
-             return NextResponse.json(
-                { success: false, error: { message: 'No valid fields provided for update.' } },
-                { status: 400 }
-            );
-        }
-
-        const updatedTeachingEntry = await prisma.homepageTeaching.update({
-            where: { id },
-            data: validation.data,
-        });
-
-        return NextResponse.json({ success: true, data: updatedTeachingEntry });
-    } catch (error: any) {
-        console.error(`Failed to update teaching entry ${params.id}:`, error);
-        if (error instanceof Error && error.message.includes('Invalid ID')) {
-             return NextResponse.json({ success: false, error: { message: error.message } }, { status: 400 });
-         }
-        if (error.code === 'P2025') { // Record not found
-             return NextResponse.json(
-                { success: false, error: { message: `Teaching entry with ID ${params.id} not found.` } },
-                { status: 404 }
-            );
-        }
-        return NextResponse.json(
-            { success: false, error: { message: 'Failed to update teaching entry.' } },
-            { status: 500 }
-        );
-    } finally {
-        await prisma.$disconnect();
+    // Validate input
+    const validation = updateTeachingSchema.safeParse(body);
+    if (!validation.success) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            message: "Invalid input.",
+            details: validation.error.errors,
+          },
+        },
+        { status: 400 }
+      );
     }
+
+    if (Object.keys(validation.data).length === 0) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: { message: "No valid fields provided for update." },
+        },
+        { status: 400 }
+      );
+    }
+
+    const updatedTeachingEntry = await prisma.homepageTeaching.update({
+      where: { id },
+      data: validation.data,
+    });
+
+    return NextResponse.json({ success: true, data: updatedTeachingEntry });
+  } catch (error: any) {
+    console.error(`Failed to update teaching entry ${params.id}:`, error);
+    if (error instanceof Error && error.message.includes("Invalid ID")) {
+      return NextResponse.json(
+        { success: false, error: { message: error.message } },
+        { status: 400 }
+      );
+    }
+    if (error.code === "P2025") {
+      // Record not found
+      return NextResponse.json(
+        {
+          success: false,
+          error: { message: `Teaching entry with ID ${params.id} not found.` },
+        },
+        { status: 404 }
+      );
+    }
+    return NextResponse.json(
+      {
+        success: false,
+        error: { message: "Failed to update teaching entry." },
+      },
+      { status: 500 }
+    );
+  } finally {
+    await prisma.$disconnect();
+  }
 }
 
 // DELETE handler to remove a specific teaching entry
 export async function DELETE(
-    request: Request,
-    { params }: { params: { id: string } }
+  request: Request,
+  { params }: { params: { id: string } }
 ) {
-    try {
-        const id = getIdFromParams(params);
+  try {
+    const id = getIdFromParams(params);
 
-        await prisma.homepageTeaching.delete({
-            where: { id },
-        });
+    await prisma.homepageTeaching.delete({
+      where: { id },
+    });
 
-        return NextResponse.json({ success: true, message: `Teaching entry with ID ${id} deleted.` }, { status: 200 });
-    } catch (error: any) {
-        console.error(`Failed to delete teaching entry ${params.id}:`, error);
-        if (error instanceof Error && error.message.includes('Invalid ID')) {
-             return NextResponse.json({ success: false, error: { message: error.message } }, { status: 400 });
-         }
-        if (error.code === 'P2025') { // Record not found
-             return NextResponse.json(
-                { success: false, error: { message: `Teaching entry with ID ${params.id} not found.` } },
-                { status: 404 }
-            );
-        }
-        return NextResponse.json(
-            { success: false, error: { message: 'Failed to delete teaching entry.' } },
-            { status: 500 }
-        );
-    } finally {
-        await prisma.$disconnect();
+    return NextResponse.json(
+      { success: true, message: `Teaching entry with ID ${id} deleted.` },
+      { status: 200 }
+    );
+  } catch (error: any) {
+    console.error(`Failed to delete teaching entry ${params.id}:`, error);
+    if (error instanceof Error && error.message.includes("Invalid ID")) {
+      return NextResponse.json(
+        { success: false, error: { message: error.message } },
+        { status: 400 }
+      );
     }
-} 
+    if (error.code === "P2025") {
+      // Record not found
+      return NextResponse.json(
+        {
+          success: false,
+          error: { message: `Teaching entry with ID ${params.id} not found.` },
+        },
+        { status: 404 }
+      );
+    }
+    return NextResponse.json(
+      {
+        success: false,
+        error: { message: "Failed to delete teaching entry." },
+      },
+      { status: 500 }
+    );
+  } finally {
+    await prisma.$disconnect();
+  }
+}

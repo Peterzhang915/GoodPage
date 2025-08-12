@@ -19,7 +19,7 @@ async function checkAdminPermission(): Promise<boolean> {
     // look up the user, and check their actual permissions from the DB.
     // For now, we grant permission if the basic cookie exists.
     console.warn(
-      "[API Reset Password] Using temporary insecure permission check.",
+      "[API Reset Password] Using temporary insecure permission check."
     );
     return true; // Assume admin if basic cookie exists
   }
@@ -28,12 +28,12 @@ async function checkAdminPermission(): Promise<boolean> {
 
 export async function POST(
   request: Request,
-  { params }: { params: { username: string } },
+  { params }: { params: { username: string } }
 ) {
   const targetUsername = params.username;
 
   console.log(
-    `[API Reset Password] Attempting to reset password for user: ${targetUsername}`,
+    `[API Reset Password] Attempting to reset password for user: ${targetUsername}`
   );
 
   try {
@@ -43,7 +43,7 @@ export async function POST(
       console.warn(`[API Reset Password] Permission denied for caller.`);
       return NextResponse.json(
         { success: false, error: "Permission denied." },
-        { status: 403 },
+        { status: 403 }
       ); // Forbidden
     }
 
@@ -55,11 +55,11 @@ export async function POST(
 
     if (!user) {
       console.log(
-        `[API Reset Password] Target user not found: ${targetUsername}`,
+        `[API Reset Password] Target user not found: ${targetUsername}`
       );
       return NextResponse.json(
         { success: false, error: `User '${targetUsername}' not found.` },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -73,13 +73,13 @@ export async function POST(
       strict: true, // Ensure all character types are present
     });
     console.log(
-      `[API Reset Password] Generated new password for ${targetUsername}`,
+      `[API Reset Password] Generated new password for ${targetUsername}`
     );
 
     // 4. Hash the new password
     const hashedPassword = await bcrypt.hash(newPassword, saltRounds);
     console.log(
-      `[API Reset Password] Hashed new password for ${targetUsername}`,
+      `[API Reset Password] Hashed new password for ${targetUsername}`
     );
 
     // 5. Update the user's password hash in the database
@@ -88,7 +88,7 @@ export async function POST(
       data: { password_hash: hashedPassword },
     });
     console.log(
-      `[API Reset Password] Updated password hash in DB for ${targetUsername}`,
+      `[API Reset Password] Updated password hash in DB for ${targetUsername}`
     );
 
     // 6. Return success and the generated password (for admin to convey)
@@ -100,14 +100,14 @@ export async function POST(
   } catch (error) {
     console.error(
       `[API Reset Password] Error resetting password for ${targetUsername}:`,
-      error,
+      error
     );
     return NextResponse.json(
       {
         success: false,
         error: "An internal server error occurred during password reset.",
       },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

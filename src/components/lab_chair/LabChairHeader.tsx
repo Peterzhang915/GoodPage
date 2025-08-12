@@ -14,7 +14,11 @@ type LabChairHeaderProps = {
   addressLine2?: string;
 };
 
-const LabChairHeader: React.FC<LabChairHeaderProps> = ({ leaderData, addressLine1, addressLine2 }) => {
+const LabChairHeader: React.FC<LabChairHeaderProps> = ({
+  leaderData,
+  addressLine1,
+  addressLine2,
+}) => {
   // Provide default values or handle null case gracefully
   // 强制添加 Dr. 前缀
   const rawNameEn = leaderData?.name_en;

@@ -33,10 +33,10 @@ const AcademicServicesSection: React.FC<AcademicServicesSectionProps> = ({
 
   // Sorting (optional)
   const sortedFeatured = [...featuredServices].sort(
-    (a, b) => a.display_order - b.display_order,
+    (a, b) => a.display_order - b.display_order
   );
   const sortedDetailed = [...detailedServices].sort(
-    (a, b) => a.display_order - b.display_order,
+    (a, b) => a.display_order - b.display_order
   );
 
   return (
@@ -74,13 +74,20 @@ const AcademicServicesSection: React.FC<AcademicServicesSectionProps> = ({
                 className={`mr-2 mt-1 flex-shrink-0 ${themeColors.textColorTertiary ?? "text-gray-500"}`}
               />
               <div>
-                <span className="font-medium">{service.role}</span> at {service.organization}
+                <span className="font-medium">{service.role}</span> at{" "}
+                {service.organization}
                 {(service.start_year || service.end_year) && (
                   <span className="block text-xs text-gray-500 dark:text-gray-400">
                     {service.start_year}
-                    {(service.end_year && service.start_year) ? ` - ${service.end_year}` : ''}
-                    {(!service.start_year && service.end_year) ? service.end_year : ''}
-                    {(service.start_year && !service.end_year) ? ' - Present' : ''}
+                    {service.end_year && service.start_year
+                      ? ` - ${service.end_year}`
+                      : ""}
+                    {!service.start_year && service.end_year
+                      ? service.end_year
+                      : ""}
+                    {service.start_year && !service.end_year
+                      ? " - Present"
+                      : ""}
                   </span>
                 )}
               </div>
@@ -150,13 +157,20 @@ const AcademicServicesSection: React.FC<AcademicServicesSectionProps> = ({
                     className={`mr-2 mt-1 flex-shrink-0 ${themeColors.textColorTertiary ?? "text-gray-400"}`}
                   />
                   <div>
-                    <span className="font-medium">{service.role}</span> at {service.organization}
+                    <span className="font-medium">{service.role}</span> at{" "}
+                    {service.organization}
                     {(service.start_year || service.end_year) && (
                       <span className="block text-xs text-gray-500 dark:text-gray-400">
                         {service.start_year}
-                        {(service.end_year && service.start_year) ? ` - ${service.end_year}` : ''}
-                        {(!service.start_year && service.end_year) ? service.end_year : ''}
-                        {(service.start_year && !service.end_year) ? ' - Present' : ''}
+                        {service.end_year && service.start_year
+                          ? ` - ${service.end_year}`
+                          : ""}
+                        {!service.start_year && service.end_year
+                          ? service.end_year
+                          : ""}
+                        {service.start_year && !service.end_year
+                          ? " - Present"
+                          : ""}
                       </span>
                     )}
                   </div>
@@ -171,4 +185,3 @@ const AcademicServicesSection: React.FC<AcademicServicesSectionProps> = ({
 };
 
 export default AcademicServicesSection;
-

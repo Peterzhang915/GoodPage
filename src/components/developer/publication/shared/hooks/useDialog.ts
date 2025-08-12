@@ -7,7 +7,9 @@ import { PublicationWithAuthors } from "@/app/api/publications/route";
  */
 export const useDialog = () => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
-  const [editingItem, setEditingItem] = useState<PublicationWithAuthors | null>(null);
+  const [editingItem, setEditingItem] = useState<PublicationWithAuthors | null>(
+    null
+  );
 
   // 打开添加对话框
   const openAddDialog = useCallback(() => {

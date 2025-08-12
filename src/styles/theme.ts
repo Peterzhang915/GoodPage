@@ -1,6 +1,6 @@
 /**
  * GoodPage 颜色主题定义
- * 
+ *
  * 定义 Tailwind CSS 类字符串，用于整个应用程序中一致的颜色使用。
  * 遵循命名约定和逻辑分组。
  */
@@ -87,10 +87,10 @@ export const themeColors = {
   // 注意: devBg 已移除，因为 devCardBg 似乎承担了主要背景色的作用。
 
   // --- 开发者工具滚动条样式 (需要 tailwind-scrollbar 插件) ---
-  devScrollbarTrack: 'scrollbar-track-gray-800', // 匹配 devCardBg
-  devScrollbarThumb: 'scrollbar-thumb-gray-700', // 匹配 devMutedBg
-  devScrollbarThumbHover: 'hover:scrollbar-thumb-gray-600', // 悬停时变亮
-  devScrollbarThin: 'scrollbar-thin', // 使用细滚动条
+  devScrollbarTrack: "scrollbar-track-gray-800", // 匹配 devCardBg
+  devScrollbarThumb: "scrollbar-thumb-gray-700", // 匹配 devMutedBg
+  devScrollbarThumbHover: "hover:scrollbar-thumb-gray-600", // 悬停时变亮
+  devScrollbarThin: "scrollbar-thin", // 使用细滚动条
 
   // ==========================================================================
   // == 特定内容类型颜色 (CCF, 高亮)

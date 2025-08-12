@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
-import fs from 'fs';
-import path from 'path';
+import fs from "fs";
+import path from "path";
 
-const DBLP_DIR = path.join(process.cwd(), 'data', 'dblp');
+const DBLP_DIR = path.join(process.cwd(), "data", "dblp");
 
 /**
  * 获取所有可用的 DBLP 文件列表
@@ -15,29 +15,34 @@ export async function GET() {
     }
 
     // 读取目录中的所有 .txt 文件
-    const files = fs.readdirSync(DBLP_DIR)
-      .filter(file => /\.txt$/i.test(file))
-      .map(fileName => {
+    const files = fs
+      .readdirSync(DBLP_DIR)
+      .filter((file) => /\.txt$/i.test(file))
+      .map((fileName) => {
         const filePath = path.join(DBLP_DIR, fileName);
         const stats = fs.statSync(filePath);
-        
+
         return {
           name: fileName,
           size: stats.size,
           lastModified: stats.mtime.toISOString(),
-          path: `/data/dblp/${fileName}`
+          path: `/data/dblp/${fileName}`,
         };
       })
-      .sort((a, b) => new Date(b.lastModified).getTime() - new Date(a.lastModified).getTime());
+      .sort(
+        (a, b) =>
+          new Date(b.lastModified).getTime() -
+          new Date(a.lastModified).getTime()
+      );
 
     return NextResponse.json({
       success: true,
-      data: files
+      data: files,
     });
-
   } catch (error) {
     console.error("Error loading DBLP files:", error);
-    const errorMessage = error instanceof Error ? error.message : "Unknown error";
+    const errorMessage =
+      error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json(
       { error: `Failed to load DBLP files: ${errorMessage}` },
       { status: 500 }
@@ -51,13 +56,10 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const formData = await request.formData();
-    const file = formData.get('file') as File;
+    const file = formData.get("file") as File;
 
     if (!file) {
-      return NextResponse.json(
-        { error: "未提供文件" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "未提供文件" }, { status: 400 });
     }
 
     // 验证文件类型
@@ -103,13 +105,13 @@ export async function POST(request: Request) {
       data: {
         name: file.name,
         size: file.size,
-        path: `/data/dblp/${file.name}`
-      }
+        path: `/data/dblp/${file.name}`,
+      },
     });
-
   } catch (error) {
     console.error("Error uploading DBLP file:", error);
-    const errorMessage = error instanceof Error ? error.message : "Unknown error";
+    const errorMessage =
+      error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json(
       { error: `上传失败: ${errorMessage}` },
       { status: 500 }

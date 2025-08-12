@@ -89,7 +89,9 @@ const MemberSidebar: React.FC<MemberSidebarProps> = ({
         {displayStatus}
       </p>
       {member.email && (
-        <div className={`text-sm mb-3 flex items-center justify-center gap-x-1 ${themeColors.textColorPrimary}`}>
+        <div
+          className={`text-sm mb-3 flex items-center justify-center gap-x-1 ${themeColors.textColorPrimary}`}
+        >
           <Mail size={14} />
           <ObfuscatedContact
             value={member.email}

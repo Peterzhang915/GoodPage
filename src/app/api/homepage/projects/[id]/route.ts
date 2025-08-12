@@ -1,6 +1,6 @@
-import { NextResponse } from 'next/server';
-import { PrismaClient, ProjectType } from '@prisma/client';
-import { z } from 'zod';
+import { NextResponse } from "next/server";
+import { PrismaClient, ProjectType } from "@prisma/client";
+import { z } from "zod";
 
 const prisma = new PrismaClient();
 
@@ -18,140 +18,181 @@ const updateProjectSchema = z.object({
 
 // Helper to get ID from params
 const getIdFromParams = (params: { id?: string }) => {
-    const id = parseInt(params.id || '');
-    if (isNaN(id)) {
-        throw new Error('Invalid ID parameter');
-    }
-    return id;
+  const id = parseInt(params.id || "");
+  if (isNaN(id)) {
+    throw new Error("Invalid ID parameter");
+  }
+  return id;
 };
 
 // GET handler for a single project
 export async function GET(
-    request: Request,
-    { params }: { params: { id: string } }
+  request: Request,
+  { params }: { params: { id: string } }
 ) {
-    try {
-        const id = getIdFromParams(params);
-        const project = await prisma.homepageProject.findUnique({
-            where: { id },
-            include: { // Include leader info
-                leader: { select: { id: true, name_en: true, name_zh: true } },
-            },
-        });
+  try {
+    const id = getIdFromParams(params);
+    const project = await prisma.homepageProject.findUnique({
+      where: { id },
+      include: {
+        // Include leader info
+        leader: { select: { id: true, name_en: true, name_zh: true } },
+      },
+    });
 
-        if (!project) {
-            return NextResponse.json(
-                { success: false, error: { message: `Project with ID ${id} not found.` } },
-                { status: 404 }
-            );
-        }
-
-        return NextResponse.json({ success: true, data: project });
-    } catch (error: any) {
-        console.error(`Failed to fetch project ${params.id}:`, error);
-        const status = error.message.includes('Invalid ID') ? 400 : 500;
-        return NextResponse.json(
-            { success: false, error: { message: status === 400 ? error.message : 'Failed to fetch project.' } },
-            { status }
-        );
-    } finally {
-        await prisma.$disconnect();
+    if (!project) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: { message: `Project with ID ${id} not found.` },
+        },
+        { status: 404 }
+      );
     }
+
+    return NextResponse.json({ success: true, data: project });
+  } catch (error: any) {
+    console.error(`Failed to fetch project ${params.id}:`, error);
+    const status = error.message.includes("Invalid ID") ? 400 : 500;
+    return NextResponse.json(
+      {
+        success: false,
+        error: {
+          message: status === 400 ? error.message : "Failed to fetch project.",
+        },
+      },
+      { status }
+    );
+  } finally {
+    await prisma.$disconnect();
+  }
 }
 
 // PUT handler to update a specific project
 export async function PUT(
-    request: Request,
-    { params }: { params: { id: string } }
+  request: Request,
+  { params }: { params: { id: string } }
 ) {
-    try {
-        const id = getIdFromParams(params);
-        const body = await request.json();
+  try {
+    const id = getIdFromParams(params);
+    const body = await request.json();
 
-        // Validate input
-        const validation = updateProjectSchema.safeParse(body);
-        if (!validation.success) {
-            return NextResponse.json(
-                { success: false, error: { message: 'Invalid input.', details: validation.error.errors } },
-                { status: 400 }
-            );
-        }
-
-        if (Object.keys(validation.data).length === 0) {
-             return NextResponse.json(
-                { success: false, error: { message: 'No valid fields provided for update.' } },
-                { status: 400 }
-            );
-        }
-
-        // Prepare data, handle potential null assignment for leader_id
-        const dataToUpdate = { ...validation.data };
-
-
-        const updatedProject = await prisma.homepageProject.update({
-            where: { id },
-            data: dataToUpdate,
-            include: { // Include leader info in the response
-                leader: { select: { id: true, name_en: true, name_zh: true } },
-            },
-        });
-
-        return NextResponse.json({ success: true, data: updatedProject });
-    } catch (error: any) {
-        console.error(`Failed to update project ${params.id}:`, error);
-        if (error instanceof Error && error.message.includes('Invalid ID')) {
-             return NextResponse.json({ success: false, error: { message: error.message } }, { status: 400 });
-         }
-        if (error.code === 'P2003' && error.meta?.field_name?.includes('leader_id')) {
-             return NextResponse.json(
-                 { success: false, error: { message: `Invalid leader ID provided. Member not found.` } },
-                 { status: 400 }
-             );
-        }
-        if (error.code === 'P2025') { // Record not found
-             return NextResponse.json(
-                { success: false, error: { message: `Project with ID ${params.id} not found.` } },
-                { status: 404 }
-            );
-        }
-        return NextResponse.json(
-            { success: false, error: { message: 'Failed to update project.' } },
-            { status: 500 }
-        );
-    } finally {
-        await prisma.$disconnect();
+    // Validate input
+    const validation = updateProjectSchema.safeParse(body);
+    if (!validation.success) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            message: "Invalid input.",
+            details: validation.error.errors,
+          },
+        },
+        { status: 400 }
+      );
     }
+
+    if (Object.keys(validation.data).length === 0) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: { message: "No valid fields provided for update." },
+        },
+        { status: 400 }
+      );
+    }
+
+    // Prepare data, handle potential null assignment for leader_id
+    const dataToUpdate = { ...validation.data };
+
+    const updatedProject = await prisma.homepageProject.update({
+      where: { id },
+      data: dataToUpdate,
+      include: {
+        // Include leader info in the response
+        leader: { select: { id: true, name_en: true, name_zh: true } },
+      },
+    });
+
+    return NextResponse.json({ success: true, data: updatedProject });
+  } catch (error: any) {
+    console.error(`Failed to update project ${params.id}:`, error);
+    if (error instanceof Error && error.message.includes("Invalid ID")) {
+      return NextResponse.json(
+        { success: false, error: { message: error.message } },
+        { status: 400 }
+      );
+    }
+    if (
+      error.code === "P2003" &&
+      error.meta?.field_name?.includes("leader_id")
+    ) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: { message: `Invalid leader ID provided. Member not found.` },
+        },
+        { status: 400 }
+      );
+    }
+    if (error.code === "P2025") {
+      // Record not found
+      return NextResponse.json(
+        {
+          success: false,
+          error: { message: `Project with ID ${params.id} not found.` },
+        },
+        { status: 404 }
+      );
+    }
+    return NextResponse.json(
+      { success: false, error: { message: "Failed to update project." } },
+      { status: 500 }
+    );
+  } finally {
+    await prisma.$disconnect();
+  }
 }
 
 // DELETE handler to remove a specific project
 export async function DELETE(
-    request: Request,
-    { params }: { params: { id: string } }
+  request: Request,
+  { params }: { params: { id: string } }
 ) {
-    try {
-        const id = getIdFromParams(params);
+  try {
+    const id = getIdFromParams(params);
 
-        await prisma.homepageProject.delete({
-            where: { id },
-        });
+    await prisma.homepageProject.delete({
+      where: { id },
+    });
 
-        return NextResponse.json({ success: true, message: `Project with ID ${id} deleted.` }, { status: 200 });
-    } catch (error: any) {
-        console.error(`Failed to delete project ${params.id}:`, error);
-         if (error instanceof Error && error.message.includes('Invalid ID')) {
-             return NextResponse.json({ success: false, error: { message: error.message } }, { status: 400 });
-         }
-        if (error.code === 'P2025') { // Record not found
-             return NextResponse.json(
-                { success: false, error: { message: `Project with ID ${params.id} not found.` } },
-                { status: 404 }
-            );
-        }
-        return NextResponse.json(
-            { success: false, error: { message: 'Failed to delete project.' } },
-            { status: 500 }
-        );
-    } finally {
-        await prisma.$disconnect();
+    return NextResponse.json(
+      { success: true, message: `Project with ID ${id} deleted.` },
+      { status: 200 }
+    );
+  } catch (error: any) {
+    console.error(`Failed to delete project ${params.id}:`, error);
+    if (error instanceof Error && error.message.includes("Invalid ID")) {
+      return NextResponse.json(
+        { success: false, error: { message: error.message } },
+        { status: 400 }
+      );
     }
+    if (error.code === "P2025") {
+      // Record not found
+      return NextResponse.json(
+        {
+          success: false,
+          error: { message: `Project with ID ${params.id} not found.` },
+        },
+        { status: 404 }
+      );
+    }
+    return NextResponse.json(
+      { success: false, error: { message: "Failed to delete project." } },
+      { status: 500 }
+    );
+  } finally {
+    await prisma.$disconnect();
+  }
 }

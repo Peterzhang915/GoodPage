@@ -1,10 +1,10 @@
 "use client";
 
-import React from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
-import { Button } from '@/components/ui/button';
+import React from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
@@ -12,23 +12,45 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { Loader2, Save, XCircle } from 'lucide-react';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { PublicationType } from '@prisma/client';
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Loader2, Save, XCircle } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { PublicationType } from "@prisma/client";
 
-// --- Zod Schema --- 
+// --- Zod Schema ---
 const publicationFormSchema = z.object({
-  title: z.string().min(1, { message: 'Title is required.' }),
-  year: z.coerce.number()
+  title: z.string().min(1, { message: "Title is required." }),
+  year: z.coerce
+    .number()
     .int()
-    .min(1900, { message: 'Year must be 1900 or later.' })
-    .max(new Date().getFullYear() + 5, { message: 'Year seems too far in the future.' }),
-  venue: z.string().nullable().optional().transform(val => val === '' ? null : val), 
-  authors_full_string: z.string().nullable().optional().transform(val => val === '' ? null : val),
-  pdf_url: z.string().url({ message: "Please enter a valid URL." }).nullable().optional().transform(val => val === '' ? null : val),
+    .min(1900, { message: "Year must be 1900 or later." })
+    .max(new Date().getFullYear() + 5, {
+      message: "Year seems too far in the future.",
+    }),
+  venue: z
+    .string()
+    .nullable()
+    .optional()
+    .transform((val) => (val === "" ? null : val)),
+  authors_full_string: z
+    .string()
+    .nullable()
+    .optional()
+    .transform((val) => (val === "" ? null : val)),
+  pdf_url: z
+    .string()
+    .url({ message: "Please enter a valid URL." })
+    .nullable()
+    .optional()
+    .transform((val) => (val === "" ? null : val)),
   type: z.nativeEnum(PublicationType).optional(),
 });
 
@@ -37,10 +59,10 @@ export type PublicationFormData = z.infer<typeof publicationFormSchema>;
 
 // Props definition
 interface PublicationFormProps {
-  initialData?: Partial<PublicationFormData> & { id?: number }; 
-  onSubmit: (data: PublicationFormData) => Promise<void>; 
-  onCancel: () => void; 
-  isLoading?: boolean; 
+  initialData?: Partial<PublicationFormData> & { id?: number };
+  onSubmit: (data: PublicationFormData) => Promise<void>;
+  onCancel: () => void;
+  isLoading?: boolean;
 }
 
 export const PublicationForm: React.FC<PublicationFormProps> = ({
@@ -49,12 +71,11 @@ export const PublicationForm: React.FC<PublicationFormProps> = ({
   onCancel,
   isLoading: isSubmitting = false,
 }) => {
-
   // Setup react-hook-form with explicit type and simplified defaults
   const form = useForm<PublicationFormData>({
     resolver: zodResolver(publicationFormSchema),
     defaultValues: {
-      title: initialData?.title || '',
+      title: initialData?.title || "",
       year: initialData?.year || new Date().getFullYear(),
       venue: initialData?.venue ?? null,
       authors_full_string: initialData?.authors_full_string ?? null,
@@ -64,19 +85,24 @@ export const PublicationForm: React.FC<PublicationFormProps> = ({
   });
 
   const handleFormSubmit = async (data: PublicationFormData) => {
-      await onSubmit(data);
+    await onSubmit(data);
   };
 
   return (
-    <Form {...form}> 
-      <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-6">
+    <Form {...form}>
+      <form
+        onSubmit={form.handleSubmit(handleFormSubmit)}
+        className="space-y-6"
+      >
         {/* Title (Required) */}
         <FormField
           control={form.control}
           name="title"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Title <span className="text-red-500">*</span></FormLabel>
+              <FormLabel>
+                Title <span className="text-red-500">*</span>
+              </FormLabel>
               <FormControl>
                 <Input placeholder="Enter publication title" {...field} />
               </FormControl>
@@ -84,32 +110,34 @@ export const PublicationForm: React.FC<PublicationFormProps> = ({
             </FormItem>
           )}
         />
-        
+
         {/* Year (Required) */}
         <FormField
           control={form.control}
           name="year"
           render={({ field }) => {
-              const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-                  const value = e.target.value;
-                  // Allow empty input temporarily, Zod will coerce and validate
-                  field.onChange(value === '' ? '' : parseInt(value, 10)); 
-              };
-              return (
-                  <FormItem>
-                  <FormLabel>Year <span className="text-red-500">*</span></FormLabel>
-                  <FormControl>
-                      <Input 
-                          type="number" 
-                          placeholder="e.g., 2024" 
-                          {...field} 
-                          value={field.value ?? ''} // Render empty string if null/undefined
-                          onChange={handleChange} 
-                      />
-                  </FormControl>
-                  <FormMessage />
-                  </FormItem>
-              );
+            const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+              const value = e.target.value;
+              // Allow empty input temporarily, Zod will coerce and validate
+              field.onChange(value === "" ? "" : parseInt(value, 10));
+            };
+            return (
+              <FormItem>
+                <FormLabel>
+                  Year <span className="text-red-500">*</span>
+                </FormLabel>
+                <FormControl>
+                  <Input
+                    type="number"
+                    placeholder="e.g., 2024"
+                    {...field}
+                    value={field.value ?? ""} // Render empty string if null/undefined
+                    onChange={handleChange}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            );
           }}
         />
 
@@ -121,11 +149,15 @@ export const PublicationForm: React.FC<PublicationFormProps> = ({
             <FormItem>
               <FormLabel>Venue</FormLabel>
               <FormControl>
-                <Input 
-                  placeholder="e.g., ICSE 2024, IEEE TSE" 
-                  {...field} 
-                  value={field.value ?? ''} // Render empty string if null
-                  onChange={(e) => field.onChange(e.target.value === '' ? null : e.target.value)} // Handle empty string for null
+                <Input
+                  placeholder="e.g., ICSE 2024, IEEE TSE"
+                  {...field}
+                  value={field.value ?? ""} // Render empty string if null
+                  onChange={(e) =>
+                    field.onChange(
+                      e.target.value === "" ? null : e.target.value
+                    )
+                  } // Handle empty string for null
                 />
               </FormControl>
               <FormMessage />
@@ -141,11 +173,15 @@ export const PublicationForm: React.FC<PublicationFormProps> = ({
             <FormItem>
               <FormLabel>Authors (Full String for Display)</FormLabel>
               <FormControl>
-                <Textarea 
-                  placeholder="e.g., John Doe*, Jane Smith (Equal Contribution)" 
-                  {...field} 
-                  value={field.value ?? ''}
-                  onChange={(e) => field.onChange(e.target.value === '' ? null : e.target.value)}
+                <Textarea
+                  placeholder="e.g., John Doe*, Jane Smith (Equal Contribution)"
+                  {...field}
+                  value={field.value ?? ""}
+                  onChange={(e) =>
+                    field.onChange(
+                      e.target.value === "" ? null : e.target.value
+                    )
+                  }
                 />
               </FormControl>
               <FormMessage />
@@ -161,12 +197,16 @@ export const PublicationForm: React.FC<PublicationFormProps> = ({
             <FormItem>
               <FormLabel>PDF URL</FormLabel>
               <FormControl>
-                <Input 
-                  type="url" 
-                  placeholder="https://example.com/paper.pdf" 
-                  {...field} 
-                  value={field.value ?? ''}
-                  onChange={(e) => field.onChange(e.target.value === '' ? null : e.target.value)}
+                <Input
+                  type="url"
+                  placeholder="https://example.com/paper.pdf"
+                  {...field}
+                  value={field.value ?? ""}
+                  onChange={(e) =>
+                    field.onChange(
+                      e.target.value === "" ? null : e.target.value
+                    )
+                  }
                 />
               </FormControl>
               <FormMessage />
@@ -194,7 +234,8 @@ export const PublicationForm: React.FC<PublicationFormProps> = ({
                   {Object.values(PublicationType).map((typeValue) => (
                     <SelectItem key={typeValue} value={typeValue}>
                       {/* Simple formatting: Capitalize first letter, lowercase rest */}
-                      {typeValue.charAt(0) + typeValue.slice(1).toLowerCase().replace(/_/g, ' ')}
+                      {typeValue.charAt(0) +
+                        typeValue.slice(1).toLowerCase().replace(/_/g, " ")}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -226,10 +267,10 @@ export const PublicationForm: React.FC<PublicationFormProps> = ({
             ) : (
               <Save size={16} className="mr-2" />
             )}
-            {initialData?.id ? 'Save Changes' : 'Add Publication'}
+            {initialData?.id ? "Save Changes" : "Add Publication"}
           </Button>
         </div>
       </form>
     </Form>
   );
-}; 
+};

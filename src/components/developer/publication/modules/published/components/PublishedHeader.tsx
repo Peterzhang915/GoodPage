@@ -30,12 +30,14 @@ const PublishedHeader: React.FC<PublishedHeaderProps> = ({
           Published Publications
         </h2>
         {count > 0 && (
-          <span className={`px-2 py-1 text-xs rounded-full ${themeColors.devMutedBg} ${themeColors.devMutedText}`}>
+          <span
+            className={`px-2 py-1 text-xs rounded-full ${themeColors.devMutedBg} ${themeColors.devMutedText}`}
+          >
             {count}
           </span>
         )}
       </div>
-      
+
       {/* 右侧：操作按钮 */}
       <div className="flex items-center gap-2">
         <button
@@ -47,7 +49,7 @@ const PublishedHeader: React.FC<PublishedHeaderProps> = ({
           <RefreshCw size={16} className={isLoading ? "animate-spin" : ""} />
           Refresh
         </button>
-        
+
         <button
           onClick={onAdd}
           className={`flex items-center gap-2 px-4 py-2 rounded text-sm bg-blue-600 hover:bg-blue-700 text-white transition-colors`}

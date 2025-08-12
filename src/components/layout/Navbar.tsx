@@ -10,14 +10,14 @@ interface NavItem {
   href: string;
 }
 
-  const Navbar: React.FC = () => {
-//   const professorNavItems: NavItem[] = [
-//     { name: "Dr. Jiahui Hu", href: "/professor/JiahuiHu" },
-//   ];
+const Navbar: React.FC = () => {
+  //   const professorNavItems: NavItem[] = [
+  //     { name: "Dr. Jiahui Hu", href: "/professor/JiahuiHu" },
+  //   ];
 
   const navItems: NavItem[] = [
     { name: "Lab Chair", href: "/lab_chair" },
-     // ... 其他教授
+    // ... 其他教授
     // ...professorNavItems, // 列出其他教授
     { name: "Lab Members", href: "/members" },
     { name: "Publications", href: "/publications" },
@@ -33,27 +33,27 @@ interface NavItem {
   const isDeveloperPath = pathname.startsWith("/developer");
 
   // Determine background color based on path
-  const navbarBgClass = isDeveloperPath 
-    ? themeColors.devCardBg // Use developer dark background 
+  const navbarBgClass = isDeveloperPath
+    ? themeColors.devCardBg // Use developer dark background
     : themeColors.navBackground; // Use default navbar background (bg-white)
-  
+
   // Determine text color based on path (adjust if needed for contrast)
-  const navbarTextClass = isDeveloperPath 
+  const navbarTextClass = isDeveloperPath
     ? themeColors.devText // Use developer light text (text-gray-200)
     : themeColors.navTextColor; // Use default navbar text (text-gray-800)
-  
+
   // Determine hover/active colors based on path
-  const navHoverTextClass = isDeveloperPath 
-    ? 'text-gray-100' // Lighter hover for dark background
+  const navHoverTextClass = isDeveloperPath
+    ? "text-gray-100" // Lighter hover for dark background
     : themeColors.navHoverText;
-  const navHoverBorderClass = isDeveloperPath 
-    ? 'border-gray-500' // More visible border for dark background
+  const navHoverBorderClass = isDeveloperPath
+    ? "border-gray-500" // More visible border for dark background
     : themeColors.navHoverBorder;
   const navActiveTextClass = isDeveloperPath
-    ? 'text-white font-semibold' // White and bold for active on dark background
+    ? "text-white font-semibold" // White and bold for active on dark background
     : themeColors.navActiveText;
   const navActiveBorderClass = isDeveloperPath
-    ? 'border-green-400' // Use dev title color for active border on dark
+    ? "border-green-400" // Use dev title color for active border on dark
     : themeColors.navActiveBorder;
   // Determine logo text color
   const logoTextClass = isDeveloperPath
@@ -66,9 +66,11 @@ interface NavItem {
   // Determine mobile menu background
   const mobileMenuBgClass = isDeveloperPath
     ? themeColors.devCardBg // Dark background for mobile menu
-    : 'bg-white';
+    : "bg-white";
   // Determine border for developer mode
-  const devBorderClass = isDeveloperPath ? `border-b ${themeColors.devBorder}` : ''; // e.g., border-b border-gray-700
+  const devBorderClass = isDeveloperPath
+    ? `border-b ${themeColors.devBorder}`
+    : ""; // e.g., border-b border-gray-700
 
   return (
     <nav
@@ -137,7 +139,9 @@ interface NavItem {
 
           {/* Mobile Menu */}
           {isMenuOpen && (
-            <div className={`sm:hidden absolute top-16 left-0 w-full ${mobileMenuBgClass} shadow-md`}>
+            <div
+              className={`sm:hidden absolute top-16 left-0 w-full ${mobileMenuBgClass} shadow-md`}
+            >
               <ul className="flex flex-col space-y-2 p-4">
                 {navItems.map((item) => {
                   const isActive =

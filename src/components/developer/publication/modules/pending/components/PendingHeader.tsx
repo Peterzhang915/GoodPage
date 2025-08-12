@@ -34,12 +34,14 @@ const PendingHeader: React.FC<PendingHeaderProps> = ({
           Pending Publications
         </h2>
         {count > 0 && (
-          <span className={`px-2 py-1 text-xs rounded-full bg-yellow-600 text-yellow-100`}>
+          <span
+            className={`px-2 py-1 text-xs rounded-full bg-yellow-600 text-yellow-100`}
+          >
             {count}
           </span>
         )}
       </div>
-      
+
       {/* 右侧：操作按钮 */}
       <div className="flex items-center gap-2">
         <button

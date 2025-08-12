@@ -29,10 +29,10 @@ const SponsorshipsSection: React.FC<SponsorshipsSectionProps> = ({
 
   // Sort both lists (optional, can also be done in parent)
   const sortedFeatured = [...featuredSponsorships].sort(
-    (a, b) => a.display_order - b.display_order,
+    (a, b) => a.display_order - b.display_order
   );
   const sortedDetailed = [...detailedSponsorships].sort(
-    (a, b) => a.display_order - b.display_order,
+    (a, b) => a.display_order - b.display_order
   );
 
   const toggleDetailedView = () => {

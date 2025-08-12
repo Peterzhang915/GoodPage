@@ -1,13 +1,17 @@
-import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
-import { z } from 'zod';
+import { NextResponse } from "next/server";
+import { PrismaClient } from "@prisma/client";
+import { z } from "zod";
 
 const prisma = new PrismaClient();
 
 // Zod Schema for validating POST request body
 const createInterestPointSchema = z.object({
-  title: z.string().min(1, { message: 'Interest point title cannot be empty.' }),
-  description: z.string().min(1, { message: 'Interest point description cannot be empty.' }),
+  title: z
+    .string()
+    .min(1, { message: "Interest point title cannot be empty." }),
+  description: z
+    .string()
+    .min(1, { message: "Interest point description cannot be empty." }),
   display_order: z.number().int().optional(),
   is_visible: z.boolean().optional().default(true),
 });
@@ -17,15 +21,18 @@ export async function GET() {
   try {
     const interestPoints = await prisma.interestPoint.findMany({
       orderBy: {
-        display_order: 'asc',
+        display_order: "asc",
       },
     });
     return NextResponse.json({ success: true, data: interestPoints });
   } catch (error) {
-    console.error('Failed to fetch interest points:', error);
+    console.error("Failed to fetch interest points:", error);
     return NextResponse.json(
-      { success: false, error: { message: 'Failed to fetch interest points data.' } },
-      { status: 500 },
+      {
+        success: false,
+        error: { message: "Failed to fetch interest points data." },
+      },
+      { status: 500 }
     );
   } finally {
     await prisma.$disconnect();
@@ -41,8 +48,14 @@ export async function POST(request: Request) {
     const validation = createInterestPointSchema.safeParse(body);
     if (!validation.success) {
       return NextResponse.json(
-        { success: false, error: { message: 'Invalid input.', details: validation.error.errors } },
-        { status: 400 },
+        {
+          success: false,
+          error: {
+            message: "Invalid input.",
+            details: validation.error.errors,
+          },
+        },
+        { status: 400 }
       );
     }
 
@@ -69,12 +82,18 @@ export async function POST(request: Request) {
       },
     });
 
-    return NextResponse.json({ success: true, data: newInterestPoint }, { status: 201 });
-  } catch (error) {
-    console.error('Failed to create interest point:', error);
     return NextResponse.json(
-      { success: false, error: { message: 'Failed to create interest point.' } },
-      { status: 500 },
+      { success: true, data: newInterestPoint },
+      { status: 201 }
+    );
+  } catch (error) {
+    console.error("Failed to create interest point:", error);
+    return NextResponse.json(
+      {
+        success: false,
+        error: { message: "Failed to create interest point." },
+      },
+      { status: 500 }
     );
   } finally {
     await prisma.$disconnect();

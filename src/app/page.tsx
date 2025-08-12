@@ -23,7 +23,10 @@ interface InterestPointItem {
   is_visible: boolean;
 }
 
-enum ProjectType { MAIN = 'MAIN', FORMER = 'FORMER' }
+enum ProjectType {
+  MAIN = "MAIN",
+  FORMER = "FORMER",
+}
 
 interface HomepageProjectItem {
   id: number;
@@ -44,7 +47,7 @@ interface HomepageTeachingItem {
 
 // --- 通用数据获取函数 ---
 async function fetchSectionData<T>(
-  endpoint: string,
+  endpoint: string
 ): Promise<{ data: T[] | null; error: string | null }> {
   const apiUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3000"}${endpoint}`;
   try {
@@ -62,7 +65,7 @@ async function fetchSectionData<T>(
           errorMessage = errorPayload.error.message;
         }
       } catch (parseErr) {
-         errorMessage = res.statusText || errorMessage;
+        errorMessage = res.statusText || errorMessage;
       }
       console.error(`Failed to fetch ${endpoint}: ${errorMessage}`);
       return { data: null, error: `Failed to load data: ${errorMessage}` };
@@ -70,10 +73,13 @@ async function fetchSectionData<T>(
     const payload = await res.json();
     if (payload.success && Array.isArray(payload.data)) {
       // 过滤掉 is_visible 为 false 的项 (在服务器端做更佳)
-       const visibleData = payload.data.filter((item: any) => item.is_visible !== false);
+      const visibleData = payload.data.filter(
+        (item: any) => item.is_visible !== false
+      );
       return { data: visibleData as T[], error: null };
     } else {
-      const errorMessage = payload?.error?.message || "Invalid data format from server.";
+      const errorMessage =
+        payload?.error?.message || "Invalid data format from server.";
       console.error(`Invalid data format from ${endpoint}:`, payload);
       return { data: null, error: `Failed to load data: ${errorMessage}` };
     }
@@ -99,7 +105,7 @@ export default async function Home() {
     fetchSectionData<HomepageNewsItem>("/api/homepage/news"),
     fetchSectionData<InterestPointItem>("/api/homepage/interest-points"),
     fetchSectionData<HomepageProjectItem>("/api/homepage/projects?type=MAIN"), // Fetch only MAIN projects
-    fetchSectionData<HomepageProjectItem>("/api/homepage/projects?type=FORMER"),// Fetch only FORMER projects
+    fetchSectionData<HomepageProjectItem>("/api/homepage/projects?type=FORMER"), // Fetch only FORMER projects
     fetchSectionData<HomepageTeachingItem>("/api/homepage/teaching"),
   ]);
 
@@ -182,13 +188,19 @@ export default async function Home() {
           </ContentSection>
 
           {/* 学生兴趣板块 (提取到独立组件) */}
-          <StudentInterestsSection items={interestPoints} error={interestsError} />
+          <StudentInterestsSection
+            items={interestPoints}
+            error={interestsError}
+          />
 
           {/* 主要研究项目板块 (提取到独立组件) */}
           <MainProjectsSection items={mainProjects} error={mainProjectsError} />
 
           {/* 过往项目板块 (提取到独立组件) */}
-          <FormerProjectsSection items={formerProjects} error={formerProjectsError} />
+          <FormerProjectsSection
+            items={formerProjects}
+            error={formerProjectsError}
+          />
 
           {/* 教学板块 (提取到独立组件) */}
           <TeachingSection items={teachingItems} error={teachingError} />

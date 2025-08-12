@@ -62,12 +62,12 @@ export async function getAllMembersGrouped(): Promise<
       (m: SelectedMember) => ({
         ...m,
         displayStatus: calculateMemberGradeStatus(
-          m as Pick<Member, "status" | "enrollment_year" | "title_zh">,
+          m as Pick<Member, "status" | "enrollment_year" | "title_zh">
         ), // 确保类型匹配
         isGraduated: calculateGraduationStatus(
           m as Pick<Member, "status" | "enrollment_year">
         ), // 新增：计算毕业状态
-      }),
+      })
     );
 
     // 按状态分组
@@ -97,12 +97,15 @@ export async function getAllMembersGrouped(): Promise<
       .sort(
         (a, b) =>
           (statusOrder[a as MemberStatus] || 99) -
-          (statusOrder[b as MemberStatus] || 99),
+          (statusOrder[b as MemberStatus] || 99)
       )
       .forEach((key) => {
         // 组内排序
         sortedGroupedData[key] = grouped[key].sort((a, b) => {
-          if (key === MemberStatus.PROFESSOR || key === MemberStatus.PHD_STUDENT) {
+          if (
+            key === MemberStatus.PROFESSOR ||
+            key === MemberStatus.PHD_STUDENT
+          ) {
             // 教授/博士生分组：按 display_order 升序（数值小的在前）
             // @ts-ignore: MemberForCard 包含 display_order（来源于 Member）
             const orderA = a.display_order ?? 0;
@@ -125,8 +128,8 @@ export async function getAllMembersGrouped(): Promise<
               return isStudentA ? yearA - yearB : yearB - yearA; // 学生升序，其他降序
             }
             // 使用 ?? '' 保证 localeCompare 操作字符串
-            return (a.name_en ?? a.name_zh ?? '').localeCompare(
-              b.name_en ?? b.name_zh ?? '',
+            return (a.name_en ?? a.name_zh ?? "").localeCompare(
+              b.name_en ?? b.name_zh ?? ""
             );
           }
         });
@@ -147,10 +150,7 @@ export async function getAllMembersForManager(): Promise<Member[]> {
   try {
     const members = await prisma.member.findMany({
       // Fetch full Member objects
-      orderBy: [
-        { enrollment_year: "asc" },
-        { name_en: "asc" },
-      ],
+      orderBy: [{ enrollment_year: "asc" }, { name_en: "asc" }],
     });
     console.log(`DB: 获取到 ${members.length} 位成员 (管理列表)`);
 
@@ -184,18 +184,18 @@ export async function getAllMembersForManager(): Promise<Member[]> {
         a.status === MemberStatus.PHD_STUDENT ||
         a.status === MemberStatus.MASTER_STUDENT ||
         a.status === MemberStatus.UNDERGRADUATE;
-      
-      if (yearA !== yearB && yearA !== Infinity && yearB !== Infinity) { 
+
+      if (yearA !== yearB && yearA !== Infinity && yearB !== Infinity) {
         return isStudentA ? yearA - yearB : yearB - yearA;
       }
       // Ensure consistent return type (number) even if years are Infinity
-      if (yearA !== yearB) { 
+      if (yearA !== yearB) {
         // If one year is Infinity (null), treat it as larger/smaller consistently
         return yearA === Infinity ? 1 : -1; // Treat null year as "later"
       }
 
       return (a.name_en ?? a.name_zh ?? "").localeCompare(
-        b.name_en ?? b.name_zh ?? "",
+        b.name_en ?? b.name_zh ?? ""
       );
     });
 
@@ -217,7 +217,9 @@ export async function getMemberProfileData(
   id: string,
   forEditing: boolean = false // Add optional parameter
 ): Promise<MemberProfileData | null> {
-  console.log(`DB: 开始获取成员 ${id} 的完整档案${forEditing ? ' (for editing)' : ' (for public view)'}`);
+  console.log(
+    `DB: 开始获取成员 ${id} 的完整档案${forEditing ? " (for editing)" : " (for public view)"}`
+  );
   try {
     // --- Dynamically build the where clause ---
     const whereCondition: Prisma.MemberWhereUniqueInput = {
@@ -249,7 +251,9 @@ export async function getMemberProfileData(
 
     if (!member) {
       // Adjust log message based on context
-      const reason = forEditing ? `ID 为 ${id} 的成员不存在` : `ID 为 ${id} 的公开成员档案不存在`;
+      const reason = forEditing
+        ? `ID 为 ${id} 的成员不存在`
+        : `ID 为 ${id} 的公开成员档案不存在`;
       console.log(`DB: ${reason}`);
       return null;
     }
@@ -312,8 +316,8 @@ export async function getMemberProfileData(
         where: {
           AND: [
             { authors: { some: { member_id: id } } },
-            { status: "published" } // 只获取已发布的出版物
-          ]
+            { status: "published" }, // 只获取已发布的出版物
+          ],
         },
         orderBy: [{ year: "desc" }, { id: "desc" }],
         select: {
@@ -359,25 +363,39 @@ export async function getMemberProfileData(
     // 3. 格式化出版物列表 (实现智能作者显示)
     // First, get PublicationAuthor records specifically for this member to access isFeatured and order
     const publicationAuthorRecords = await prisma.publicationAuthor.findMany({
-        where: {
-            member_id: id,
-            publication_id: { in: memberPublicationsRaw.map((p: PublicationWithAuthorsPayload) => p.id) }
+      where: {
+        member_id: id,
+        publication_id: {
+          in: memberPublicationsRaw.map(
+            (p: PublicationWithAuthorsPayload) => p.id
+          ),
         },
-        select: { // Select only the necessary fields
-            publication_id: true,
-            isFeaturedOnProfile: true,
-            profileDisplayOrder: true,
-        }
+      },
+      select: {
+        // Select only the necessary fields
+        publication_id: true,
+        isFeaturedOnProfile: true,
+        profileDisplayOrder: true,
+      },
     });
 
     // Create a map for easy lookup of isFeatured and order by publication_id
-    const pubAuthorDetailsMap = new Map<number, { isFeatured: boolean; order: number | null }>();
-    publicationAuthorRecords.forEach((pa: { publication_id: number; isFeaturedOnProfile: boolean | null; profileDisplayOrder: number | null }) => {
+    const pubAuthorDetailsMap = new Map<
+      number,
+      { isFeatured: boolean; order: number | null }
+    >();
+    publicationAuthorRecords.forEach(
+      (pa: {
+        publication_id: number;
+        isFeaturedOnProfile: boolean | null;
+        profileDisplayOrder: number | null;
+      }) => {
         pubAuthorDetailsMap.set(pa.publication_id, {
-            isFeatured: pa.isFeaturedOnProfile ?? false,
-            order: pa.profileDisplayOrder // Keep null as null
+          isFeatured: pa.isFeaturedOnProfile ?? false,
+          order: pa.profileDisplayOrder, // Keep null as null
         });
-    });
+      }
+    );
 
     type PublicationWithAuthorsPayload = Prisma.PublicationGetPayload<{
       select: {
@@ -419,13 +437,19 @@ export async function getMemberProfileData(
       (p: PublicationWithAuthorsPayload): PublicationInfo => {
         // 将内部作者信息提取到 Map 中，方便按 order 查找
         // 将内部作者信息提取到数组中，方便按名字匹配
-        const internalAuthors = p.authors.map((ap: { author_order: number; is_corresponding_author: boolean; author: { id: string; name_en: string; name_zh: string | null } }) => ({
-          id: ap.author.id,
-          name_en: ap.author.name_en,
-          name_zh: ap.author.name_zh,
-          is_corresponding: ap.is_corresponding_author,
-          author_order: ap.author_order,
-        }));
+        const internalAuthors = p.authors.map(
+          (ap: {
+            author_order: number;
+            is_corresponding_author: boolean;
+            author: { id: string; name_en: string; name_zh: string | null };
+          }) => ({
+            id: ap.author.id,
+            name_en: ap.author.name_en,
+            name_zh: ap.author.name_zh,
+            is_corresponding: ap.is_corresponding_author,
+            author_order: ap.author_order,
+          })
+        );
 
         // 辅助函数：检查作者名字是否匹配
         const findMatchingMember = (authorName: string) => {
@@ -441,8 +465,8 @@ export async function getMemberProfileData(
             let normalizedAuthorName1 = cleanName; // "LastName, FirstName" -> "FirstName LastName"
             let normalizedAuthorName2 = cleanName; // "FirstName, LastName" -> "FirstName LastName"
 
-            if (cleanName.includes(',')) {
-              const parts = cleanName.split(',').map(p => p.trim());
+            if (cleanName.includes(",")) {
+              const parts = cleanName.split(",").map((p) => p.trim());
               if (parts.length === 2) {
                 // 尝试两种格式转换
                 normalizedAuthorName1 = `${parts[1]} ${parts[0]}`.toLowerCase(); // "LastName, FirstName" -> "FirstName LastName"
@@ -465,7 +489,10 @@ export async function getMemberProfileData(
               nameEn.includes(normalizedAuthorName2) ||
               normalizedAuthorName2.includes(nameEn) ||
               // 中文名匹配
-              (nameZh && (nameZh === cleanName || nameZh.includes(cleanName) || cleanName.includes(nameZh)))
+              (nameZh &&
+                (nameZh === cleanName ||
+                  nameZh.includes(cleanName) ||
+                  cleanName.includes(nameZh)))
             );
           });
         };
@@ -513,63 +540,72 @@ export async function getMemberProfileData(
         } else {
           // 如果没有 authors_full_string，则回退到只显示内部作者 (可能不理想)
           console.warn(
-            `Publication ID ${p.id} is missing authors_full_string. Falling back to internal authors only.`,
+            `Publication ID ${p.id} is missing authors_full_string. Falling back to internal authors only.`
           );
-          p.authors.forEach((ap: { author_order: number; is_corresponding_author: boolean; author: { id: string; name_en: string; name_zh: string | null } }) => {
-            displayAuthors.push({
-              type: "internal",
-              id: ap.author.id,
-              name_en: ap.author.name_en,
-              name_zh: ap.author.name_zh,
-              order: ap.author_order,
-              is_corresponding: ap.is_corresponding_author,
-            });
-          });
+          p.authors.forEach(
+            (ap: {
+              author_order: number;
+              is_corresponding_author: boolean;
+              author: { id: string; name_en: string; name_zh: string | null };
+            }) => {
+              displayAuthors.push({
+                type: "internal",
+                id: ap.author.id,
+                name_en: ap.author.name_en,
+                name_zh: ap.author.name_zh,
+                order: ap.author_order,
+                is_corresponding: ap.is_corresponding_author,
+              });
+            }
+          );
         }
 
         // Get the featured status and order from the map
-        const authorDetails = pubAuthorDetailsMap.get(p.id) || { isFeatured: false, order: null };
+        const authorDetails = pubAuthorDetailsMap.get(p.id) || {
+          isFeatured: false,
+          order: null,
+        };
 
         // Construct the final PublicationInfo object explicitly
         // Ensuring all fields required by PublicationInfo are present and correctly typed
         return {
-            id: p.id,
-            title: p.title,
-            year: p.year,
-            venue: p.venue,
-            ccf_rank: p.ccf_rank,
-            dblp_url: p.dblp_url,
-            pdf_url: p.pdf_url,
-            code_repository_url: p.code_repository_url,
-            project_page_url: p.project_page_url,
-            video_url: p.video_url,
-            slides_url: p.slides_url,
-            number: p.number,
-            volume: p.volume,
-            pages: p.pages,
-            publisher: p.publisher,
-            abstract: p.abstract,
-            keywords: p.keywords,
-            type: p.type,
-            displayAuthors: displayAuthors,
-            isFeatured: authorDetails.isFeatured,
-            profileDisplayOrder: authorDetails.order,
-            // publicationAuthors: p.authors // Removed: Not assigning raw authors relation
+          id: p.id,
+          title: p.title,
+          year: p.year,
+          venue: p.venue,
+          ccf_rank: p.ccf_rank,
+          dblp_url: p.dblp_url,
+          pdf_url: p.pdf_url,
+          code_repository_url: p.code_repository_url,
+          project_page_url: p.project_page_url,
+          video_url: p.video_url,
+          slides_url: p.slides_url,
+          number: p.number,
+          volume: p.volume,
+          pages: p.pages,
+          publisher: p.publisher,
+          abstract: p.abstract,
+          keywords: p.keywords,
+          type: p.type,
+          displayAuthors: displayAuthors,
+          isFeatured: authorDetails.isFeatured,
+          profileDisplayOrder: authorDetails.order,
+          // publicationAuthors: p.authors // Removed: Not assigning raw authors relation
         };
-      },
+      }
     );
 
     // Sort the formatted publications based on profileDisplayOrder
     publicationsFormatted.sort((a, b) => {
-        const orderA = a.profileDisplayOrder ?? Infinity; // Treat null/undefined as last
-        const orderB = b.profileDisplayOrder ?? Infinity;
-        if (orderA !== orderB) {
-            return orderA - orderB; // Sort by order first
-        }
-        // If order is the same or both are null, fallback to year descending
-        const yearA = a.year ?? 0;
-        const yearB = b.year ?? 0;
-        return yearB - yearA;
+      const orderA = a.profileDisplayOrder ?? Infinity; // Treat null/undefined as last
+      const orderB = b.profileDisplayOrder ?? Infinity;
+      if (orderA !== orderB) {
+        return orderA - orderB; // Sort by order first
+      }
+      // If order is the same or both are null, fallback to year descending
+      const yearA = a.year ?? 0;
+      const yearB = b.year ?? 0;
+      return yearB - yearA;
     });
 
     // 4. 计算显示状态

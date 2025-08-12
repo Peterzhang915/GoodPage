@@ -23,37 +23,37 @@ import MemberSidebar from "@/components/members/MemberSidebar";
 
 // --- Props 类型定义 ---
 interface MemberPageProps {
-    params: {
-        memberId: string;
+  params: {
+    memberId: string;
   };
 }
 
 // --- 主页面组件 (Server Component) ---
 export default async function MemberProfilePage({ params }: MemberPageProps) {
-    const { memberId } = params;
-    let memberProfileData: MemberProfileData | null = null;
-    let error: string | null = null;
+  const { memberId } = params;
+  let memberProfileData: MemberProfileData | null = null;
+  let error: string | null = null;
 
-    try {
-        memberProfileData = await getMemberProfileData(memberId);
-    } catch (err) {
-        console.error(`Failed to load profile for ${memberId}:`, err);
-        error = err instanceof Error ? err.message : "加载成员档案失败";
-    }
+  try {
+    memberProfileData = await getMemberProfileData(memberId);
+  } catch (err) {
+    console.error(`Failed to load profile for ${memberId}:`, err);
+    error = err instanceof Error ? err.message : "加载成员档案失败";
+  }
 
-    if (!memberProfileData && !error) {
-        notFound();
-    }
+  if (!memberProfileData && !error) {
+    notFound();
+  }
 
-    if (error) {
+  if (error) {
     return (
       <div className="container mx-auto px-4 py-12 text-center text-red-600">
         <p>Error: {error}</p>
       </div>
     );
-    }
+  }
 
-    const {
+  const {
     displayStatus,
     educationHistory,
     awards,
@@ -68,16 +68,16 @@ export default async function MemberProfilePage({ params }: MemberPageProps) {
     supervisor,
     supervisees,
     ...member
-    } = memberProfileData!;
+  } = memberProfileData!;
 
-    return (
+  return (
     <div
       className={`max-w-7xl mx-auto my-8 sm:my-12 shadow-lg rounded-lg overflow-hidden`}
     >
-            <div className="md:flex">
+      <div className="md:flex">
         <MemberSidebar member={member} displayStatus={displayStatus} />
-                <div className="md:w-2/3 p-6">
-                    <div className="space-y-6 md:space-y-8">
+        <div className="md:w-2/3 p-6">
+          <div className="space-y-6 md:space-y-8">
             <BioSection bio_zh={member.bio_zh} bio_en={member.bio_en} />
             <EducationSection educationHistory={educationHistory} />
             <ResearchInterestsSection
@@ -95,9 +95,9 @@ export default async function MemberProfilePage({ params }: MemberPageProps) {
             <AcademicServicesSection academicServices={academicServices} />
             <MoreAboutMeSection more_about_me={member.more_about_me} />
             <SuperviseesSection supervisees={supervisees} />
-                    </div>
-                </div>
-            </div>
+          </div>
         </div>
-    );
+      </div>
+    </div>
+  );
 }

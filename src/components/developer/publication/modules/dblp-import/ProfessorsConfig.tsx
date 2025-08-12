@@ -2,14 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { themeColors } from "@/styles/theme";
-import { 
-  Plus, 
-  Trash2, 
-  Save,
-  Loader2,
-  Users,
-  AlertCircle
-} from "lucide-react";
+import { Plus, Trash2, Save, Loader2, Users, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 
 interface ProfessorsConfigProps {
@@ -20,11 +13,13 @@ interface ProfessorsConfigProps {
  * 教授配置管理组件
  * 允许用户配置要爬取的教授列表
  */
-const ProfessorsConfig: React.FC<ProfessorsConfigProps> = ({ onConfigUpdate }) => {
+const ProfessorsConfig: React.FC<ProfessorsConfigProps> = ({
+  onConfigUpdate,
+}) => {
   const [professors, setProfessors] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [newProfessor, setNewProfessor] = useState('');
+  const [newProfessor, setNewProfessor] = useState("");
 
   useEffect(() => {
     loadProfessorsConfig();
@@ -36,17 +31,18 @@ const ProfessorsConfig: React.FC<ProfessorsConfigProps> = ({ onConfigUpdate }) =
   const loadProfessorsConfig = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch('/api/publications/dblp-professors');
+      const response = await fetch("/api/publications/dblp-professors");
       const result = await response.json();
 
       if (response.ok && result.success) {
         setProfessors(result.data.professors || []);
       } else {
-        throw new Error(result.error || 'Failed to load config');
+        throw new Error(result.error || "Failed to load config");
       }
     } catch (error) {
-      console.error('Load config error:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      console.error("Load config error:", error);
+      const errorMessage =
+        error instanceof Error ? error.message : "Unknown error";
       toast.error(`Failed to load professors config: ${errorMessage}`);
     } finally {
       setIsLoading(false);
@@ -58,16 +54,16 @@ const ProfessorsConfig: React.FC<ProfessorsConfigProps> = ({ onConfigUpdate }) =
    */
   const saveProfessorsConfig = async () => {
     if (professors.length === 0) {
-      toast.error('At least one professor is required');
+      toast.error("At least one professor is required");
       return;
     }
 
     setIsSaving(true);
     try {
-      const response = await fetch('/api/publications/dblp-professors', {
-        method: 'POST',
+      const response = await fetch("/api/publications/dblp-professors", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({ professors }),
       });
@@ -75,14 +71,15 @@ const ProfessorsConfig: React.FC<ProfessorsConfigProps> = ({ onConfigUpdate }) =
       const result = await response.json();
 
       if (response.ok && result.success) {
-        toast.success('Professors configuration saved successfully!');
+        toast.success("Professors configuration saved successfully!");
         onConfigUpdate?.();
       } else {
-        throw new Error(result.error || 'Save failed');
+        throw new Error(result.error || "Save failed");
       }
     } catch (error) {
-      console.error('Save config error:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      console.error("Save config error:", error);
+      const errorMessage =
+        error instanceof Error ? error.message : "Unknown error";
       toast.error(`Failed to save config: ${errorMessage}`);
     } finally {
       setIsSaving(false);
@@ -94,17 +91,17 @@ const ProfessorsConfig: React.FC<ProfessorsConfigProps> = ({ onConfigUpdate }) =
    */
   const addProfessor = () => {
     if (!newProfessor.trim()) {
-      toast.error('Please enter a professor name');
+      toast.error("Please enter a professor name");
       return;
     }
 
     if (professors.includes(newProfessor.trim())) {
-      toast.error('Professor already exists');
+      toast.error("Professor already exists");
       return;
     }
 
     setProfessors([...professors, newProfessor.trim()]);
-    setNewProfessor('');
+    setNewProfessor("");
   };
 
   /**
@@ -118,22 +115,28 @@ const ProfessorsConfig: React.FC<ProfessorsConfigProps> = ({ onConfigUpdate }) =
    * 处理回车键添加
    */
   const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
+    if (e.key === "Enter") {
       addProfessor();
     }
   };
 
   return (
-    <div className={`p-6 rounded-xl ${themeColors.devCardBg} border border-gray-600`}>
+    <div
+      className={`p-6 rounded-xl ${themeColors.devCardBg} border border-gray-600`}
+    >
       <div className="flex items-center gap-3 mb-6">
         <Users className="w-6 h-6 text-blue-400" />
-        <h3 className={`text-lg font-medium ${themeColors.devText}`}>Professors Configuration</h3>
+        <h3 className={`text-lg font-medium ${themeColors.devText}`}>
+          Professors Configuration
+        </h3>
       </div>
 
       {isLoading ? (
         <div className="flex items-center justify-center py-8">
           <Loader2 className="w-6 h-6 animate-spin text-blue-400" />
-          <span className={`ml-2 ${themeColors.devDescText}`}>Loading configuration...</span>
+          <span className={`ml-2 ${themeColors.devDescText}`}>
+            Loading configuration...
+          </span>
         </div>
       ) : (
         <div className="space-y-4">
@@ -161,13 +164,22 @@ const ProfessorsConfig: React.FC<ProfessorsConfigProps> = ({ onConfigUpdate }) =
             {professors.length === 0 ? (
               <div className="text-center py-8 border-2 border-dashed border-gray-600 rounded-lg">
                 <AlertCircle className="w-12 h-12 text-yellow-400 mx-auto mb-3" />
-                <p className={`${themeColors.devDescText} text-lg mb-1`}>No professors configured</p>
-                <p className={`text-sm ${themeColors.devDescText}`}>Add at least one professor to run the crawler</p>
+                <p className={`${themeColors.devDescText} text-lg mb-1`}>
+                  No professors configured
+                </p>
+                <p className={`text-sm ${themeColors.devDescText}`}>
+                  Add at least one professor to run the crawler
+                </p>
               </div>
             ) : (
               professors.map((professor, index) => (
-                <div key={index} className="flex items-center justify-between p-4 border border-gray-600 rounded-lg bg-gray-800/30 hover:bg-gray-700/30 transition-colors">
-                  <span className={`${themeColors.devText} font-mono text-sm`}>{professor}</span>
+                <div
+                  key={index}
+                  className="flex items-center justify-between p-4 border border-gray-600 rounded-lg bg-gray-800/30 hover:bg-gray-700/30 transition-colors"
+                >
+                  <span className={`${themeColors.devText} font-mono text-sm`}>
+                    {professor}
+                  </span>
                   <button
                     onClick={() => removeProfessor(index)}
                     className="inline-flex items-center px-3 py-2 border border-red-600 rounded-lg text-sm font-medium text-red-400 hover:bg-red-600 hover:text-white transition-colors"
@@ -211,8 +223,18 @@ const ProfessorsConfig: React.FC<ProfessorsConfigProps> = ({ onConfigUpdate }) =
               💡 <strong>Format Examples:</strong>
             </p>
             <ul className="text-blue-300 text-sm space-y-1">
-              <li>• <code className="bg-gray-800 px-2 py-1 rounded">Jiahui Hu</code> - Simple name format</li>
-              <li>• <code className="bg-gray-800 px-2 py-1 rounded">Zichen Xu 0001</code> - Name with DBLP identifier</li>
+              <li>
+                •{" "}
+                <code className="bg-gray-800 px-2 py-1 rounded">Jiahui Hu</code>{" "}
+                - Simple name format
+              </li>
+              <li>
+                •{" "}
+                <code className="bg-gray-800 px-2 py-1 rounded">
+                  Zichen Xu 0001
+                </code>{" "}
+                - Name with DBLP identifier
+              </li>
             </ul>
           </div>
         </div>

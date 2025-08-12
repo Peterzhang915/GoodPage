@@ -125,7 +125,7 @@ export function MemberCard({ member, isEmojiEnabled }: MemberCardProps) {
       <motion.div
         ref={cardRef}
         onMouseEnter={handleMouseEnterConfetti}
-        className={`relative ${themeColors.backgroundWhite ?? "bg-white"} border ${themeColors.borderLight ?? "border-gray-200"} rounded-xl shadow-sm hover:shadow-lg transition-shadow duration-300 p-5 flex flex-col items-center text-center h-full overflow-hidden ${member.isGraduated ? 'opacity-75' : ''}`}
+        className={`relative ${themeColors.backgroundWhite ?? "bg-white"} border ${themeColors.borderLight ?? "border-gray-200"} rounded-xl shadow-sm hover:shadow-lg transition-shadow duration-300 p-5 flex flex-col items-center text-center h-full overflow-hidden ${member.isGraduated ? "opacity-75" : ""}`}
         whileHover={{ y: -5 }} // 保留卡片上浮效果
         transition={{ type: "spring", stiffness: 300 }}
       >

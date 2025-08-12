@@ -9,7 +9,7 @@ import {
   AlertTriangle,
   RefreshCw,
 } from "lucide-react";
-import Link from 'next/link';
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -55,35 +55,47 @@ const MemberManager: React.FC<MemberManagerProps> = ({ onClose }) => {
       if (!res.ok) {
         let errorMsg = `Failed to fetch members (Status: ${res.status})`;
         try {
-            const errorData = await res.json();
-            if (errorData && errorData.error && errorData.error.message) {
-                errorMsg = errorData.error.message;
-            } else if (errorData && errorData.error) {
-                errorMsg = errorData.error; // Handle simple string errors too
-            }
-        } catch (e) { /* Ignore parsing error */ }
+          const errorData = await res.json();
+          if (errorData && errorData.error && errorData.error.message) {
+            errorMsg = errorData.error.message;
+          } else if (errorData && errorData.error) {
+            errorMsg = errorData.error; // Handle simple string errors too
+          }
+        } catch (e) {
+          /* Ignore parsing error */
+        }
         throw new Error(errorMsg);
       }
       const result = await res.json();
       if (result.success && Array.isArray(result.data)) {
         let fetchedMembers = result.data as Member[];
-        
+
         if (!isFullAccess && loggedInUsername) {
-          fetchedMembers = fetchedMembers.filter(member => member.username === loggedInUsername);
-          console.log(`User role detected. Filtered members down to user: ${loggedInUsername}`);
+          fetchedMembers = fetchedMembers.filter(
+            (member) => member.username === loggedInUsername
+          );
+          console.log(
+            `User role detected. Filtered members down to user: ${loggedInUsername}`
+          );
         }
         // 前端排序：教授按 display_order 升序，其余成员顺序不变
         const professors = fetchedMembers
-          .filter(m => m.status === 'PROFESSOR')
+          .filter((m) => m.status === "PROFESSOR")
           .sort((a, b) => (a.display_order ?? 0) - (b.display_order ?? 0));
-        const others = fetchedMembers.filter(m => m.status !== 'PROFESSOR');
+        const others = fetchedMembers.filter((m) => m.status !== "PROFESSOR");
         setMembers([...professors, ...others]);
       } else {
-          throw new Error(result.error || "Invalid data format received from API.");
+        throw new Error(
+          result.error || "Invalid data format received from API."
+        );
       }
     } catch (err) {
       console.error("Fetch members error:", err);
-      setError(err instanceof Error ? err.message : "An unknown error occurred while fetching members.");
+      setError(
+        err instanceof Error
+          ? err.message
+          : "An unknown error occurred while fetching members."
+      );
     } finally {
       setIsLoading(false);
     }
@@ -102,9 +114,14 @@ const MemberManager: React.FC<MemberManagerProps> = ({ onClose }) => {
     <div className="mt-10 p-6 bg-gray-800 rounded-lg border border-gray-700 shadow-lg min-h-[400px] flex flex-col">
       {/* Header */}
       <div className="flex justify-between items-center mb-4 border-b border-gray-700 pb-4">
-        <h2 className="text-2xl font-semibold text-green-400">Manage Members</h2>
+        <h2 className="text-2xl font-semibold text-green-400">
+          Manage Members
+        </h2>
         <div className="flex items-center space-x-2">
-           <Dialog open={isAddMemberDialogOpen} onOpenChange={setIsAddMemberDialogOpen}>
+          <Dialog
+            open={isAddMemberDialogOpen}
+            onOpenChange={setIsAddMemberDialogOpen}
+          >
             <DialogTrigger asChild disabled={!isFullAccess}>
               <Button
                 variant="default"
@@ -118,13 +135,15 @@ const MemberManager: React.FC<MemberManagerProps> = ({ onClose }) => {
             </DialogTrigger>
             <DialogContent className="sm:max-w-[425px] bg-gray-800 border-gray-700 text-gray-200">
               <DialogHeader>
-                <DialogTitle className="text-green-400">Add New Member</DialogTitle>
+                <DialogTitle className="text-green-400">
+                  Add New Member
+                </DialogTitle>
               </DialogHeader>
               <div className="py-4">
-                 <AddMemberForm
-                    onSuccess={handleAddMemberSuccess}
-                    onCancel={() => setIsAddMemberDialogOpen(false)}
-                 />
+                <AddMemberForm
+                  onSuccess={handleAddMemberSuccess}
+                  onCancel={() => setIsAddMemberDialogOpen(false)}
+                />
               </div>
             </DialogContent>
           </Dialog>
@@ -136,7 +155,11 @@ const MemberManager: React.FC<MemberManagerProps> = ({ onClose }) => {
             className="inline-flex items-center text-xs bg-blue-600 hover:bg-blue-700 text-white focus-visible:ring-blue-500 disabled:opacity-50 disabled:bg-blue-800"
             title="Refresh Member List"
           >
-            {isLoading ? <Loader2 size={14} className="mr-1 animate-spin"/> : <RefreshCw size={14} className="mr-1"/>}
+            {isLoading ? (
+              <Loader2 size={14} className="mr-1 animate-spin" />
+            ) : (
+              <RefreshCw size={14} className="mr-1" />
+            )}
             {isLoading ? "Refreshing..." : "Refresh"}
           </Button>
         </div>
@@ -152,51 +175,70 @@ const MemberManager: React.FC<MemberManagerProps> = ({ onClose }) => {
         )}
         {error && (
           <div className="flex flex-col justify-center items-center h-full text-red-400">
-             <AlertTriangle size={24} className="mb-2"/>
-             <p>Error loading members:</p>
-             <p className="text-sm text-red-500">{error}</p>
-             <button onClick={fetchMembers} className="mt-4 px-3 py-1 text-xs bg-red-700 hover:bg-red-600 text-white rounded">Retry</button>
+            <AlertTriangle size={24} className="mb-2" />
+            <p>Error loading members:</p>
+            <p className="text-sm text-red-500">{error}</p>
+            <button
+              onClick={fetchMembers}
+              className="mt-4 px-3 py-1 text-xs bg-red-700 hover:bg-red-600 text-white rounded"
+            >
+              Retry
+            </button>
           </div>
         )}
         {!isLoading && !error && (
           <ul className="space-y-3 pr-2">
             {members.length === 0 ? (
-                 <p className="text-center text-gray-500 italic mt-8">
-                   {isFullAccess ? "No members found." : "Could not find your member profile."}
-                 </p>
+              <p className="text-center text-gray-500 italic mt-8">
+                {isFullAccess
+                  ? "No members found."
+                  : "Could not find your member profile."}
+              </p>
             ) : (
-                 members.map((member) => (
-                      <li
-                        key={member.id}
-                        className="flex items-center justify-between p-3 bg-gray-700 rounded-md hover:bg-gray-600 transition-colors"
-                      >
-                        <div className="flex items-center space-x-3">
-                          {/* Basic Avatar Placeholder */}
-                          <div className="w-8 h-8 rounded-full bg-gray-500 flex items-center justify-center text-xs text-white overflow-hidden">
-                            {member.avatar_url ? (
-                              <img src={member.avatar_url} alt={`${member.name_en}'s avatar`} className="w-full h-full object-cover" />
-                            ) : (
-                              <span>{member.name_en.charAt(0).toUpperCase()}</span>
-                            )}
-                          </div>
-                          <div>
-                             <span className="font-medium text-gray-200">{member.name_en}</span>
-                             {member.name_zh && <span className="text-sm text-gray-400 ml-2">({member.name_zh})</span>}
-                             <span className="block text-xs text-gray-400 capitalize">
-                                {member.status ? member.status.toLowerCase().replace(/_/g, ' ') : 'N/A'}
-                             </span>
-                          </div>
-                        </div>
-                        <Link
-                          href={`/developer/members/${member.id}/edit`}
-                          passHref
-                          className="p-1 text-gray-400 hover:text-indigo-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-700 focus:ring-indigo-500 rounded" 
-                          title={`Edit ${member.name_en}`}
-                        >
-                          <Edit size={16} />
-                        </Link>
-                      </li>
-                 ))
+              members.map((member) => (
+                <li
+                  key={member.id}
+                  className="flex items-center justify-between p-3 bg-gray-700 rounded-md hover:bg-gray-600 transition-colors"
+                >
+                  <div className="flex items-center space-x-3">
+                    {/* Basic Avatar Placeholder */}
+                    <div className="w-8 h-8 rounded-full bg-gray-500 flex items-center justify-center text-xs text-white overflow-hidden">
+                      {member.avatar_url ? (
+                        <img
+                          src={member.avatar_url}
+                          alt={`${member.name_en}'s avatar`}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <span>{member.name_en.charAt(0).toUpperCase()}</span>
+                      )}
+                    </div>
+                    <div>
+                      <span className="font-medium text-gray-200">
+                        {member.name_en}
+                      </span>
+                      {member.name_zh && (
+                        <span className="text-sm text-gray-400 ml-2">
+                          ({member.name_zh})
+                        </span>
+                      )}
+                      <span className="block text-xs text-gray-400 capitalize">
+                        {member.status
+                          ? member.status.toLowerCase().replace(/_/g, " ")
+                          : "N/A"}
+                      </span>
+                    </div>
+                  </div>
+                  <Link
+                    href={`/developer/members/${member.id}/edit`}
+                    passHref
+                    className="p-1 text-gray-400 hover:text-indigo-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-700 focus:ring-indigo-500 rounded"
+                    title={`Edit ${member.name_en}`}
+                  >
+                    <Edit size={16} />
+                  </Link>
+                </li>
+              ))
             )}
           </ul>
         )}

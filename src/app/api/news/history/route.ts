@@ -20,7 +20,7 @@ export async function GET() {
   try {
     const historyJsonData = await fs.promises.readFile(
       HISTORY_FILE_PATH,
-      "utf-8",
+      "utf-8"
     );
     try {
       const historyData = JSON.parse(historyJsonData);
@@ -28,7 +28,7 @@ export async function GET() {
       // Validate the overall structure (must be an array)
       if (!Array.isArray(historyData)) {
         console.warn(
-          "Invalid data format in news_history.json. Expected an array, returning default.",
+          "Invalid data format in news_history.json. Expected an array, returning default."
         );
         return NextResponse.json(defaultHistory, { status: 200 });
       }
@@ -43,12 +43,12 @@ export async function GET() {
           typeof entry.timestamp === "string" &&
           typeof entry.title === "string" && // Check for title
           Array.isArray(entry.news) &&
-          entry.news.every((item: unknown) => typeof item === "string"),
+          entry.news.every((item: unknown) => typeof item === "string")
       );
 
       if (!isValid) {
         console.warn(
-          "Some entries in news_history.json have invalid format, returning parsed data but be cautious.",
+          "Some entries in news_history.json have invalid format, returning parsed data but be cautious."
         );
         // Decide whether to filter invalid entries or return as is with warning
         // Returning as is for now, assuming POST handles creation correctly
@@ -87,7 +87,7 @@ export async function DELETE(request: NextRequest) {
   if (!timestampToDelete) {
     return NextResponse.json(
       { error: "Missing timestamp query parameter." },
-      { status: 400 },
+      { status: 400 }
     );
   }
 
@@ -97,14 +97,14 @@ export async function DELETE(request: NextRequest) {
     try {
       const historyJsonData = await fs.promises.readFile(
         HISTORY_FILE_PATH,
-        "utf-8",
+        "utf-8"
       );
       const parsedHistory = JSON.parse(historyJsonData);
       if (Array.isArray(parsedHistory)) {
         history = parsedHistory;
       } else {
         console.warn(
-          "news_history.json format is invalid during delete, assuming empty.",
+          "news_history.json format is invalid during delete, assuming empty."
         );
         // Proceeding with empty history means the item won't be found
       }
@@ -118,12 +118,12 @@ export async function DELETE(request: NextRequest) {
         // File doesn't exist, so the item to delete doesn't exist
         return NextResponse.json(
           { message: "History item not found (file does not exist)." },
-          { status: 404 },
+          { status: 404 }
         );
       } else {
         console.error(
           "Error reading or parsing news_history.json during delete:",
-          readError,
+          readError
         );
         throw new Error("Failed to read history data."); // Throw to be caught by outer catch
       }
@@ -132,14 +132,14 @@ export async function DELETE(request: NextRequest) {
     // 3. Filter out the entry to delete
     const initialLength = history.length;
     const updatedHistory = history.filter(
-      (entry) => entry.timestamp !== timestampToDelete,
+      (entry) => entry.timestamp !== timestampToDelete
     );
 
     // 4. Check if anything was actually deleted
     if (updatedHistory.length === initialLength) {
       return NextResponse.json(
         { message: "History item with the specified timestamp not found." },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -147,20 +147,20 @@ export async function DELETE(request: NextRequest) {
     await fs.promises.writeFile(
       HISTORY_FILE_PATH,
       JSON.stringify(updatedHistory, null, 2),
-      "utf-8",
+      "utf-8"
     );
     console.log(`Deleted history entry with timestamp: ${timestampToDelete}`);
 
     // 6. Return success response
     return NextResponse.json(
       { message: "History entry deleted successfully." },
-      { status: 200 },
+      { status: 200 }
     );
   } catch (error) {
     console.error("API DELETE /api/news/history Error:", error);
     return NextResponse.json(
       { error: "Failed to delete history entry due to an internal error." },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

@@ -11,7 +11,7 @@ export const pendingApi = {
    */
   async fetchAll(): Promise<PublicationWithAuthors[]> {
     const response = await fetch("/api/publications/pending");
-    
+
     if (!response.ok) {
       let errorMsg = `HTTP error! status: ${response.status}`;
       try {
@@ -26,7 +26,7 @@ export const pendingApi = {
     }
 
     const result = await response.json();
-    
+
     // 确保返回的数据格式正确
     if (!result.data || !Array.isArray(result.data)) {
       throw new Error("Invalid response format");
@@ -107,8 +107,12 @@ export const pendingApi = {
     const result = await response.json();
     return {
       ...result.data,
-      createdAt: result.data.createdAt ? new Date(result.data.createdAt) : new Date(),
-      updatedAt: result.data.updatedAt ? new Date(result.data.updatedAt) : new Date(),
+      createdAt: result.data.createdAt
+        ? new Date(result.data.createdAt)
+        : new Date(),
+      updatedAt: result.data.updatedAt
+        ? new Date(result.data.updatedAt)
+        : new Date(),
     };
   },
 
@@ -140,8 +144,12 @@ export const pendingApi = {
     const result = await response.json();
     return {
       ...result.data,
-      createdAt: result.data.createdAt ? new Date(result.data.createdAt) : new Date(),
-      updatedAt: result.data.updatedAt ? new Date(result.data.updatedAt) : new Date(),
+      createdAt: result.data.createdAt
+        ? new Date(result.data.createdAt)
+        : new Date(),
+      updatedAt: result.data.updatedAt
+        ? new Date(result.data.updatedAt)
+        : new Date(),
     };
   },
 

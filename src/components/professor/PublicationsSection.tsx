@@ -31,10 +31,7 @@ const PublicationsSection: React.FC<PublicationsSectionProps> = ({
         <div className="list-none space-y-3 md:space-y-4">
           {publications.length > 0 ? (
             publications.map((pub) => (
-              <PublicationItem
-                key={pub.id ?? pub.title}
-                pub={pub}
-              />
+              <PublicationItem key={pub.id ?? pub.title} pub={pub} />
             ))
           ) : (
             <p

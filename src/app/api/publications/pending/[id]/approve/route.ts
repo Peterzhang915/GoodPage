@@ -22,12 +22,12 @@ export async function POST(
     // 检查 publication 是否存在且为 pending 状态
     const publication = await prisma.publication.findUnique({
       where: { id },
-      select: { 
-        id: true, 
-        status: true, 
+      select: {
+        id: true,
+        status: true,
         title: true,
-        authors_full_string: true 
-      }
+        authors_full_string: true,
+      },
     });
 
     if (!publication) {
@@ -56,39 +56,39 @@ export async function POST(
           authors: {
             include: {
               author: {
-                select: { id: true, name_en: true, name_zh: true }
-              }
+                select: { id: true, name_en: true, name_zh: true },
+              },
             },
-            orderBy: { author_order: 'asc' }
-          }
-        }
+            orderBy: { author_order: "asc" },
+          },
+        },
       });
 
       // 2. 处理作者匹配和关联（如果有 authors_full_string）
       if (publication.authors_full_string) {
         const authorNames = publication.authors_full_string
-          .split(';')
-          .map(name => name.trim())
-          .filter(name => name.length > 0);
+          .split(";")
+          .map((name) => name.trim())
+          .filter((name) => name.length > 0);
 
         // 获取所有members用于智能匹配
         const allMembers = await tx.member.findMany({
-          select: { id: true, name_en: true, name_zh: true }
+          select: { id: true, name_en: true, name_zh: true },
         });
 
         // 智能匹配逻辑（复用之前的逻辑）
         const findMatchingMember = (inputName: string) => {
           const cleanName = inputName.trim().toLowerCase();
-          
+
           return allMembers.find((member) => {
             const nameEn = member.name_en.toLowerCase();
             const nameZh = member.name_zh?.toLowerCase();
 
             let normalizedAuthorName1 = cleanName;
             let normalizedAuthorName2 = cleanName;
-            
-            if (cleanName.includes(',')) {
-              const parts = cleanName.split(',').map(p => p.trim());
+
+            if (cleanName.includes(",")) {
+              const parts = cleanName.split(",").map((p) => p.trim());
               if (parts.length === 2) {
                 normalizedAuthorName1 = `${parts[1]} ${parts[0]}`.toLowerCase();
                 normalizedAuthorName2 = `${parts[0]} ${parts[1]}`.toLowerCase();
@@ -105,14 +105,17 @@ export async function POST(
               nameEn === normalizedAuthorName2 ||
               nameEn.includes(normalizedAuthorName2) ||
               normalizedAuthorName2.includes(nameEn) ||
-              (nameZh && (nameZh === cleanName || nameZh.includes(cleanName) || cleanName.includes(nameZh)))
+              (nameZh &&
+                (nameZh === cleanName ||
+                  nameZh.includes(cleanName) ||
+                  cleanName.includes(nameZh)))
             );
           });
         };
 
         // 清除现有的作者关联
         await tx.publicationAuthor.deleteMany({
-          where: { publication_id: id }
+          where: { publication_id: id },
         });
 
         // 创建新的作者关联
@@ -128,9 +131,13 @@ export async function POST(
                 author_order: authorOrder,
               },
             });
-            console.log(`Linked author "${authorName}" to member ID ${member.id} (${member.name_en})`);
+            console.log(
+              `Linked author "${authorName}" to member ID ${member.id} (${member.name_en})`
+            );
           } else {
-            console.warn(`Author "${authorName}" not linked to any existing member.`);
+            console.warn(
+              `Author "${authorName}" not linked to any existing member.`
+            );
           }
           authorOrder++;
         }
@@ -144,12 +151,12 @@ export async function POST(
     return NextResponse.json({
       success: true,
       message: "Publication approved successfully",
-      data: updatedPublication
+      data: updatedPublication,
     });
-
   } catch (error) {
     console.error("Error approving publication:", error);
-    const errorMessage = error instanceof Error ? error.message : "Unknown error";
+    const errorMessage =
+      error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json(
       { error: `Failed to approve publication: ${errorMessage}` },
       { status: 500 }

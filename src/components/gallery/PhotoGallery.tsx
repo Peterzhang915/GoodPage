@@ -1,6 +1,6 @@
 /**
  * 实验室相册展示组件
- * 
+ *
  * 功能特点：
  * 1. 支持两种展示模式：
  *    - 高亮滚动流（highlight）：自动滚动的图片流，支持鼠标交互控制
@@ -8,7 +8,7 @@
  * 2. 支持图片分类和筛选
  * 3. 支持图片点击放大查看
  * 4. 支持无限滚动和平滑动画效果
- * 
+ *
  * 交互设计：
  * 1. 高亮流模式：
  *    - 自动向左滚动
@@ -50,12 +50,12 @@ interface PhotoGalleryProps {
 
 // 支持的图片分类列表
 const CATEGORIES = [
-  "Meetings",      // 会议照片
-  "Graduation",    // 毕业照片
+  "Meetings", // 会议照片
+  "Graduation", // 毕业照片
   "Team Building", // 团建活动
-  "Sports",        // 运动照片
-  "Lab Life",      // 实验室生活
-  "Competition"    // 比赛照片
+  "Sports", // 运动照片
+  "Lab Life", // 实验室生活
+  "Competition", // 比赛照片
 ];
 
 /**
@@ -69,7 +69,7 @@ const categoryEmojis: { [key: string]: string } = {
   Sports: "🏸",
   "Lab Life": "🔬",
   Competition: "🏆",
-  Default: "🖼️"
+  Default: "🖼️",
 };
 
 /**
@@ -78,8 +78,8 @@ const categoryEmojis: { [key: string]: string } = {
 
 // 高亮滚动视图的动画效果
 const highlightStreamVariants = {
-  hidden: { opacity: 0, y: -20 },    // 初始隐藏状态
-  visible: { opacity: 1, y: 0 },     // 显示状态
+  hidden: { opacity: 0, y: -20 }, // 初始隐藏状态
+  visible: { opacity: 1, y: 0 }, // 显示状态
   exit: { opacity: 0, y: 20, transition: { duration: 0.3 } }, // 退出动画
 };
 
@@ -106,15 +106,18 @@ const waterfallViewVariants = {
  * 相册展示主组件
  * @param props PhotoGalleryProps
  */
-const PhotoGallery: React.FC<PhotoGalleryProps> = ({ images: albumImages = [], loading: albumLoading }) => {
+const PhotoGallery: React.FC<PhotoGalleryProps> = ({
+  images: albumImages = [],
+  loading: albumLoading,
+}) => {
   // === 状态管理 ===
-  
+
   // 视图控制状态
   const [currentView, setCurrentView] = useState<GalleryView>("highlight");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedImage, setSelectedImage] = useState<GalleryImage | null>(null);
   const [originRect, setOriginRect] = useState<DOMRect | null>(null);
-  
+
   // 图片数据状态
   const [categoryImages, setCategoryImages] = useState<GalleryImage[]>([]);
   const [categoryLoading, setCategoryLoading] = useState(false);
@@ -127,13 +130,13 @@ const PhotoGallery: React.FC<PhotoGalleryProps> = ({ images: albumImages = [], l
       if (!albumImages) {
         setCategoryLoading(true);
         try {
-          const res = await fetch('/api/gallery/photos');
+          const res = await fetch("/api/gallery/photos");
           const data = await res.json();
           if (data.success) {
             setCategoryImages(data.data);
           }
         } catch (error) {
-          console.error('Failed to fetch gallery images:', error);
+          console.error("Failed to fetch gallery images:", error);
         }
         setCategoryLoading(false);
       }
@@ -147,13 +150,15 @@ const PhotoGallery: React.FC<PhotoGalleryProps> = ({ images: albumImages = [], l
       if (currentView === "waterfall" && selectedCategory) {
         setCategoryLoading(true);
         try {
-          const res = await fetch(`/api/gallery/photos?category=${selectedCategory}&include_hidden=false`);
+          const res = await fetch(
+            `/api/gallery/photos?category=${selectedCategory}&include_hidden=false`
+          );
           const data = await res.json();
           if (data.success) {
             setCategoryImages(data.data);
           }
         } catch (error) {
-          console.error('Failed to fetch category images:', error);
+          console.error("Failed to fetch category images:", error);
         }
         setCategoryLoading(false);
       }
@@ -164,23 +169,25 @@ const PhotoGallery: React.FC<PhotoGalleryProps> = ({ images: albumImages = [], l
   // === 高亮滚动流控制 ===
 
   // 引用和标记
-  const containerRef = useRef<HTMLDivElement>(null);     // 滚动容器引用
-  const isHoveringRef = useRef(false);                  // 鼠标悬停标记
-  const isPausedRef = useRef(false);                    // 动画暂停标记
-  const mouseXRelative = useRef<number | null>(null);   // 鼠标相对位置
-  const categoryButtonRefs = useRef<{[key: string]: HTMLButtonElement | null}>({});
+  const containerRef = useRef<HTMLDivElement>(null); // 滚动容器引用
+  const isHoveringRef = useRef(false); // 鼠标悬停标记
+  const isPausedRef = useRef(false); // 动画暂停标记
+  const mouseXRelative = useRef<number | null>(null); // 鼠标相对位置
+  const categoryButtonRefs = useRef<{
+    [key: string]: HTMLButtonElement | null;
+  }>({});
 
   // 动画参数配置
-  const normalVelocity = 60;    // 正常滚动速度（像素/秒）
-  const maxVelocity = 600;      // 最大滚动速度
-  const acceleration = 500;     // 加速度
-  const deceleration = -500;    // 减速度
-  const edgeThreshold = 0.2;    // 边缘触发区域（20%）
+  const normalVelocity = 60; // 正常滚动速度（像素/秒）
+  const maxVelocity = 600; // 最大滚动速度
+  const acceleration = 500; // 加速度
+  const deceleration = -500; // 减速度
+  const edgeThreshold = 0.2; // 边缘触发区域（20%）
 
   // 布局参数
-  const itemWidth = 256;        // 图片宽度
-  const itemHeight = 192;       // 图片高度
-  const gap = 16;              // 图片间距
+  const itemWidth = 256; // 图片宽度
+  const itemHeight = 192; // 图片高度
+  const gap = 16; // 图片间距
 
   // === 内容计算 ===
 
@@ -190,25 +197,25 @@ const PhotoGallery: React.FC<PhotoGalleryProps> = ({ images: albumImages = [], l
       albumImages.length >= 10
         ? albumImages
         : [...albumImages, ...albumImages, ...albumImages].slice(0, 10),
-    [albumImages],
+    [albumImages]
   );
 
   // 双倍列表用于无缝循环
   const doubledItems = useMemo(
     () => [...itemsToRender, ...itemsToRender],
-    [itemsToRender],
+    [itemsToRender]
   );
 
   // 计算内容总宽度
   const contentWidth = useMemo(
     () => itemsToRender.length * (itemWidth + gap),
-    [itemsToRender, itemWidth, gap],
+    [itemsToRender, itemWidth, gap]
   );
 
   // === 动画控制 ===
 
-  const x = motionValue(0);                     // X 坐标动画值
-  const velocity = useRef(-normalVelocity);     // 当前速度
+  const x = motionValue(0); // X 坐标动画值
+  const velocity = useRef(-normalVelocity); // 当前速度
 
   // 动画帧更新逻辑
   useAnimationFrame((time, delta) => {
@@ -218,8 +225,8 @@ const PhotoGallery: React.FC<PhotoGalleryProps> = ({ images: albumImages = [], l
       return;
     }
 
-    const dt = delta / 1000;  // 转换为秒
-    let targetVelocity = -normalVelocity;  // 默认向左滚动
+    const dt = delta / 1000; // 转换为秒
+    let targetVelocity = -normalVelocity; // 默认向左滚动
 
     // 根据状态确定目标速度
     if (isPausedRef.current) {
@@ -351,7 +358,7 @@ const PhotoGallery: React.FC<PhotoGalleryProps> = ({ images: albumImages = [], l
   // --- 数据准备 ---
   // 根据当前选中的类别，过滤出用于瀑布流视图的图片列表
   const waterfallImages = albumImages?.filter(
-    (img) => img.category === selectedCategory,
+    (img) => img.category === selectedCategory
   );
 
   if (albumLoading || categoryLoading) {
@@ -531,25 +538,45 @@ const PhotoGallery: React.FC<PhotoGalleryProps> = ({ images: albumImages = [], l
         )}
       </AnimatePresence>
       {/* 渲染模态框组件 (独立于视图切换) */}
-      <Modal isOpen={selectedImage !== null} onClose={closeModal} showCloseButton={false}>
+      <Modal
+        isOpen={selectedImage !== null}
+        onClose={closeModal}
+        showCloseButton={false}
+      >
         {selectedImage && (
           <div className="relative flex flex-col items-center justify-center bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden">
             {/* 顶部品牌字样 */}
             <div className="absolute top-0 left-0 w-full flex items-center px-4 py-2 bg-white/90 border-b border-gray-100 rounded-t-2xl z-10">
-              <span className="font-bold text-base tracking-wide text-blue-700 select-none" style={{letterSpacing: '0.08em', fontFamily: 'serif'}}>LAB GALLERY</span>
+              <span
+                className="font-bold text-base tracking-wide text-blue-700 select-none"
+                style={{ letterSpacing: "0.08em", fontFamily: "serif" }}
+              >
+                LAB GALLERY
+              </span>
             </div>
             {/* 图片主体 */}
             <img
               src={selectedImage.src}
-              alt={selectedImage.alt || ''}
+              alt={selectedImage.alt || ""}
               className="w-full h-auto object-cover rounded-2xl mt-8 mb-1"
-              style={{maxHeight: 340, minHeight: 180, background: '#f8fafc'}}
+              style={{ maxHeight: 340, minHeight: 180, background: "#f8fafc" }}
             />
             {/* 底部信息栏：一行内展示所有信息 */}
             <div className="absolute bottom-0 left-0 right-0 bg-white/95 py-2 px-4 border-t border-gray-100 rounded-b-2xl flex flex-row items-center gap-3 text-xs">
-              <span className="font-semibold text-gray-800 truncate max-w-[40%]" title={selectedImage.caption || ''}>{selectedImage.caption}</span>
-              <span className="text-blue-700 font-bold tracking-wide uppercase whitespace-nowrap">{selectedImage.category || ''}</span>
-              {selectedImage.date && <span className="text-gray-500 font-mono whitespace-nowrap">{selectedImage.date}</span>}
+              <span
+                className="font-semibold text-gray-800 truncate max-w-[40%]"
+                title={selectedImage.caption || ""}
+              >
+                {selectedImage.caption}
+              </span>
+              <span className="text-blue-700 font-bold tracking-wide uppercase whitespace-nowrap">
+                {selectedImage.category || ""}
+              </span>
+              {selectedImage.date && (
+                <span className="text-gray-500 font-mono whitespace-nowrap">
+                  {selectedImage.date}
+                </span>
+              )}
             </div>
           </div>
         )}

@@ -26,9 +26,9 @@ const SearchBar: React.FC<SearchBarProps> = ({
   return (
     <div className={`relative ${className}`}>
       <div className="relative">
-        <Search 
-          size={16} 
-          className={`absolute left-3 top-1/2 transform -translate-y-1/2 ${themeColors.devDescText}`} 
+        <Search
+          size={16}
+          className={`absolute left-3 top-1/2 transform -translate-y-1/2 ${themeColors.devDescText}`}
         />
         <input
           type="text"

@@ -2,7 +2,7 @@
 
 import { PrismaClient } from "@prisma/client";
 
-// --- Prisma Client Initialization for Next.js --- 
+// --- Prisma Client Initialization for Next.js ---
 // See: https://pris.ly/d/help/next-js-best-practices
 
 declare global {
@@ -11,7 +11,7 @@ declare global {
   var prisma: PrismaClient | undefined;
 }
 
-const prisma = 
+const prisma =
   globalThis.prisma ??
   new PrismaClient({
     log:
@@ -25,6 +25,6 @@ if (process.env.NODE_ENV !== "production") globalThis.prisma = prisma;
 export default prisma;
 
 // --- Optional: Re-export types ---
-// export * from "@prisma/client"; 
-// Keeping this commented out unless explicitly needed, 
+// export * from "@prisma/client";
+// Keeping this commented out unless explicitly needed,
 // as direct imports from "@prisma/client" are also fine.

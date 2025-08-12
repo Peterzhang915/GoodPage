@@ -23,11 +23,16 @@ interface StudentInterestsSectionProps {
   error: string | null;
 }
 
-const StudentInterestsSection: React.FC<StudentInterestsSectionProps> = ({ items, error }) => {
+const StudentInterestsSection: React.FC<StudentInterestsSectionProps> = ({
+  items,
+  error,
+}) => {
   return (
     <ContentSection id="student-interests" title="Student Interests">
       {error ? (
-        <div className={`flex items-center space-x-2 text-red-600 dark:text-red-400`}>
+        <div
+          className={`flex items-center space-x-2 text-red-600 dark:text-red-400`}
+        >
           <AlertTriangle className="h-5 w-5 flex-shrink-0" />
           <span>Error loading student interests: {error}</span>
         </div>

@@ -1,6 +1,6 @@
-import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
-import { z } from 'zod';
+import { NextResponse } from "next/server";
+import { PrismaClient } from "@prisma/client";
+import { z } from "zod";
 
 const prisma = new PrismaClient();
 
@@ -13,125 +13,165 @@ const updateInterestPointSchema = z.object({
 
 // Helper to get ID from params (same as before)
 const getIdFromParams = (params: { id?: string }) => {
-    const id = parseInt(params.id || '');
-    if (isNaN(id)) {
-        throw new Error('Invalid ID parameter');
-    }
-    return id;
+  const id = parseInt(params.id || "");
+  if (isNaN(id)) {
+    throw new Error("Invalid ID parameter");
+  }
+  return id;
 };
 
 // GET handler for a single interest point (optional)
 export async function GET(
-    request: Request,
-    { params }: { params: { id: string } }
+  request: Request,
+  { params }: { params: { id: string } }
 ) {
-    try {
-        const id = getIdFromParams(params);
-        const interestPoint = await prisma.interestPoint.findUnique({
-            where: { id },
-        });
+  try {
+    const id = getIdFromParams(params);
+    const interestPoint = await prisma.interestPoint.findUnique({
+      where: { id },
+    });
 
-        if (!interestPoint) {
-            return NextResponse.json(
-                { success: false, error: { message: `Interest point with ID ${id} not found.` } },
-                { status: 404 }
-            );
-        }
-
-        return NextResponse.json({ success: true, data: interestPoint });
-    } catch (error: any) {
-        console.error(`Failed to fetch interest point ${params.id}:`, error);
-        const status = error.message.includes('Invalid ID') ? 400 : 500;
-        return NextResponse.json(
-            { success: false, error: { message: status === 400 ? error.message : 'Failed to fetch interest point.' } },
-            { status }
-        );
-    } finally {
-        await prisma.$disconnect();
+    if (!interestPoint) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: { message: `Interest point with ID ${id} not found.` },
+        },
+        { status: 404 }
+      );
     }
-}
 
+    return NextResponse.json({ success: true, data: interestPoint });
+  } catch (error: any) {
+    console.error(`Failed to fetch interest point ${params.id}:`, error);
+    const status = error.message.includes("Invalid ID") ? 400 : 500;
+    return NextResponse.json(
+      {
+        success: false,
+        error: {
+          message:
+            status === 400 ? error.message : "Failed to fetch interest point.",
+        },
+      },
+      { status }
+    );
+  } finally {
+    await prisma.$disconnect();
+  }
+}
 
 // PUT handler to update a specific interest point
 export async function PUT(
-    request: Request,
-    { params }: { params: { id: string } }
+  request: Request,
+  { params }: { params: { id: string } }
 ) {
-    try {
-        const id = getIdFromParams(params);
-        const body = await request.json();
+  try {
+    const id = getIdFromParams(params);
+    const body = await request.json();
 
-        // Validate input
-        const validation = updateInterestPointSchema.safeParse(body);
-        if (!validation.success) {
-            return NextResponse.json(
-                { success: false, error: { message: 'Invalid input.', details: validation.error.errors } },
-                { status: 400 }
-            );
-        }
-
-        if (Object.keys(validation.data).length === 0) {
-             return NextResponse.json(
-                { success: false, error: { message: 'No valid fields provided for update.' } },
-                { status: 400 }
-            );
-        }
-
-        const updatedInterestPoint = await prisma.interestPoint.update({
-            where: { id },
-            data: validation.data,
-        });
-
-        return NextResponse.json({ success: true, data: updatedInterestPoint });
-    } catch (error: any) {
-        console.error(`Failed to update interest point ${params.id}:`, error);
-        if (error instanceof Error && error.message.includes('Invalid ID')) {
-             return NextResponse.json({ success: false, error: { message: error.message } }, { status: 400 });
-         }
-        if (error.code === 'P2025') { // Record not found
-             return NextResponse.json(
-                { success: false, error: { message: `Interest point with ID ${params.id} not found.` } },
-                { status: 404 }
-            );
-        }
-        return NextResponse.json(
-            { success: false, error: { message: 'Failed to update interest point.' } },
-            { status: 500 }
-        );
-    } finally {
-        await prisma.$disconnect();
+    // Validate input
+    const validation = updateInterestPointSchema.safeParse(body);
+    if (!validation.success) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            message: "Invalid input.",
+            details: validation.error.errors,
+          },
+        },
+        { status: 400 }
+      );
     }
+
+    if (Object.keys(validation.data).length === 0) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: { message: "No valid fields provided for update." },
+        },
+        { status: 400 }
+      );
+    }
+
+    const updatedInterestPoint = await prisma.interestPoint.update({
+      where: { id },
+      data: validation.data,
+    });
+
+    return NextResponse.json({ success: true, data: updatedInterestPoint });
+  } catch (error: any) {
+    console.error(`Failed to update interest point ${params.id}:`, error);
+    if (error instanceof Error && error.message.includes("Invalid ID")) {
+      return NextResponse.json(
+        { success: false, error: { message: error.message } },
+        { status: 400 }
+      );
+    }
+    if (error.code === "P2025") {
+      // Record not found
+      return NextResponse.json(
+        {
+          success: false,
+          error: { message: `Interest point with ID ${params.id} not found.` },
+        },
+        { status: 404 }
+      );
+    }
+    return NextResponse.json(
+      {
+        success: false,
+        error: { message: "Failed to update interest point." },
+      },
+      { status: 500 }
+    );
+  } finally {
+    await prisma.$disconnect();
+  }
 }
 
 // DELETE handler to remove a specific interest point
 export async function DELETE(
-    request: Request,
-    { params }: { params: { id: string } }
+  request: Request,
+  { params }: { params: { id: string } }
 ) {
-    try {
-        const id = getIdFromParams(params);
+  try {
+    const id = getIdFromParams(params);
 
-        await prisma.interestPoint.delete({
-            where: { id },
-        });
+    await prisma.interestPoint.delete({
+      where: { id },
+    });
 
-        return NextResponse.json({ success: true, message: `Interest point with ID ${id} deleted.` }, { status: 200 });
-    } catch (error: any) {
-        console.error(`Failed to delete interest point ${params.id}:`, error);
-        if (error instanceof Error && error.message.includes('Invalid ID')) {
-             return NextResponse.json({ success: false, error: { message: error.message } }, { status: 400 });
-         }
-        if (error.code === 'P2025') { // Record not found
-             return NextResponse.json(
-                { success: false, error: { message: `Interest point with ID ${params.id} not found.` } },
-                { status: 404 }
-            );
-        }
-        return NextResponse.json(
-            { success: false, error: { message: 'Failed to delete interest point.' } },
-            { status: 500 }
-        );
-    } finally {
-        await prisma.$disconnect();
+    return NextResponse.json(
+      { success: true, message: `Interest point with ID ${id} deleted.` },
+      { status: 200 }
+    );
+  } catch (error: any) {
+    console.error(`Failed to delete interest point ${params.id}:`, error);
+    if (error instanceof Error && error.message.includes("Invalid ID")) {
+      return NextResponse.json(
+        { success: false, error: { message: error.message } },
+        { status: 400 }
+      );
     }
+    if (error.code === "P2025") {
+      // Record not found
+      return NextResponse.json(
+        {
+          success: false,
+          error: { message: `Interest point with ID ${params.id} not found.` },
+        },
+        { status: 404 }
+      );
+    }
+    return NextResponse.json(
+      {
+        success: false,
+        error: { message: "Failed to delete interest point." },
+      },
+      { status: 500 }
+    );
+  } finally {
+    await prisma.$disconnect();
+  }
 }

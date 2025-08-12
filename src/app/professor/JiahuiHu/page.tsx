@@ -5,7 +5,7 @@ import type { PublicationInfo, DisplayAuthor } from "@/lib/types";
 import { getAllPublicationsFormatted } from "@/lib/publications";
 
 // 强制动态渲染，确保始终获取最新数据
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 // 使用 Next.js 13+ app router 的 server component 写法
 export default async function JiahuiHuPage() {
@@ -33,23 +33,23 @@ export default async function JiahuiHuPage() {
     const allPublications = await getAllPublicationsFormatted();
     publications = allPublications.filter((pub: PublicationInfo) => {
       // 检查是否有该教授作为作者
-      return pub.displayAuthors.some(author =>
-        author.type === "internal" && author.id === professorId
+      return pub.displayAuthors.some(
+        (author) => author.type === "internal" && author.id === professorId
       );
     });
-    
+
     // 获取学术服务
     services = await prisma.academicService.findMany({
       where: { member_id: professorId },
       orderBy: { display_order: "asc" },
     });
-    
+
     // 获取奖项
     awards = await prisma.award.findMany({
       where: { member_id: professorId },
       orderBy: { display_order: "asc" },
     });
-    
+
     // 获取资助/赞助
     sponsorships = await prisma.sponsorship.findMany({
       where: { member_id: professorId },
@@ -61,14 +61,14 @@ export default async function JiahuiHuPage() {
   }
 
   // 4. 将数据分为特色和详细两类
-  const featuredServices = services.filter(s => s.isFeatured);
-  const detailedServices = services.filter(s => !s.isFeatured);
-  
-  const featuredAwards = awards.filter(a => a.isFeatured);
-  const detailedAwards = awards.filter(a => !a.isFeatured);
-  
-  const featuredSponsorships = sponsorships.filter(s => s.isFeatured);
-  const detailedSponsorships = sponsorships.filter(s => !s.isFeatured);
+  const featuredServices = services.filter((s) => s.isFeatured);
+  const detailedServices = services.filter((s) => !s.isFeatured);
+
+  const featuredAwards = awards.filter((a) => a.isFeatured);
+  const detailedAwards = awards.filter((a) => !a.isFeatured);
+
+  const featuredSponsorships = sponsorships.filter((s) => s.isFeatured);
+  const detailedSponsorships = sponsorships.filter((s) => !s.isFeatured);
 
   // 5. 渲染教授个人资料页面
   return (
@@ -87,4 +87,4 @@ export default async function JiahuiHuPage() {
       addressLine2="Nanchang, Jiangxi, 330000"
     />
   );
-} 
+}

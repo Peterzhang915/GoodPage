@@ -28,10 +28,10 @@ const AwardsSection: React.FC<AwardsSectionProps> = ({
 
   // Sorting (optional, can also be done in parent)
   const sortedFeatured = [...featuredAwards].sort(
-    (a, b) => a.display_order - b.display_order,
+    (a, b) => a.display_order - b.display_order
   );
   const sortedDetailed = [...detailedAwards].sort(
-    (a, b) => a.display_order - b.display_order,
+    (a, b) => a.display_order - b.display_order
   );
 
   return (

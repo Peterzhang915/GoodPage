@@ -28,7 +28,7 @@ export async function GET(request: Request) {
       error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json(
       { error: `Internal server error: ${errorMessage}` },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

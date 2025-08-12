@@ -36,12 +36,12 @@ interface WaterfallViewProps {
 
 // 定义 Masonry 布局的断点（屏幕宽度对应列数）
 const breakpointColumnsObj = {
-  default: 5,      // 默认 5 列
-  1536: 4,         // 2xl 屏幕 4 列
-  1280: 3,         // xl 屏幕 3 列
-  1024: 3,         // lg 屏幕 3 列
-  768: 2,          // md 屏幕 2 列
-  640: 1,          // sm 屏幕 1 列
+  default: 5, // 默认 5 列
+  1536: 4, // 2xl 屏幕 4 列
+  1280: 3, // xl 屏幕 3 列
+  1024: 3, // lg 屏幕 3 列
+  768: 2, // md 屏幕 2 列
+  640: 1, // sm 屏幕 1 列
 };
 
 const WaterfallView: React.FC<WaterfallViewProps> = ({

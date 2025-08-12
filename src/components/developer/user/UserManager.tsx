@@ -31,7 +31,7 @@ const UserManager: React.FC<UserManagerProps> = ({ onClose }) => {
     string | null
   >(null);
   const [generatedPassword, setGeneratedPassword] = useState<string | null>(
-    null,
+    null
   );
   const [copySuccess, setCopySuccess] = useState(false);
 

@@ -1,14 +1,14 @@
 /**
  * 图片上传相关 Hook
- * 
+ *
  * 管理图片上传的状态和逻辑，包括拖拽上传
  */
 
-import { useState, useRef, useCallback } from 'react';
-import type { Category, UploadState, DragHandlers } from '../types';
-import { photoApi } from '../services/photoApi';
-import { formValidationUtils, urlUtils } from '../utils';
-import { isAlbumsView } from '../constants';
+import { useState, useRef, useCallback } from "react";
+import type { Category, UploadState, DragHandlers } from "../types";
+import { photoApi } from "../services/photoApi";
+import { formValidationUtils, urlUtils } from "../utils";
+import { isAlbumsView } from "../constants";
 
 interface UsePhotoUploadOptions {
   category: Category;
@@ -22,15 +22,15 @@ interface UsePhotoUploadOptions {
 export function usePhotoUpload({
   category,
   onUploadSuccess,
-  onError
+  onError,
 }: UsePhotoUploadOptions) {
   // 上传状态
   const [uploadState, setUploadState] = useState<UploadState>({
     uploading: false,
     file: null,
-    caption: '',
-    date: '',
-    isDragging: false
+    caption: "",
+    date: "",
+    isDragging: false,
   });
 
   // 文件输入引用
@@ -40,21 +40,21 @@ export function usePhotoUpload({
    * 设置上传文件
    */
   const setFile = useCallback((file: File | null) => {
-    setUploadState(prev => ({ ...prev, file }));
+    setUploadState((prev) => ({ ...prev, file }));
   }, []);
 
   /**
    * 设置图片标题
    */
   const setCaption = useCallback((caption: string) => {
-    setUploadState(prev => ({ ...prev, caption }));
+    setUploadState((prev) => ({ ...prev, caption }));
   }, []);
 
   /**
    * 设置拍摄日期
    */
   const setDate = useCallback((date: string) => {
-    setUploadState(prev => ({ ...prev, date }));
+    setUploadState((prev) => ({ ...prev, date }));
   }, []);
 
   /**
@@ -64,32 +64,35 @@ export function usePhotoUpload({
     setUploadState({
       uploading: false,
       file: null,
-      caption: '',
-      date: '',
-      isDragging: false
+      caption: "",
+      date: "",
+      isDragging: false,
     });
-    
+
     // 重置文件输入
     if (fileInputRef.current) {
-      fileInputRef.current.value = '';
+      fileInputRef.current.value = "";
     }
   }, []);
 
   /**
    * 处理文件选择
    */
-  const handleFileSelect = useCallback((files: FileList | null) => {
-    if (files && files.length > 0) {
-      const file = files[0];
-      const validation = formValidationUtils.validateUploadForm(file, '', '');
-      
-      if (validation.isValid) {
-        setFile(file);
-      } else {
-        onError?.(validation.errors[0]);
+  const handleFileSelect = useCallback(
+    (files: FileList | null) => {
+      if (files && files.length > 0) {
+        const file = files[0];
+        const validation = formValidationUtils.validateUploadForm(file, "", "");
+
+        if (validation.isValid) {
+          setFile(file);
+        } else {
+          onError?.(validation.errors[0]);
+        }
       }
-    }
-  }, [setFile, onError]);
+    },
+    [setFile, onError]
+  );
 
   /**
    * 拖拽处理器
@@ -97,21 +100,24 @@ export function usePhotoUpload({
   const dragHandlers: DragHandlers = {
     onDragOver: useCallback((e: React.DragEvent) => {
       e.preventDefault();
-      setUploadState(prev => ({ ...prev, isDragging: true }));
+      setUploadState((prev) => ({ ...prev, isDragging: true }));
     }, []),
 
     onDragLeave: useCallback((e: React.DragEvent) => {
       e.preventDefault();
-      setUploadState(prev => ({ ...prev, isDragging: false }));
+      setUploadState((prev) => ({ ...prev, isDragging: false }));
     }, []),
 
-    onDrop: useCallback((e: React.DragEvent) => {
-      e.preventDefault();
-      setUploadState(prev => ({ ...prev, isDragging: false }));
-      
-      const files = e.dataTransfer.files;
-      handleFileSelect(files);
-    }, [handleFileSelect])
+    onDrop: useCallback(
+      (e: React.DragEvent) => {
+        e.preventDefault();
+        setUploadState((prev) => ({ ...prev, isDragging: false }));
+
+        const files = e.dataTransfer.files;
+        handleFileSelect(files);
+      },
+      [handleFileSelect]
+    ),
   };
 
   /**
@@ -126,39 +132,42 @@ export function usePhotoUpload({
    */
   const uploadPhoto = useCallback(async () => {
     const { file, caption, date } = uploadState;
-    
+
     if (!file || isAlbumsView(category)) {
       return;
     }
 
     // 验证表单
-    const validation = formValidationUtils.validateUploadForm(file, caption, date);
+    const validation = formValidationUtils.validateUploadForm(
+      file,
+      caption,
+      date
+    );
     if (!validation.isValid) {
       onError?.(validation.errors[0]);
       return;
     }
 
-    setUploadState(prev => ({ ...prev, uploading: true }));
+    setUploadState((prev) => ({ ...prev, uploading: true }));
 
     try {
       const uploadData = {
         file,
         category,
         caption: caption || undefined,
-        date: date || undefined
+        date: date || undefined,
       };
 
       await photoApi.uploadPhoto(uploadData);
-      
+
       // 上传成功，重置表单
       resetUploadForm();
       onUploadSuccess?.();
-      
     } catch (error) {
-      console.error('Upload failed:', error);
-      onError?.(error instanceof Error ? error.message : '上传失败');
+      console.error("Upload failed:", error);
+      onError?.(error instanceof Error ? error.message : "上传失败");
     } finally {
-      setUploadState(prev => ({ ...prev, uploading: false }));
+      setUploadState((prev) => ({ ...prev, uploading: false }));
     }
   }, [uploadState, category, onUploadSuccess, onError, resetUploadForm]);
 
@@ -171,7 +180,7 @@ export function usePhotoUpload({
       const previewUrl = urlUtils.createFilePreviewUrl(uploadState.file);
       urlUtils.revokeFilePreviewUrl(previewUrl);
     }
-    
+
     resetUploadForm();
   }, [uploadState.file, resetUploadForm]);
 
@@ -188,7 +197,8 @@ export function usePhotoUpload({
   /**
    * 检查是否可以上传
    */
-  const canUpload = !isAlbumsView(category) && uploadState.file && !uploadState.uploading;
+  const canUpload =
+    !isAlbumsView(category) && uploadState.file && !uploadState.uploading;
 
   /**
    * 检查是否显示上传区域
@@ -202,11 +212,11 @@ export function usePhotoUpload({
     caption: uploadState.caption,
     date: uploadState.date,
     isDragging: uploadState.isDragging,
-    
+
     // 计算属性
     canUpload,
     showUploadArea,
-    
+
     // 操作方法
     setFile,
     setCaption,
@@ -217,11 +227,11 @@ export function usePhotoUpload({
     uploadPhoto,
     cancelUpload,
     getFilePreviewUrl,
-    
+
     // 拖拽处理器
     dragHandlers,
-    
+
     // 引用
-    fileInputRef
+    fileInputRef,
   };
 }

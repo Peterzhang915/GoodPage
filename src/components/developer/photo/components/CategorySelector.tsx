@@ -1,19 +1,23 @@
 /**
  * 分类选择器组件
- * 
+ *
  * 提供相册分类选择功能
  */
 
-import React from 'react';
-import type { CategorySelectorProps } from '../types';
-import { VALID_CATEGORIES, getCategoryLabel, getCategoryDescription } from '../constants';
+import React from "react";
+import type { CategorySelectorProps } from "../types";
+import {
+  VALID_CATEGORIES,
+  getCategoryLabel,
+  getCategoryDescription,
+} from "../constants";
 
 /**
  * 分类选择器组件
  */
 const CategorySelector: React.FC<CategorySelectorProps> = ({
   value,
-  onChange
+  onChange,
 }) => {
   /**
    * 处理分类变更

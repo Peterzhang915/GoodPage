@@ -1,7 +1,16 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { Upload, FileText, AlertCircle, CheckCircle, Loader2, Plus, X, RefreshCw } from "lucide-react";
+import {
+  Upload,
+  FileText,
+  AlertCircle,
+  CheckCircle,
+  Loader2,
+  Plus,
+  X,
+  RefreshCw,
+} from "lucide-react";
 import { toast } from "sonner";
 import { themeColors } from "@/styles/theme";
 
@@ -41,17 +50,18 @@ const YamlImportManager: React.FC = () => {
   const loadYamlFiles = async () => {
     setIsLoadingFiles(true);
     try {
-      const response = await fetch('/api/publications/yaml-files');
+      const response = await fetch("/api/publications/yaml-files");
       const result = await response.json();
 
       if (response.ok && result.success) {
         setYamlFiles(result.data);
       } else {
-        throw new Error(result.error || 'Failed to load files');
+        throw new Error(result.error || "Failed to load files");
       }
     } catch (error) {
-      console.error('Load files error:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      console.error("Load files error:", error);
+      const errorMessage =
+        error instanceof Error ? error.message : "Unknown error";
       toast.error(`Failed to load files: ${errorMessage}`);
     } finally {
       setIsLoadingFiles(false);
@@ -65,10 +75,10 @@ const YamlImportManager: React.FC = () => {
     setIsUploading(true);
     try {
       const formData = new FormData();
-      formData.append('file', file);
+      formData.append("file", file);
 
-      const response = await fetch('/api/publications/yaml-files', {
-        method: 'POST',
+      const response = await fetch("/api/publications/yaml-files", {
+        method: "POST",
         body: formData,
       });
 
@@ -78,11 +88,12 @@ const YamlImportManager: React.FC = () => {
         toast.success(`File "${file.name}" uploaded successfully!`);
         await loadYamlFiles(); // 重新加载文件列表
       } else {
-        throw new Error(result.error || 'Upload failed');
+        throw new Error(result.error || "Upload failed");
       }
     } catch (error) {
-      console.error('Upload error:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      console.error("Upload error:", error);
+      const errorMessage =
+        error instanceof Error ? error.message : "Unknown error";
       toast.error(`Upload failed: ${errorMessage}`);
     } finally {
       setIsUploading(false);
@@ -97,11 +108,14 @@ const YamlImportManager: React.FC = () => {
       return;
     }
 
-    setDeletingFiles(prev => new Set(prev).add(fileName));
+    setDeletingFiles((prev) => new Set(prev).add(fileName));
     try {
-      const response = await fetch(`/api/publications/yaml-files/${encodeURIComponent(fileName)}`, {
-        method: 'DELETE',
-      });
+      const response = await fetch(
+        `/api/publications/yaml-files/${encodeURIComponent(fileName)}`,
+        {
+          method: "DELETE",
+        }
+      );
 
       const result = await response.json();
 
@@ -109,14 +123,15 @@ const YamlImportManager: React.FC = () => {
         toast.success(`File "${fileName}" deleted successfully!`);
         await loadYamlFiles(); // 重新加载文件列表
       } else {
-        throw new Error(result.error || 'Delete failed');
+        throw new Error(result.error || "Delete failed");
       }
     } catch (error) {
-      console.error('Delete error:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      console.error("Delete error:", error);
+      const errorMessage =
+        error instanceof Error ? error.message : "Unknown error";
       toast.error(`Delete failed: ${errorMessage}`);
     } finally {
-      setDeletingFiles(prev => {
+      setDeletingFiles((prev) => {
         const newSet = new Set(prev);
         newSet.delete(fileName);
         return newSet;
@@ -134,7 +149,7 @@ const YamlImportManager: React.FC = () => {
     }
     // 清空 input 值，允许重复选择同一文件
     if (fileInputRef.current) {
-      fileInputRef.current.value = '';
+      fileInputRef.current.value = "";
     }
   };
 
@@ -150,7 +165,7 @@ const YamlImportManager: React.FC = () => {
    */
   const handleImport = async (fileName: string) => {
     if (!fileName) {
-      toast.error('Please select a YAML file first');
+      toast.error("Please select a YAML file first");
       return;
     }
 
@@ -159,10 +174,10 @@ const YamlImportManager: React.FC = () => {
 
     try {
       // 发送到 API，类似重置密码的逻辑
-      const response = await fetch('/api/publications/import-yaml', {
-        method: 'POST',
+      const response = await fetch("/api/publications/import-yaml", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           fileName: fileName,
@@ -173,18 +188,22 @@ const YamlImportManager: React.FC = () => {
 
       if (response.ok && result.success) {
         setImportResult(result.data);
-        toast.success(`Successfully imported ${result.data.imported} publications!`);
+        toast.success(
+          `Successfully imported ${result.data.imported} publications!`
+        );
 
         if (result.data.duplicatesSkipped > 0) {
-          toast.warning(`Skipped ${result.data.duplicatesSkipped} duplicate publications`);
+          toast.warning(
+            `Skipped ${result.data.duplicatesSkipped} duplicate publications`
+          );
         }
       } else {
-        throw new Error(result.error || 'Import failed');
+        throw new Error(result.error || "Import failed");
       }
-
     } catch (error) {
-      console.error('Import error:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      console.error("Import error:", error);
+      const errorMessage =
+        error instanceof Error ? error.message : "Unknown error";
       toast.error(`Import failed: ${errorMessage}`);
     } finally {
       setIsImporting(false);
@@ -199,7 +218,9 @@ const YamlImportManager: React.FC = () => {
   };
 
   return (
-    <div className={`space-y-6 ${themeColors.devCardBg} p-6 rounded-lg border border-gray-700`}>
+    <div
+      className={`space-y-6 ${themeColors.devCardBg} p-6 rounded-lg border border-gray-700`}
+    >
       {/* 标题 */}
       <div className="flex items-center gap-3">
         <Upload className={`${themeColors.devAccent} w-6 h-6`} />
@@ -212,7 +233,9 @@ const YamlImportManager: React.FC = () => {
       <div className="space-y-6">
         {/* 上传按钮 */}
         <div className="flex justify-between items-center">
-          <h3 className={`text-lg font-medium ${themeColors.devText}`}>YAML Files Management</h3>
+          <h3 className={`text-lg font-medium ${themeColors.devText}`}>
+            YAML Files Management
+          </h3>
           <div className="flex gap-3">
             <input
               ref={fileInputRef}
@@ -258,7 +281,9 @@ const YamlImportManager: React.FC = () => {
         </div>
 
         {/* 文件列表 */}
-        <div className={`overflow-hidden shadow ring-1 ring-black ring-opacity-5 rounded-lg ${themeColors.devCardBg}`}>
+        <div
+          className={`overflow-hidden shadow ring-1 ring-black ring-opacity-5 rounded-lg ${themeColors.devCardBg}`}
+        >
           <table className="min-w-full divide-y divide-gray-700">
             <thead className="bg-gray-800">
               <tr>
@@ -282,84 +307,88 @@ const YamlImportManager: React.FC = () => {
                   <td colSpan={4} className="px-6 py-8 text-center">
                     <div className="flex items-center justify-center">
                       <Loader2 className="w-5 h-5 mr-2 animate-spin text-gray-400" />
-                      <span className={`text-sm ${themeColors.devDescText}`}>Loading files...</span>
+                      <span className={`text-sm ${themeColors.devDescText}`}>
+                        Loading files...
+                      </span>
                     </div>
                   </td>
                 </tr>
               ) : yamlFiles.length === 0 ? (
                 <tr>
                   <td colSpan={4} className="px-6 py-8 text-center">
-                    <span className={`text-sm ${themeColors.devDescText}`}>No YAML files found. Upload one to get started.</span>
+                    <span className={`text-sm ${themeColors.devDescText}`}>
+                      No YAML files found. Upload one to get started.
+                    </span>
                   </td>
                 </tr>
               ) : (
                 yamlFiles.map((file) => (
-                <tr key={file.name} className="hover:bg-gray-700/50">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center">
-                      <FileText className="w-4 h-4 mr-2 text-blue-400" />
-                      <span className={themeColors.devText}>{file.name}</span>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`text-sm ${themeColors.devDescText}`}>
-                      {(file.size / 1024).toFixed(1)} KB
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`text-sm ${themeColors.devDescText}`}>
-                      {new Date(file.lastModified).toLocaleDateString()}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-center whitespace-nowrap">
-                    <div className="flex items-center justify-center gap-2">
-                      <button
-                        onClick={() => handleImport(file.name)}
-                        disabled={isImporting}
-                        className={`inline-flex items-center px-3 py-1 border border-transparent rounded-md shadow-sm text-xs font-medium text-white ${
-                          isImporting
-                            ? "bg-gray-600 cursor-not-allowed animate-pulse"
-                            : "bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
-                        } transition-colors disabled:opacity-50`}
-                        title={`Import ${file.name} to pending review`}
-                      >
-                        {isImporting ? (
-                          <>
-                            <Loader2 className="w-3 h-3 mr-1 animate-spin" />
-                            Importing...
-                          </>
-                        ) : (
-                          <>
-                            <Upload className="w-3 h-3 mr-1" />
-                            Import
-                          </>
-                        )}
-                      </button>
-                      <button
-                        onClick={() => handleFileDelete(file.name)}
-                        disabled={deletingFiles.has(file.name)}
-                        className={`inline-flex items-center px-3 py-1 border border-transparent rounded-md shadow-sm text-xs font-medium text-white ${
-                          deletingFiles.has(file.name)
-                            ? "bg-gray-600 cursor-not-allowed animate-pulse"
-                            : "bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-                        } transition-colors disabled:opacity-50`}
-                        title={`Delete ${file.name}`}
-                      >
-                        {deletingFiles.has(file.name) ? (
-                          <>
-                            <Loader2 className="w-3 h-3 mr-1 animate-spin" />
-                            Deleting...
-                          </>
-                        ) : (
-                          <>
-                            <X className="w-3 h-3 mr-1" />
-                            Delete
-                          </>
-                        )}
-                      </button>
-                    </div>
-                  </td>
-                </tr>
+                  <tr key={file.name} className="hover:bg-gray-700/50">
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center">
+                        <FileText className="w-4 h-4 mr-2 text-blue-400" />
+                        <span className={themeColors.devText}>{file.name}</span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`text-sm ${themeColors.devDescText}`}>
+                        {(file.size / 1024).toFixed(1)} KB
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`text-sm ${themeColors.devDescText}`}>
+                        {new Date(file.lastModified).toLocaleDateString()}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-center whitespace-nowrap">
+                      <div className="flex items-center justify-center gap-2">
+                        <button
+                          onClick={() => handleImport(file.name)}
+                          disabled={isImporting}
+                          className={`inline-flex items-center px-3 py-1 border border-transparent rounded-md shadow-sm text-xs font-medium text-white ${
+                            isImporting
+                              ? "bg-gray-600 cursor-not-allowed animate-pulse"
+                              : "bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                          } transition-colors disabled:opacity-50`}
+                          title={`Import ${file.name} to pending review`}
+                        >
+                          {isImporting ? (
+                            <>
+                              <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                              Importing...
+                            </>
+                          ) : (
+                            <>
+                              <Upload className="w-3 h-3 mr-1" />
+                              Import
+                            </>
+                          )}
+                        </button>
+                        <button
+                          onClick={() => handleFileDelete(file.name)}
+                          disabled={deletingFiles.has(file.name)}
+                          className={`inline-flex items-center px-3 py-1 border border-transparent rounded-md shadow-sm text-xs font-medium text-white ${
+                            deletingFiles.has(file.name)
+                              ? "bg-gray-600 cursor-not-allowed animate-pulse"
+                              : "bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                          } transition-colors disabled:opacity-50`}
+                          title={`Delete ${file.name}`}
+                        >
+                          {deletingFiles.has(file.name) ? (
+                            <>
+                              <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                              Deleting...
+                            </>
+                          ) : (
+                            <>
+                              <X className="w-3 h-3 mr-1" />
+                              Delete
+                            </>
+                          )}
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
                 ))
               )}
             </tbody>
@@ -377,17 +406,19 @@ const YamlImportManager: React.FC = () => {
         )}
       </div>
 
-
-
       {/* 导入结果 */}
       {importResult && (
         <div className="space-y-4">
-          <div className={`p-4 rounded-md border ${themeColors.devCardBg} border-green-600`}>
+          <div
+            className={`p-4 rounded-md border ${themeColors.devCardBg} border-green-600`}
+          >
             <div className="flex items-center gap-2 mb-3">
               <CheckCircle className="w-5 h-5 text-green-500" />
-              <h4 className={`font-medium ${themeColors.devText}`}>Import Completed</h4>
+              <h4 className={`font-medium ${themeColors.devText}`}>
+                Import Completed
+              </h4>
             </div>
-            
+
             <div className={`space-y-2 text-sm ${themeColors.devDescText}`}>
               <div>📁 File: {importResult.fileName}</div>
               <div>📊 Total publications in file: {importResult.total}</div>
@@ -397,8 +428,12 @@ const YamlImportManager: React.FC = () => {
 
             {importResult.duplicateTitles.length > 0 && (
               <div className="mt-4">
-                <h5 className={`font-medium ${themeColors.devText} mb-2`}>Duplicate Titles Skipped:</h5>
-                <div className={`max-h-32 overflow-y-auto space-y-1 text-xs ${themeColors.devDescText}`}>
+                <h5 className={`font-medium ${themeColors.devText} mb-2`}>
+                  Duplicate Titles Skipped:
+                </h5>
+                <div
+                  className={`max-h-32 overflow-y-auto space-y-1 text-xs ${themeColors.devDescText}`}
+                >
                   {importResult.duplicateTitles.map((title, index) => (
                     <div key={index} className="truncate">
                       • {title}
@@ -409,11 +444,14 @@ const YamlImportManager: React.FC = () => {
             )}
           </div>
 
-          <div className={`p-3 rounded-md bg-blue-900/20 border border-blue-600`}>
+          <div
+            className={`p-3 rounded-md bg-blue-900/20 border border-blue-600`}
+          >
             <div className="flex items-center gap-2">
               <AlertCircle className="w-4 h-4 text-blue-400" />
               <span className={`text-sm ${themeColors.devText}`}>
-                Imported publications are now in the <strong>Pending</strong> section for review.
+                Imported publications are now in the <strong>Pending</strong>{" "}
+                section for review.
               </span>
             </div>
           </div>
@@ -422,20 +460,52 @@ const YamlImportManager: React.FC = () => {
 
       {/* 使用说明 */}
       <div className={`p-4 rounded-md bg-gray-800/50 border border-gray-600`}>
-        <h4 className={`font-medium ${themeColors.devText} mb-2`}>Instructions:</h4>
+        <h4 className={`font-medium ${themeColors.devText} mb-2`}>
+          Instructions:
+        </h4>
         <ul className={`text-sm ${themeColors.devDescText} space-y-1`}>
-          <li>• <strong>Upload:</strong> Click "Upload YAML File" to add new YAML files to the system</li>
-          <li>• <strong>Import:</strong> Click "Import" button for any available YAML file to import publications</li>
-          <li>• <strong>Delete:</strong> Click "Delete" button to remove YAML files from the system</li>
+          <li>
+            • <strong>Upload:</strong> Click "Upload YAML File" to add new YAML
+            files to the system
+          </li>
+          <li>
+            • <strong>Import:</strong> Click "Import" button for any available
+            YAML file to import publications
+          </li>
+          <li>
+            • <strong>Delete:</strong> Click "Delete" button to remove YAML
+            files from the system
+          </li>
           <li>• Files are stored in the /data/yaml directory on the server</li>
           <li>• Only .yml and .yaml files are accepted (max 10MB)</li>
-          <li>• The file should have a 'works' array with publication entries</li>
+          <li>
+            • The file should have a 'works' array with publication entries
+          </li>
           <li>• Author information will be automatically parsed and saved</li>
-          <li>• Duplicate titles will be automatically skipped (checks all existing records)</li>
-          <li>• Imported publications will appear in the Pending section for review</li>
+          <li>
+            • Duplicate titles will be automatically skipped (checks all
+            existing records)
+          </li>
+          <li>
+            • Imported publications will appear in the Pending section for
+            review
+          </li>
           <li>• You can then approve or edit them before publishing</li>
-          <li>• yml source file comes from <a href="https://github.com/TheAlbertDev/get-orcid-publications" target="_blank" rel="noopener noreferrer" className={`text-blue-400 hover:text-blue-500`}>get-orcid-publications</a></li>
-          <li>• to update the yml file, please update data, just fork the repo and use the workflow</li>
+          <li>
+            • yml source file comes from{" "}
+            <a
+              href="https://github.com/TheAlbertDev/get-orcid-publications"
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`text-blue-400 hover:text-blue-500`}
+            >
+              get-orcid-publications
+            </a>
+          </li>
+          <li>
+            • to update the yml file, please update data, just fork the repo and
+            use the workflow
+          </li>
         </ul>
       </div>
     </div>

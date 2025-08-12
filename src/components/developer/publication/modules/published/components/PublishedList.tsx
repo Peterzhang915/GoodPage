@@ -34,7 +34,9 @@ const PublishedList: React.FC<PublishedListProps> = ({
     return (
       <div className="flex items-center justify-center py-12">
         <Loader2 className={`${themeColors.devAccent} w-8 h-8 animate-spin`} />
-        <span className={`ml-3 ${themeColors.devDescText}`}>Loading publications...</span>
+        <span className={`ml-3 ${themeColors.devDescText}`}>
+          Loading publications...
+        </span>
       </div>
     );
   }
@@ -46,7 +48,9 @@ const PublishedList: React.FC<PublishedListProps> = ({
         <div className={`p-3 rounded-full ${themeColors.errorBg} mb-4`}>
           <Inbox className="w-8 h-8 text-red-400" />
         </div>
-        <p className={`text-lg font-medium ${themeColors.devText} mb-2`}>Failed to Load</p>
+        <p className={`text-lg font-medium ${themeColors.devText} mb-2`}>
+          Failed to Load
+        </p>
         <p className={`${themeColors.devDescText} mb-4 max-w-md`}>{error}</p>
         {onRetry && (
           <button
@@ -67,8 +71,12 @@ const PublishedList: React.FC<PublishedListProps> = ({
         <div className={`p-3 rounded-full ${themeColors.devMutedBg} mb-4`}>
           <Inbox className={`w-8 h-8 ${themeColors.devDescText}`} />
         </div>
-        <p className={`text-lg font-medium ${themeColors.devText} mb-2`}>No Publications Found</p>
-        <p className={`${themeColors.devDescText} mb-4`}>Get started by adding your first publication.</p>
+        <p className={`text-lg font-medium ${themeColors.devText} mb-2`}>
+          No Publications Found
+        </p>
+        <p className={`${themeColors.devDescText} mb-4`}>
+          Get started by adding your first publication.
+        </p>
       </div>
     );
   }

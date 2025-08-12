@@ -34,16 +34,23 @@ export function calculateMemberGradeStatus(
       grade = yearDiff; // Corrected logic
     }
     // Ensure grade is at least 1 if enrollment year is the current year and month is >= start month
-    if (grade <= 0 && currentYear === member.enrollment_year && currentMonth >= academicYearStartMonth) {
-        grade = 1;
+    if (
+      grade <= 0 &&
+      currentYear === member.enrollment_year &&
+      currentMonth >= academicYearStartMonth
+    ) {
+      grade = 1;
     }
     // Ensure grade is at least 1 if enrollment year is the previous year and month is < start month
-     else if (grade <= 0 && currentYear === member.enrollment_year + 1 && currentMonth < academicYearStartMonth) {
-         grade = 1;
-     } else if (grade <= 0) {
-         grade = null; // Invalid enrollment year or future start?
-     }
-
+    else if (
+      grade <= 0 &&
+      currentYear === member.enrollment_year + 1 &&
+      currentMonth < academicYearStartMonth
+    ) {
+      grade = 1;
+    } else if (grade <= 0) {
+      grade = null; // Invalid enrollment year or future start?
+    }
   }
 
   switch (member.status) {
@@ -54,19 +61,23 @@ export function calculateMemberGradeStatus(
     case MemberStatus.PHD_STUDENT:
       return yearSuffix && grade
         ? `${yearSuffix} Grade Ph.D. (Year ${grade})`
-        : yearSuffix ? `${yearSuffix} Grade Ph.D.` : "Ph.D. Student";
+        : yearSuffix
+          ? `${yearSuffix} Grade Ph.D.`
+          : "Ph.D. Student";
     case MemberStatus.MASTER_STUDENT:
       return yearSuffix && grade
         ? `${yearSuffix} Grade Master (Year ${grade})`
-        : yearSuffix ? `${yearSuffix} Grade Master` : "Master Student";
+        : yearSuffix
+          ? `${yearSuffix} Grade Master`
+          : "Master Student";
     case MemberStatus.UNDERGRADUATE:
       if (yearSuffix && grade) {
         // Typically undergrad is 4 years, adjust range if needed
-        if (grade >= 1 && grade <= 4) { 
+        if (grade >= 1 && grade <= 4) {
           return `${yearSuffix} Grade Undergraduate (Year ${grade})`;
         } else {
           // Handle cases outside the typical 1-4 range (e.g., graduated, 5th year)
-          return `${yearSuffix} Grade Undergraduate`; 
+          return `${yearSuffix} Grade Undergraduate`;
         }
       } else {
         return "Undergraduate";
@@ -80,8 +91,10 @@ export function calculateMemberGradeStatus(
     case MemberStatus.OTHER:
     default:
       const statusString = member.status
-          ? member.status.replace(/_/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())
-          : "Member";
+        ? member.status
+            .replace(/_/g, " ")
+            .replace(/\b\w/g, (l: string) => l.toUpperCase())
+        : "Member";
       return statusString || "Unknown Status";
   }
 }
@@ -91,7 +104,9 @@ export function calculateMemberGradeStatus(
  * @param member 成员信息
  * @returns 是否已毕业
  */
-export function calculateGraduationStatus(member: Pick<Member, "status" | "enrollment_year">): boolean {
+export function calculateGraduationStatus(
+  member: Pick<Member, "status" | "enrollment_year">
+): boolean {
   if (!member.enrollment_year) return false;
 
   const currentYear = new Date().getFullYear();
@@ -115,4 +130,6 @@ export function calculateGraduationStatus(member: Pick<Member, "status" | "enrol
 /**
  * Education 表单数据类型定义
  */
-export type EducationFormData = Partial<Omit<Education, 'id' | 'member_id' | 'member'>>;
+export type EducationFormData = Partial<
+  Omit<Education, "id" | "member_id" | "member">
+>;

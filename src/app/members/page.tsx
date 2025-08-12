@@ -8,7 +8,7 @@ import { themeColors } from "@/styles/theme";
 import { AlertTriangle } from "lucide-react"; // 用于错误显示
 
 // Force dynamic rendering (SSR) for this page
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 // 定义分组标题 (保持不变)
 const statusTitles: Record<string, string> = {

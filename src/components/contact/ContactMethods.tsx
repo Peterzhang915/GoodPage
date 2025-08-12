@@ -21,7 +21,6 @@ const email = "xuz@ncu.edu.cn";
 const phone = "(0791) 8396 8516";
 
 const ContactMethods: React.FC = () => {
-
   return (
     // 应用入场动画
     <motion.div variants={itemVariants} className="space-y-4 mb-8">
@@ -49,7 +48,9 @@ const ContactMethods: React.FC = () => {
           />
         </motion.div>
         {/* 使用 ObfuscatedContact 组件保护邮箱 */}
-        <div className={`${themeColors.textColorPrimary} group-hover:${themeColors.ccfAText} transition-colors`}>
+        <div
+          className={`${themeColors.textColorPrimary} group-hover:${themeColors.ccfAText} transition-colors`}
+        >
           <ObfuscatedContact value={email} type="email" />
         </div>
       </motion.div>
@@ -75,7 +76,9 @@ const ContactMethods: React.FC = () => {
           />
         </motion.div>
         {/* 使用 ObfuscatedContact 组件保护电话 */}
-        <div className={`${themeColors.textColorPrimary} group-hover:${themeColors.ccfAText} transition-colors`}>
+        <div
+          className={`${themeColors.textColorPrimary} group-hover:${themeColors.ccfAText} transition-colors`}
+        >
           <ObfuscatedContact value={phone} type="phone" />
         </div>
       </motion.div>

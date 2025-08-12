@@ -14,7 +14,7 @@ import prisma from "@/lib/prisma"; // Import Prisma Client instance
 import LabChairProfileContent from "@/components/lab_chair/LabChairProfileContent";
 
 // Force dynamic rendering (SSR) for this page
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 // --- 教授页面组件 (Server Component - Primarily for data fetching) ---
 export default async function ProfessorPage() {
@@ -35,8 +35,8 @@ export default async function ProfessorPage() {
     if (pub.ccf_rank !== "A") return false;
 
     // 检查是否有 Lab Chair 作为作者
-    return pub.displayAuthors.some(author =>
-      author.type === "internal" && author.id === professorId
+    return pub.displayAuthors.some(
+      (author) => author.type === "internal" && author.id === professorId
     );
   });
 
@@ -107,5 +107,4 @@ export default async function ProfessorPage() {
       addressLine2="Nanchang, Jiangxi, 330000"
     />
   );
-
 }

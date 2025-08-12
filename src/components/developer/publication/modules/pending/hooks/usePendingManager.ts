@@ -47,7 +47,7 @@ export const usePendingManager = () => {
     updatePublication,
     removePublication,
     addPublication,
-    setClearingState,
+    setClearingState
   );
 
   // 初始化时获取数据

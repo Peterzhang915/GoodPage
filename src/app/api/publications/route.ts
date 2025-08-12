@@ -1,34 +1,40 @@
 import { NextResponse } from "next/server";
-import prisma from '@/lib/prisma';
-import { Prisma, PublicationType } from '@prisma/client'; // Ensure PublicationType is imported
-import * as z from 'zod'; // Import zod for input validation
+import prisma from "@/lib/prisma";
+import { Prisma, PublicationType } from "@prisma/client"; // Ensure PublicationType is imported
+import * as z from "zod"; // Import zod for input validation
 import { getAllPublicationsFormatted } from "@/lib/publications";
 // import { checkPermission, getCurrentUser } from '@/lib/auth'; // Placeholder for actual auth functions
 
 // Define the type for the data returned by the GET request, including authors
 // We use Prisma.validator to create a type safe payload structure
-const publicationWithAuthorsPayload = Prisma.validator<Prisma.PublicationDefaultArgs>()({
-  include: { 
-    authors: { // Include the relation PublicationAuthor
-      include: {
-        author: { // From PublicationAuthor, include the related Member
-          select: { // Select only necessary Member fields
-            id: true,
-            name_en: true,
-            name_zh: true
-          }
-        }
+const publicationWithAuthorsPayload =
+  Prisma.validator<Prisma.PublicationDefaultArgs>()({
+    include: {
+      authors: {
+        // Include the relation PublicationAuthor
+        include: {
+          author: {
+            // From PublicationAuthor, include the related Member
+            select: {
+              // Select only necessary Member fields
+              id: true,
+              name_en: true,
+              name_zh: true,
+            },
+          },
+        },
+        orderBy: {
+          // Order authors by their specified order
+          author_order: "asc",
+        },
       },
-      orderBy: { // Order authors by their specified order
-        author_order: 'asc'
-      }
-    } 
-  }
-});
+    },
+  });
 
 // Export the type for use in the frontend component
-export type PublicationWithAuthors = Prisma.PublicationGetPayload<typeof publicationWithAuthorsPayload>;
-
+export type PublicationWithAuthors = Prisma.PublicationGetPayload<
+  typeof publicationWithAuthorsPayload
+>;
 
 export async function GET() {
   console.log("API: Handling GET /api/publications");
@@ -45,7 +51,9 @@ export async function GET() {
     }
     console.log(`API: User ${currentUser.id} authorized.`);
     */
-    console.warn("API: Permission check is currently disabled in GET /api/publications.");
+    console.warn(
+      "API: Permission check is currently disabled in GET /api/publications."
+    );
     // --- End Permission Check ---
 
     // 使用 getAllPublicationsFormatted 函数获取格式化的出版物数据
@@ -57,7 +65,6 @@ export async function GET() {
       data: publications,
       count: publications.length,
     });
-
   } catch (error) {
     console.error("API Error in GET /api/publications:", error);
     return NextResponse.json(
@@ -67,25 +74,41 @@ export async function GET() {
   }
 }
 
-// --- Zod Schema for POST Input Validation --- 
+// --- Zod Schema for POST Input Validation ---
 // Corresponds to the simplified PublicationForm for now
 const createPublicationSchema = z.object({
-  title: z.string().min(1, { message: 'Title is required.' }),
-  year: z.coerce.number()
+  title: z.string().min(1, { message: "Title is required." }),
+  year: z.coerce
+    .number()
     .int()
-    .min(1900, { message: 'Year must be 1900 or later.' })
-    .max(new Date().getFullYear() + 5, { message: 'Year seems too far in the future.' }),
-  venue: z.string().nullable().optional().transform(val => val === '' ? null : val),
-  authors_full_string: z.string().nullable().optional().transform(val => val === '' ? null : val),
-  pdf_url: z.string().url({ message: "Please enter a valid URL." }).nullable().optional().transform(val => val === '' ? null : val),
+    .min(1900, { message: "Year must be 1900 or later." })
+    .max(new Date().getFullYear() + 5, {
+      message: "Year seems too far in the future.",
+    }),
+  venue: z
+    .string()
+    .nullable()
+    .optional()
+    .transform((val) => (val === "" ? null : val)),
+  authors_full_string: z
+    .string()
+    .nullable()
+    .optional()
+    .transform((val) => (val === "" ? null : val)),
+  pdf_url: z
+    .string()
+    .url({ message: "Please enter a valid URL." })
+    .nullable()
+    .optional()
+    .transform((val) => (val === "" ? null : val)),
   type: z.nativeEnum(PublicationType).optional(), // PublicationType should be available here
 });
 
-// --- POST Handler --- 
+// --- POST Handler ---
 export async function POST(request: Request) {
   console.log("API: Handling POST /api/publications");
   try {
-    // --- Permission Check Placeholder --- 
+    // --- Permission Check Placeholder ---
     /* 
     const currentUser = await getCurrentUser();
     if (!currentUser || !checkPermission(currentUser, 'manage_publications')) { 
@@ -97,7 +120,9 @@ export async function POST(request: Request) {
     }
     console.log(`API: User ${currentUser.id} authorized to create publication.`);
     */
-    console.warn("API: Permission check is currently disabled in POST /api/publications.");
+    console.warn(
+      "API: Permission check is currently disabled in POST /api/publications."
+    );
     // --- End Permission Check ---
 
     // 1. Parse request body
@@ -106,12 +131,15 @@ export async function POST(request: Request) {
     // 2. Validate input data
     const validationResult = createPublicationSchema.safeParse(body);
     if (!validationResult.success) {
-      console.log("API: Invalid input for creating publication:", validationResult.error.formErrors.fieldErrors); // Log detailed errors
+      console.log(
+        "API: Invalid input for creating publication:",
+        validationResult.error.formErrors.fieldErrors
+      ); // Log detailed errors
       return NextResponse.json(
         {
           success: false,
           error: {
-            code: 'INVALID_INPUT',
+            code: "INVALID_INPUT",
             message: "Invalid publication data provided.",
             details: validationResult.error.flatten().fieldErrors, // Send detailed validation errors
           },
@@ -121,37 +149,36 @@ export async function POST(request: Request) {
     }
 
     // Ensure data types are correct after validation
-    const { 
-      title, 
-      year, 
-      venue, 
-      authors_full_string, 
-      pdf_url, 
-      type 
-    } = validationResult.data;
+    const { title, year, venue, authors_full_string, pdf_url, type } =
+      validationResult.data;
 
-    console.log(`API: Creating publication with Title: ${title}, Year: ${year}, Venue: ${venue}, Authors: ${authors_full_string}, PDF: ${pdf_url}, Type: ${type}`);
+    console.log(
+      `API: Creating publication with Title: ${title}, Year: ${year}, Venue: ${venue}, Authors: ${authors_full_string}, PDF: ${pdf_url}, Type: ${type}`
+    );
 
     // 3. Create publication in database
     const newPublication = await prisma.publication.create({
       data: {
         title: title, // Explicitly typed
-        year: year,   // Explicitly typed
+        year: year, // Explicitly typed
         venue: venue, // Explicitly typed
         authors_full_string: authors_full_string, // Explicitly typed
         pdf_url: pdf_url, // Explicitly typed
-        type: type,   // Explicitly typed
+        type: type, // Explicitly typed
         // NOTE: Optional fields not provided will default to null or their DB default
       },
     });
 
     // 4. Process and link authors with smart matching
     if (authors_full_string) {
-      const authorNames = authors_full_string.split(';').map(name => name.trim()).filter(name => name.length > 0);
+      const authorNames = authors_full_string
+        .split(";")
+        .map((name) => name.trim())
+        .filter((name) => name.length > 0);
 
       // 获取所有members用于智能匹配
       const allMembers = await prisma.member.findMany({
-        select: { id: true, name_en: true, name_zh: true }
+        select: { id: true, name_en: true, name_zh: true },
       });
 
       let authorOrder = 0;
@@ -170,8 +197,8 @@ export async function POST(request: Request) {
             let normalizedAuthorName1 = cleanName; // "LastName, FirstName" -> "FirstName LastName"
             let normalizedAuthorName2 = cleanName; // "FirstName, LastName" -> "FirstName LastName"
 
-            if (cleanName.includes(',')) {
-              const parts = cleanName.split(',').map(p => p.trim());
+            if (cleanName.includes(",")) {
+              const parts = cleanName.split(",").map((p) => p.trim());
               if (parts.length === 2) {
                 // 尝试两种格式转换
                 normalizedAuthorName1 = `${parts[1]} ${parts[0]}`.toLowerCase(); // "LastName, FirstName" -> "FirstName LastName"
@@ -194,7 +221,10 @@ export async function POST(request: Request) {
               nameEn.includes(normalizedAuthorName2) ||
               normalizedAuthorName2.includes(nameEn) ||
               // 中文名匹配
-              (nameZh && (nameZh === cleanName || nameZh.includes(cleanName) || cleanName.includes(nameZh)))
+              (nameZh &&
+                (nameZh === cleanName ||
+                  nameZh.includes(cleanName) ||
+                  cleanName.includes(nameZh)))
             );
           });
         };
@@ -210,15 +240,21 @@ export async function POST(request: Request) {
               author_order: authorOrder,
             },
           });
-          console.log(`API: Linked author "${authorName}" to member ID ${member.id} (${member.name_en})`);
+          console.log(
+            `API: Linked author "${authorName}" to member ID ${member.id} (${member.name_en})`
+          );
         } else {
-          console.warn(`API: Author "${authorName}" from authors_full_string not linked to any existing member.`);
+          console.warn(
+            `API: Author "${authorName}" from authors_full_string not linked to any existing member.`
+          );
         }
         authorOrder++;
       }
     }
 
-    console.log(`API: Successfully created publication with ID: ${newPublication.id}`);
+    console.log(
+      `API: Successfully created publication with ID: ${newPublication.id}`
+    );
 
     // 5. 获取完整的publication数据（包含authors关系）用于返回
     const completePublication = await prisma.publication.findUnique({
@@ -227,12 +263,12 @@ export async function POST(request: Request) {
         authors: {
           include: {
             author: {
-              select: { id: true, name_en: true, name_zh: true }
-            }
+              select: { id: true, name_en: true, name_zh: true },
+            },
           },
-          orderBy: { author_order: 'asc' }
-        }
-      }
+          orderBy: { author_order: "asc" },
+        },
+      },
     });
 
     // 6. Return success response with complete data
@@ -240,7 +276,6 @@ export async function POST(request: Request) {
       { success: true, data: completePublication },
       { status: 201 } // 201 Created
     );
-
   } catch (error) {
     console.error("API Error creating publication:", error);
     let message = "Internal Server Error";
@@ -248,18 +283,21 @@ export async function POST(request: Request) {
 
     // Handle potential Prisma errors specifically if needed
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
-        // e.g., unique constraint violation
-        message = `Database error occurred: ${error.code}`;
-        statusCode = 409; // Conflict, maybe?
+      // e.g., unique constraint violation
+      message = `Database error occurred: ${error.code}`;
+      statusCode = 409; // Conflict, maybe?
     } else if (error instanceof Error) {
-        message = error.message;
+      message = error.message;
     }
 
     return NextResponse.json(
-      { success: false, error: { code: 'PUBLICATION_CREATION_FAILED', message } },
+      {
+        success: false,
+        error: { code: "PUBLICATION_CREATION_FAILED", message },
+      },
       { status: statusCode }
     );
   }
 }
 
-// TODO: Implement PUT/DELETE handlers in a separate [id]/route.ts file 
+// TODO: Implement PUT/DELETE handlers in a separate [id]/route.ts file

@@ -128,8 +128,8 @@ const Modal: React.FC<ModalProps> = ({
           <motion.div
             ref={modalRef}
             initial={{ scale: 0.9, opacity: 0, y: 20 }} // 初始动画状态
-            animate={{ scale: 1, opacity: 1, y: 0 }}   // 进入动画
-            exit={{ scale: 0.95, opacity: 0, y: 10 }}   // 退出动画
+            animate={{ scale: 1, opacity: 1, y: 0 }} // 进入动画
+            exit={{ scale: 0.95, opacity: 0, y: 10 }} // 退出动画
             transition={{ duration: 0.2, ease: "easeOut" }}
             className={`bg-white rounded-lg shadow-xl overflow-hidden w-full ${getSizeClasses()} relative flex flex-col max-h-[90vh]`}
           >

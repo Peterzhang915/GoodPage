@@ -1,5 +1,5 @@
-import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import { NextResponse } from "next/server";
+import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
@@ -12,10 +12,13 @@ export async function GET() {
     });
     return NextResponse.json({ success: true, data: sections });
   } catch (error) {
-    console.error('Failed to fetch homepage section metadata:', error);
+    console.error("Failed to fetch homepage section metadata:", error);
     return NextResponse.json(
-      { success: false, error: { message: 'Failed to fetch section metadata.' } },
-      { status: 500 },
+      {
+        success: false,
+        error: { message: "Failed to fetch section metadata." },
+      },
+      { status: 500 }
     );
   } finally {
     await prisma.$disconnect();
@@ -23,4 +26,4 @@ export async function GET() {
 }
 
 // Note: POST handler might not be needed if sections are predefined and managed directly
-// or through a seeding script. If dynamic creation is needed, add a POST handler here. 
+// or through a seeding script. If dynamic creation is needed, add a POST handler here.

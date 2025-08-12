@@ -1,21 +1,21 @@
 import { NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
-import fs from 'fs';
-import path from 'path';
+import fs from "fs";
+import path from "path";
 
 const prisma = new PrismaClient();
 
 // 类型映射：YAML type → 数据库 PublicationType
 // 只取 '-' 前的部分进行映射
 const TYPE_MAPPING: Record<string, string> = {
-  'journal': 'JOURNAL',
-  'conference': 'CONFERENCE',
-  'book': 'BOOK',
-  'preprint': 'PREPRINT',
-  'workshop': 'WORKSHOP',
-  'thesis': 'THESIS',
-  'patent': 'PATENT',
-  'technical': 'TECHNICAL_REPORT'
+  journal: "JOURNAL",
+  conference: "CONFERENCE",
+  book: "BOOK",
+  preprint: "PREPRINT",
+  workshop: "WORKSHOP",
+  thesis: "THESIS",
+  patent: "PATENT",
+  technical: "TECHNICAL_REPORT",
 };
 
 /**
@@ -23,37 +23,42 @@ const TYPE_MAPPING: Record<string, string> = {
  */
 function convertYamlToDbFormat(yamlWork: any) {
   // 处理标题 - 清理引号和多余空格
-  let title = typeof yamlWork.title === 'string'
-    ? yamlWork.title
-    : yamlWork.title?.value || 'Untitled';
+  let title =
+    typeof yamlWork.title === "string"
+      ? yamlWork.title
+      : yamlWork.title?.value || "Untitled";
 
   // 清理标题中的引号和多余空格
-  title = title.replace(/"/g, '').trim();
+  title = title.replace(/"/g, "").trim();
 
   // 处理年份
-  const year = parseInt(yamlWork.publicationDate?.year) || new Date().getFullYear();
+  const year =
+    parseInt(yamlWork.publicationDate?.year) || new Date().getFullYear();
 
   // 处理会议/期刊名称
   const venue = yamlWork.journalTitle || yamlWork.venue || null;
 
   // 处理作者列表 - 转换为 "First, Last" 格式并用分号分隔
   const authors = yamlWork.authors || [];
-  const authors_full_string = authors.length > 0
-    ? authors.map((author: string) => {
-        // 将 "First Last" 转换为 "First, Last"
-        const parts = author.trim().split(' ');
-        if (parts.length >= 2) {
-          const firstName = parts.slice(0, -1).join(' '); // 除最后一个词外的所有词作为名
-          const lastName = parts[parts.length - 1]; // 最后一个词作为姓
-          return `${firstName}, ${lastName}`;
-        }
-        return author; // 如果只有一个词，保持原样
-      }).join('; ')
-    : null;
+  const authors_full_string =
+    authors.length > 0
+      ? authors
+          .map((author: string) => {
+            // 将 "First Last" 转换为 "First, Last"
+            const parts = author.trim().split(" ");
+            if (parts.length >= 2) {
+              const firstName = parts.slice(0, -1).join(" "); // 除最后一个词外的所有词作为名
+              const lastName = parts[parts.length - 1]; // 最后一个词作为姓
+              return `${firstName}, ${lastName}`;
+            }
+            return author; // 如果只有一个词，保持原样
+          })
+          .join("; ")
+      : null;
 
   // 处理类型 - 只取 '-' 前的部分
-  const typePrefix = yamlWork.type ? yamlWork.type.split('-')[0] : '';
-  const type = TYPE_MAPPING[typePrefix] || 'OTHER';
+  const typePrefix = yamlWork.type ? yamlWork.type.split("-")[0] : "";
+  const type = TYPE_MAPPING[typePrefix] || "OTHER";
 
   // 构建数据库记录
   return {
@@ -75,7 +80,7 @@ function convertYamlToDbFormat(yamlWork: any) {
     video_url: null,
     code_repository_url: null,
     project_page_url: null,
-    is_peer_reviewed: yamlWork.type === 'journal-article' ? true : null
+    is_peer_reviewed: yamlWork.type === "journal-article" ? true : null,
   };
 }
 
@@ -83,25 +88,27 @@ function convertYamlToDbFormat(yamlWork: any) {
  * 检查重复标题
  */
 async function checkDuplicateTitles(publications: any[]) {
-  const titles = publications.map(pub => pub.title);
-  
+  const titles = publications.map((pub) => pub.title);
+
   const existingPublications = await prisma.publication.findMany({
     where: {
       title: {
-        in: titles
-      }
+        in: titles,
+      },
       // 检查所有状态的记录，避免重复导入
     },
     select: {
-      title: true
-    }
+      title: true,
+    },
   });
 
-  const existingTitles = new Set(existingPublications.map(pub => pub.title));
-  
+  const existingTitles = new Set(existingPublications.map((pub) => pub.title));
+
   return {
-    duplicates: titles.filter(title => existingTitles.has(title)),
-    uniquePublications: publications.filter(pub => !existingTitles.has(pub.title))
+    duplicates: titles.filter((title) => existingTitles.has(title)),
+    uniquePublications: publications.filter(
+      (pub) => !existingTitles.has(pub.title)
+    ),
   };
 }
 
@@ -109,12 +116,12 @@ async function checkDuplicateTitles(publications: any[]) {
  * 简单的 YAML 解析器（专门处理 JiahuiHu.yml 的结构）
  */
 function parseSimpleYaml(yamlContent: string): any {
-  const lines = yamlContent.split('\n');
+  const lines = yamlContent.split("\n");
   const result: any = { works: [] };
   let currentWork: any = null;
   let currentArray: string[] = [];
   let currentPublicationDate: any = {};
-  let currentState = 'none'; // 'authors', 'publicationDate', 'title'
+  let currentState = "none"; // 'authors', 'publicationDate', 'title'
   let titleLines: string[] = [];
   let collectingTitleValue = false;
 
@@ -122,14 +129,14 @@ function parseSimpleYaml(yamlContent: string): any {
     const line = lines[i];
     const trimmedLine = line.trim();
 
-    if (!trimmedLine || trimmedLine.startsWith('#')) continue;
+    if (!trimmedLine || trimmedLine.startsWith("#")) continue;
 
     // 检查缩进级别
     const indent = line.length - line.trimStart().length;
 
-    if (trimmedLine === 'works:') {
+    if (trimmedLine === "works:") {
       continue;
-    } else if (indent === 2 && trimmedLine.startsWith('- ')) {
+    } else if (indent === 2 && trimmedLine.startsWith("- ")) {
       // 新的 work 项目开始
       if (currentWork) {
         // 保存前一个 work - 修复：不依赖 currentState
@@ -140,7 +147,7 @@ function parseSimpleYaml(yamlContent: string): any {
           currentWork.publicationDate = currentPublicationDate;
         }
         if (titleLines.length > 0) {
-          currentWork.title = { value: titleLines.join(' ').trim() };
+          currentWork.title = { value: titleLines.join(" ").trim() };
         }
         result.works.push(currentWork);
       }
@@ -150,62 +157,69 @@ function parseSimpleYaml(yamlContent: string): any {
       currentArray = [];
       currentPublicationDate = {};
       titleLines = [];
-      currentState = 'none';
+      currentState = "none";
       collectingTitleValue = false;
 
       // 检查是否有同行的键值对
       const content = trimmedLine.substring(2).trim();
-      if (content && content.includes(':')) {
-        const [key, value] = content.split(':', 2);
+      if (content && content.includes(":")) {
+        const [key, value] = content.split(":", 2);
         const trimmedKey = key.trim();
-        const trimmedValue = value.trim().replace(/"/g, '');
+        const trimmedValue = value.trim().replace(/"/g, "");
 
-        if (trimmedKey === 'authors') {
-          currentState = 'authors';
+        if (trimmedKey === "authors") {
+          currentState = "authors";
           currentArray = [];
         } else {
           currentWork[trimmedKey] = trimmedValue;
         }
       }
-    } else if (indent === 4 && trimmedLine.includes(':')) {
+    } else if (indent === 4 && trimmedLine.includes(":")) {
       // 4个空格缩进的主要属性
-      const colonIndex = trimmedLine.indexOf(':');
+      const colonIndex = trimmedLine.indexOf(":");
       const key = trimmedLine.substring(0, colonIndex).trim();
       const value = trimmedLine.substring(colonIndex + 1).trim();
 
-      if (key === 'authors') {
-        currentState = 'authors';
+      if (key === "authors") {
+        currentState = "authors";
         currentArray = [];
-      } else if (key === 'publicationDate') {
-        currentState = 'publicationDate';
+      } else if (key === "publicationDate") {
+        currentState = "publicationDate";
         currentPublicationDate = {};
-      } else if (key === 'title') {
-        currentState = 'title';
+      } else if (key === "title") {
+        currentState = "title";
         titleLines = [];
         collectingTitleValue = false;
-      } else if (currentState === 'publicationDate') {
+      } else if (currentState === "publicationDate") {
         // publicationDate 的子属性
-        currentPublicationDate[key] = value.replace(/"/g, '').replace(/null/g, '');
+        currentPublicationDate[key] = value
+          .replace(/"/g, "")
+          .replace(/null/g, "");
       } else {
         // 其他直接属性
-        currentWork[key] = value.replace(/"/g, '');
-        currentState = 'none';
+        currentWork[key] = value.replace(/"/g, "");
+        currentState = "none";
       }
     } else if (indent === 6) {
-      if (currentState === 'authors' && trimmedLine.startsWith('- ')) {
+      if (currentState === "authors" && trimmedLine.startsWith("- ")) {
         // 作者列表项
         currentArray.push(trimmedLine.substring(2).trim());
-      } else if (currentState === 'title' && trimmedLine.startsWith('value:')) {
+      } else if (currentState === "title" && trimmedLine.startsWith("value:")) {
         // 标题的 value 开始
-        const titleValue = trimmedLine.substring(6).trim().replace(/"/g, '');
+        const titleValue = trimmedLine.substring(6).trim().replace(/"/g, "");
         titleLines.push(titleValue);
         collectingTitleValue = true;
-      } else if (currentState === 'publicationDate' && trimmedLine.includes(':')) {
+      } else if (
+        currentState === "publicationDate" &&
+        trimmedLine.includes(":")
+      ) {
         // publicationDate 的子属性
-        const colonIndex = trimmedLine.indexOf(':');
+        const colonIndex = trimmedLine.indexOf(":");
         const key = trimmedLine.substring(0, colonIndex).trim();
         const value = trimmedLine.substring(colonIndex + 1).trim();
-        currentPublicationDate[key] = value.replace(/"/g, '').replace(/null/g, '');
+        currentPublicationDate[key] = value
+          .replace(/"/g, "")
+          .replace(/null/g, "");
       }
     } else if (indent === 8 && collectingTitleValue) {
       // 多行标题的续行
@@ -222,7 +236,7 @@ function parseSimpleYaml(yamlContent: string): any {
       currentWork.publicationDate = currentPublicationDate;
     }
     if (titleLines.length > 0) {
-      currentWork.title = { value: titleLines.join(' ').trim() };
+      currentWork.title = { value: titleLines.join(" ").trim() };
     }
     result.works.push(currentWork);
   }
@@ -245,7 +259,7 @@ export async function POST(request: Request) {
     }
 
     // 读取服务器上的 YAML 文件
-    const filePath = path.join(process.cwd(), 'data', 'yaml', fileName);
+    const filePath = path.join(process.cwd(), "data", "yaml", fileName);
 
     if (!fs.existsSync(filePath)) {
       return NextResponse.json(
@@ -254,7 +268,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const yamlContent = fs.readFileSync(filePath, 'utf8');
+    const yamlContent = fs.readFileSync(filePath, "utf8");
 
     // 解析 YAML
     let yamlData: any;
@@ -280,9 +294,13 @@ export async function POST(request: Request) {
     const convertedPublications = yamlData.works.map(convertYamlToDbFormat);
 
     // 检查重复
-    const { duplicates, uniquePublications } = await checkDuplicateTitles(convertedPublications);
+    const { duplicates, uniquePublications } = await checkDuplicateTitles(
+      convertedPublications
+    );
 
-    console.log(`Found ${duplicates.length} duplicates, ${uniquePublications.length} unique publications`);
+    console.log(
+      `Found ${duplicates.length} duplicates, ${uniquePublications.length} unique publications`
+    );
 
     // 批量创建 pending publications
     const createdPublications = [];
@@ -300,7 +318,10 @@ export async function POST(request: Request) {
         });
         createdPublications.push(created);
       } catch (error) {
-        console.error(`Failed to create publication: ${publication.title}`, error);
+        console.error(
+          `Failed to create publication: ${publication.title}`,
+          error
+        );
       }
     }
 
@@ -312,13 +333,13 @@ export async function POST(request: Request) {
         duplicatesSkipped: duplicates.length,
         total: yamlData.works.length,
         duplicateTitles: duplicates,
-        fileName: fileName || 'unknown'
-      }
+        fileName: fileName || "unknown",
+      },
     });
-
   } catch (error) {
     console.error("Error importing YAML:", error);
-    const errorMessage = error instanceof Error ? error.message : "Unknown error";
+    const errorMessage =
+      error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json(
       { error: `Failed to import YAML: ${errorMessage}` },
       { status: 500 }

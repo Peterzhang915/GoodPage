@@ -2,16 +2,16 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import { themeColors } from "@/styles/theme";
-import { 
-  Loader2, 
-  Download, 
-  CheckCircle, 
+import {
+  Loader2,
+  Download,
+  CheckCircle,
   ExternalLink,
   Plus,
   RefreshCw,
   Trash2,
   FileText,
-  Play
+  Play,
 } from "lucide-react";
 import { toast } from "sonner";
 import ProfessorsConfig from "./ProfessorsConfig";
@@ -53,17 +53,18 @@ const DblpImportManager: React.FC = () => {
   const loadDblpFiles = async () => {
     setIsLoadingFiles(true);
     try {
-      const response = await fetch('/api/publications/dblp-files');
+      const response = await fetch("/api/publications/dblp-files");
       const result = await response.json();
 
       if (response.ok && result.success) {
         setDblpFiles(result.data || []);
       } else {
-        throw new Error(result.error || 'Failed to load files');
+        throw new Error(result.error || "Failed to load files");
       }
     } catch (error) {
-      console.error('Load files error:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      console.error("Load files error:", error);
+      const errorMessage =
+        error instanceof Error ? error.message : "Unknown error";
       toast.error(`Failed to load files: ${errorMessage}`);
     } finally {
       setIsLoadingFiles(false);
@@ -79,7 +80,7 @@ const DblpImportManager: React.FC = () => {
       handleFileUpload(file);
     }
     if (fileInputRef.current) {
-      fileInputRef.current.value = '';
+      fileInputRef.current.value = "";
     }
   };
 
@@ -90,10 +91,10 @@ const DblpImportManager: React.FC = () => {
     setIsUploading(true);
     try {
       const formData = new FormData();
-      formData.append('file', file);
+      formData.append("file", file);
 
-      const response = await fetch('/api/publications/dblp-files', {
-        method: 'POST',
+      const response = await fetch("/api/publications/dblp-files", {
+        method: "POST",
         body: formData,
       });
 
@@ -103,11 +104,12 @@ const DblpImportManager: React.FC = () => {
         toast.success(`File "${file.name}" uploaded successfully!`);
         await loadDblpFiles();
       } else {
-        throw new Error(result.error || 'Upload failed');
+        throw new Error(result.error || "Upload failed");
       }
     } catch (error) {
-      console.error('Upload error:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      console.error("Upload error:", error);
+      const errorMessage =
+        error instanceof Error ? error.message : "Unknown error";
       toast.error(`Upload failed: ${errorMessage}`);
     } finally {
       setIsUploading(false);
@@ -123,9 +125,12 @@ const DblpImportManager: React.FC = () => {
     }
 
     try {
-      const response = await fetch(`/api/publications/dblp-files/${encodeURIComponent(fileName)}`, {
-        method: 'DELETE',
-      });
+      const response = await fetch(
+        `/api/publications/dblp-files/${encodeURIComponent(fileName)}`,
+        {
+          method: "DELETE",
+        }
+      );
 
       const result = await response.json();
 
@@ -133,11 +138,12 @@ const DblpImportManager: React.FC = () => {
         toast.success(`File "${fileName}" deleted successfully!`);
         await loadDblpFiles();
       } else {
-        throw new Error(result.error || 'Delete failed');
+        throw new Error(result.error || "Delete failed");
       }
     } catch (error) {
-      console.error('Delete error:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      console.error("Delete error:", error);
+      const errorMessage =
+        error instanceof Error ? error.message : "Unknown error";
       toast.error(`Delete failed: ${errorMessage}`);
     }
   };
@@ -147,7 +153,7 @@ const DblpImportManager: React.FC = () => {
    */
   const handleImportFile = async (fileName: string) => {
     if (!fileName) {
-      toast.error('Please select a file to import');
+      toast.error("Please select a file to import");
       return;
     }
 
@@ -155,10 +161,10 @@ const DblpImportManager: React.FC = () => {
     setImportResult(null);
 
     try {
-      const response = await fetch('/api/publications/import-dblp', {
-        method: 'POST',
+      const response = await fetch("/api/publications/import-dblp", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({ fileName }),
       });
@@ -167,17 +173,22 @@ const DblpImportManager: React.FC = () => {
 
       if (response.ok && result.success) {
         setImportResult(result.data);
-        toast.success(`Successfully imported ${result.data.imported} publications!`);
+        toast.success(
+          `Successfully imported ${result.data.imported} publications!`
+        );
 
         if (result.data.duplicatesSkipped > 0) {
-          toast.warning(`Skipped ${result.data.duplicatesSkipped} duplicate publications`);
+          toast.warning(
+            `Skipped ${result.data.duplicatesSkipped} duplicate publications`
+          );
         }
       } else {
-        throw new Error(result.error || 'Import failed');
+        throw new Error(result.error || "Import failed");
       }
     } catch (error) {
-      console.error('Import error:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      console.error("Import error:", error);
+      const errorMessage =
+        error instanceof Error ? error.message : "Unknown error";
       toast.error(`Import failed: ${errorMessage}`);
     } finally {
       setIsImporting(false);
@@ -188,18 +199,18 @@ const DblpImportManager: React.FC = () => {
    * 格式化文件大小
    */
   const formatFileSize = (bytes: number): string => {
-    if (bytes === 0) return '0 Bytes';
+    if (bytes === 0) return "0 Bytes";
     const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const sizes = ["Bytes", "KB", "MB", "GB"];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
   };
 
   /**
    * 格式化日期
    */
   const formatDate = (dateString: string): string => {
-    return new Date(dateString).toLocaleString('en-US');
+    return new Date(dateString).toLocaleString("en-US");
   };
 
   /**
@@ -208,21 +219,22 @@ const DblpImportManager: React.FC = () => {
   const handleRunCrawler = async () => {
     setIsRunningCrawler(true);
     try {
-      const response = await fetch('/api/publications/run-dblp-crawler', {
-        method: 'POST',
+      const response = await fetch("/api/publications/run-dblp-crawler", {
+        method: "POST",
       });
 
       const result = await response.json();
 
       if (response.ok && result.success) {
-        toast.success('DBLP crawler completed successfully!');
+        toast.success("DBLP crawler completed successfully!");
         await loadDblpFiles();
       } else {
-        throw new Error(result.error || 'Crawler failed');
+        throw new Error(result.error || "Crawler failed");
       }
     } catch (error) {
-      console.error('Crawler error:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      console.error("Crawler error:", error);
+      const errorMessage =
+        error instanceof Error ? error.message : "Unknown error";
       toast.error(`Crawler failed: ${errorMessage}`);
     } finally {
       setIsRunningCrawler(false);
@@ -248,19 +260,26 @@ const DblpImportManager: React.FC = () => {
         <div className="space-y-6">
           {/* 教授配置区域 */}
           <div className="bg-gradient-to-br from-blue-900/20 to-indigo-900/20 p-1 rounded-xl">
-            <ProfessorsConfig onConfigUpdate={() => {
-              console.log('Professors configuration updated');
-            }} />
+            <ProfessorsConfig
+              onConfigUpdate={() => {
+                console.log("Professors configuration updated");
+              }}
+            />
           </div>
 
           {/* 爬虫控制区域 */}
-          <div className={`p-6 rounded-xl ${themeColors.devCardBg} border border-gray-600 bg-gradient-to-br from-cyan-900/10 to-blue-900/10`}>
+          <div
+            className={`p-6 rounded-xl ${themeColors.devCardBg} border border-gray-600 bg-gradient-to-br from-cyan-900/10 to-blue-900/10`}
+          >
             <div className="flex items-center gap-3 mb-4">
               <Play className="w-6 h-6 text-cyan-400" />
-              <h3 className={`text-lg font-medium ${themeColors.devText}`}>Crawler Control</h3>
+              <h3 className={`text-lg font-medium ${themeColors.devText}`}>
+                Crawler Control
+              </h3>
             </div>
             <p className={`text-sm ${themeColors.devDescText} mb-4`}>
-              Run the DBLP crawler to automatically fetch publications for configured professors
+              Run the DBLP crawler to automatically fetch publications for
+              configured professors
             </p>
             <button
               onClick={handleRunCrawler}
@@ -289,11 +308,15 @@ const DblpImportManager: React.FC = () => {
         {/* 右侧：文件管理 */}
         <div className="space-y-6">
           {/* 文件管理区域 */}
-          <div className={`p-6 rounded-xl ${themeColors.devCardBg} border border-gray-600 bg-gradient-to-br from-blue-900/10 to-indigo-900/10`}>
+          <div
+            className={`p-6 rounded-xl ${themeColors.devCardBg} border border-gray-600 bg-gradient-to-br from-blue-900/10 to-indigo-900/10`}
+          >
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-3">
                 <FileText className="w-6 h-6 text-blue-400" />
-                <h3 className={`text-lg font-medium ${themeColors.devText}`}>Files Management</h3>
+                <h3 className={`text-lg font-medium ${themeColors.devText}`}>
+                  Files Management
+                </h3>
               </div>
               <div className="flex gap-2">
                 <input
@@ -340,11 +363,15 @@ const DblpImportManager: React.FC = () => {
             </div>
 
             {/* 文件列表 */}
-            <div className={`rounded-lg border border-gray-700 bg-gray-800/50 overflow-hidden`}>
+            <div
+              className={`rounded-lg border border-gray-700 bg-gray-800/50 overflow-hidden`}
+            >
               {isLoadingFiles ? (
                 <div className="flex items-center justify-center py-8">
                   <Loader2 className="w-6 h-6 animate-spin text-blue-400" />
-                  <span className={`ml-2 ${themeColors.devText}`}>Loading files...</span>
+                  <span className={`ml-2 ${themeColors.devText}`}>
+                    Loading files...
+                  </span>
                 </div>
               ) : dblpFiles.length === 0 ? (
                 <div className="text-center py-12">
@@ -359,14 +386,20 @@ const DblpImportManager: React.FC = () => {
               ) : (
                 <div className="divide-y divide-gray-700">
                   {dblpFiles.map((file, index) => (
-                    <div key={index} className="p-4 hover:bg-gray-700/30 transition-colors">
+                    <div
+                      key={index}
+                      className="p-4 hover:bg-gray-700/30 transition-colors"
+                    >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-3">
                           <FileText className="w-5 h-5 text-blue-400" />
                           <div>
-                            <p className={`font-medium ${themeColors.devText}`}>{file.name}</p>
+                            <p className={`font-medium ${themeColors.devText}`}>
+                              {file.name}
+                            </p>
                             <p className={`text-sm ${themeColors.devDescText}`}>
-                              {formatFileSize(file.size)} • {formatDate(file.lastModified)}
+                              {formatFileSize(file.size)} •{" "}
+                              {formatDate(file.lastModified)}
                             </p>
                           </div>
                         </div>
@@ -410,43 +443,75 @@ const DblpImportManager: React.FC = () => {
 
           {/* 导入结果区域 - 移动到右侧文件管理下方 */}
           {importResult && (
-            <div className={`p-6 rounded-xl ${themeColors.devCardBg} border border-green-600 bg-gradient-to-br from-green-900/20 to-emerald-900/20`}>
+            <div
+              className={`p-6 rounded-xl ${themeColors.devCardBg} border border-green-600 bg-gradient-to-br from-green-900/20 to-emerald-900/20`}
+            >
               <div className="flex items-center gap-3 mb-6">
                 <CheckCircle className="w-8 h-8 text-green-400" />
-                <h3 className={`text-xl font-medium ${themeColors.devText}`}>Import Completed</h3>
+                <h3 className={`text-xl font-medium ${themeColors.devText}`}>
+                  Import Completed
+                </h3>
               </div>
 
               <div className="grid grid-cols-3 gap-4 mb-6">
                 <div className="text-center p-4 rounded-lg bg-green-900/30 border border-green-600/50">
-                  <div className="text-2xl font-bold text-green-400 mb-2">{importResult.imported}</div>
-                  <div className={`text-xs ${themeColors.devDescText} font-medium`}>Successfully Imported</div>
+                  <div className="text-2xl font-bold text-green-400 mb-2">
+                    {importResult.imported}
+                  </div>
+                  <div
+                    className={`text-xs ${themeColors.devDescText} font-medium`}
+                  >
+                    Successfully Imported
+                  </div>
                 </div>
                 <div className="text-center p-4 rounded-lg bg-yellow-900/30 border border-yellow-600/50">
-                  <div className="text-2xl font-bold text-yellow-400 mb-2">{importResult.duplicatesSkipped}</div>
-                  <div className={`text-xs ${themeColors.devDescText} font-medium`}>Duplicates Skipped</div>
+                  <div className="text-2xl font-bold text-yellow-400 mb-2">
+                    {importResult.duplicatesSkipped}
+                  </div>
+                  <div
+                    className={`text-xs ${themeColors.devDescText} font-medium`}
+                  >
+                    Duplicates Skipped
+                  </div>
                 </div>
                 <div className="text-center p-4 rounded-lg bg-blue-900/30 border border-blue-600/50">
-                  <div className="text-2xl font-bold text-blue-400 mb-2">{importResult.total}</div>
-                  <div className={`text-xs ${themeColors.devDescText} font-medium`}>Total Processed</div>
+                  <div className="text-2xl font-bold text-blue-400 mb-2">
+                    {importResult.total}
+                  </div>
+                  <div
+                    className={`text-xs ${themeColors.devDescText} font-medium`}
+                  >
+                    Total Processed
+                  </div>
                 </div>
               </div>
 
-              {importResult.duplicateTitles && importResult.duplicateTitles.length > 0 && (
-                <div className="mb-4 p-4 bg-yellow-900/30 border border-yellow-600/50 rounded-lg">
-                  <p className={`text-sm ${themeColors.devDescText} mb-2 font-medium`}>Skipped duplicate publications:</p>
-                  <div className="max-h-24 overflow-y-auto">
-                    <ul className={`text-xs ${themeColors.devDescText} space-y-1`}>
-                      {importResult.duplicateTitles.map((title, index) => (
-                        <li key={index} className="truncate">• {title}</li>
-                      ))}
-                    </ul>
+              {importResult.duplicateTitles &&
+                importResult.duplicateTitles.length > 0 && (
+                  <div className="mb-4 p-4 bg-yellow-900/30 border border-yellow-600/50 rounded-lg">
+                    <p
+                      className={`text-sm ${themeColors.devDescText} mb-2 font-medium`}
+                    >
+                      Skipped duplicate publications:
+                    </p>
+                    <div className="max-h-24 overflow-y-auto">
+                      <ul
+                        className={`text-xs ${themeColors.devDescText} space-y-1`}
+                      >
+                        {importResult.duplicateTitles.map((title, index) => (
+                          <li key={index} className="truncate">
+                            • {title}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
 
               <div className="p-3 bg-blue-900/30 border border-blue-600/50 rounded-lg">
                 <p className="text-blue-400 text-sm">
-                  💡 Imported publications have been added to the "Pending Review" tab where you can review, edit, and publish them.
+                  💡 Imported publications have been added to the "Pending
+                  Review" tab where you can review, edit, and publish them.
                 </p>
               </div>
             </div>
@@ -454,32 +519,59 @@ const DblpImportManager: React.FC = () => {
         </div>
       </div>
 
-
-
       {/* 使用说明区域 */}
       <div className={`p-6 rounded-xl bg-gray-800/50 border border-gray-600`}>
-        <h4 className={`font-medium ${themeColors.devText} mb-4 text-lg`}>Usage Instructions:</h4>
+        <h4 className={`font-medium ${themeColors.devText} mb-4 text-lg`}>
+          Usage Instructions:
+        </h4>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <h5 className={`font-medium ${themeColors.devText} mb-2 text-green-400`}>Automated Workflow:</h5>
+            <h5
+              className={`font-medium ${themeColors.devText} mb-2 text-green-400`}
+            >
+              Automated Workflow:
+            </h5>
             <ul className={`text-sm ${themeColors.devDescText} space-y-1`}>
-              <li>• <strong>Configure:</strong> Set up professor names in the configuration panel</li>
-              <li>• <strong>Run Crawler:</strong> Click "Run DBLP Crawler" to fetch latest publications</li>
-              <li>• <strong>Import:</strong> Click "Import" on the generated file to add publications</li>
+              <li>
+                • <strong>Configure:</strong> Set up professor names in the
+                configuration panel
+              </li>
+              <li>
+                • <strong>Run Crawler:</strong> Click "Run DBLP Crawler" to
+                fetch latest publications
+              </li>
+              <li>
+                • <strong>Import:</strong> Click "Import" on the generated file
+                to add publications
+              </li>
             </ul>
           </div>
           <div>
-            <h5 className={`font-medium ${themeColors.devText} mb-2 text-blue-400`}>Manual Workflow:</h5>
+            <h5
+              className={`font-medium ${themeColors.devText} mb-2 text-blue-400`}
+            >
+              Manual Workflow:
+            </h5>
             <ul className={`text-sm ${themeColors.devDescText} space-y-1`}>
-              <li>• <strong>Upload:</strong> Upload manually generated .txt files (max 10MB)</li>
-              <li>• <strong>Import:</strong> Process uploaded files to add publications</li>
-              <li>• <strong>Manage:</strong> Delete unnecessary files from the system</li>
+              <li>
+                • <strong>Upload:</strong> Upload manually generated .txt files
+                (max 10MB)
+              </li>
+              <li>
+                • <strong>Import:</strong> Process uploaded files to add
+                publications
+              </li>
+              <li>
+                • <strong>Manage:</strong> Delete unnecessary files from the
+                system
+              </li>
             </ul>
           </div>
         </div>
         <div className="mt-4 pt-4 border-t border-gray-600">
           <p className={`text-xs ${themeColors.devDescText}`}>
-            <strong>Note:</strong> System automatically detects duplicates and imports publications to "Pending Review" for final approval.
+            <strong>Note:</strong> System automatically detects duplicates and
+            imports publications to "Pending Review" for final approval.
           </p>
         </div>
       </div>

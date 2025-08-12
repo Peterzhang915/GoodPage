@@ -1,18 +1,18 @@
 /**
  * 相册管理工具函数
- * 
+ *
  * 包含所有相册管理相关的通用工具函数
  */
 
-import type { GalleryImage, Category } from '../types';
-import { 
-  isAlbumsView, 
-  isValidFileType, 
-  isValidFileSize, 
+import type { GalleryImage, Category } from "../types";
+import {
+  isAlbumsView,
+  isValidFileType,
+  isValidFileSize,
   isValidDateFormat,
   UPLOAD_CONFIG,
-  ERROR_MESSAGES 
-} from '../constants';
+  ERROR_MESSAGES,
+} from "../constants";
 
 /**
  * 图片排序工具函数
@@ -49,7 +49,7 @@ export const photoSortUtils = {
    * @returns 可见的图片列表
    */
   getVisiblePhotos(photos: GalleryImage[], category: Category): GalleryImage[] {
-    return photos.filter(photo => 
+    return photos.filter((photo) =>
       isAlbumsView(category) ? photo.show_in_albums : photo.is_visible
     );
   },
@@ -61,10 +61,10 @@ export const photoSortUtils = {
    * @returns 隐藏的图片列表
    */
   getHiddenPhotos(photos: GalleryImage[], category: Category): GalleryImage[] {
-    return photos.filter(photo => 
+    return photos.filter((photo) =>
       isAlbumsView(category) ? !photo.show_in_albums : !photo.is_visible
     );
-  }
+  },
 };
 
 /**
@@ -80,14 +80,14 @@ export const fileValidationUtils = {
     if (!isValidFileType(file)) {
       return {
         isValid: false,
-        error: ERROR_MESSAGES.FILE_TYPE_NOT_SUPPORTED
+        error: ERROR_MESSAGES.FILE_TYPE_NOT_SUPPORTED,
       };
     }
 
     if (!isValidFileSize(file)) {
       return {
         isValid: false,
-        error: ERROR_MESSAGES.FILE_TOO_LARGE
+        error: ERROR_MESSAGES.FILE_TOO_LARGE,
       };
     }
 
@@ -100,13 +100,13 @@ export const fileValidationUtils = {
    * @returns 格式化后的文件大小字符串
    */
   formatFileSize(bytes: number): string {
-    if (bytes === 0) return '0 Bytes';
+    if (bytes === 0) return "0 Bytes";
 
     const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const sizes = ["Bytes", "KB", "MB", "GB"];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
 
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
   },
 
   /**
@@ -115,8 +115,8 @@ export const fileValidationUtils = {
    * @returns 文件扩展名
    */
   getFileExtension(filename: string): string {
-    return filename.slice((filename.lastIndexOf('.') - 1 >>> 0) + 2);
-  }
+    return filename.slice(((filename.lastIndexOf(".") - 1) >>> 0) + 2);
+  },
 };
 
 /**
@@ -132,7 +132,7 @@ export const formValidationUtils = {
     if (caption.length > 100) {
       return {
         isValid: false,
-        error: 'Caption length cannot exceed 100 characters'
+        error: "Caption length cannot exceed 100 characters",
       };
     }
 
@@ -150,7 +150,7 @@ export const formValidationUtils = {
     if (!isValidDateFormat(date)) {
       return {
         isValid: false,
-        error: 'Date format is incorrect, please use YYYY.MM.DD format'
+        error: "Date format is incorrect, please use YYYY.MM.DD format",
       };
     }
 
@@ -165,14 +165,14 @@ export const formValidationUtils = {
    * @returns 验证结果
    */
   validateUploadForm(
-    file: File | null, 
-    caption: string, 
+    file: File | null,
+    caption: string,
     date: string
   ): { isValid: boolean; errors: string[] } {
     const errors: string[] = [];
 
     if (!file) {
-      errors.push('Please select a file to upload');
+      errors.push("Please select a file to upload");
     } else {
       const fileValidation = fileValidationUtils.validateFile(file);
       if (!fileValidation.isValid && fileValidation.error) {
@@ -192,9 +192,9 @@ export const formValidationUtils = {
 
     return {
       isValid: errors.length === 0,
-      errors
+      errors,
     };
-  }
+  },
 };
 
 /**
@@ -216,7 +216,7 @@ export const urlUtils = {
    */
   revokeFilePreviewUrl(url: string): void {
     URL.revokeObjectURL(url);
-  }
+  },
 };
 
 /**
@@ -245,11 +245,11 @@ export const arrayUtils = {
    * @returns 新数组
    */
   updateArrayItem<T>(
-    array: T[], 
-    predicate: (item: T) => boolean, 
+    array: T[],
+    predicate: (item: T) => boolean,
     updater: (item: T) => T
   ): T[] {
-    return array.map(item => predicate(item) ? updater(item) : item);
+    return array.map((item) => (predicate(item) ? updater(item) : item));
   },
 
   /**
@@ -259,8 +259,8 @@ export const arrayUtils = {
    * @returns 新数组
    */
   removeArrayItem<T>(array: T[], predicate: (item: T) => boolean): T[] {
-    return array.filter(item => !predicate(item));
-  }
+    return array.filter((item) => !predicate(item));
+  },
 };
 
 /**
@@ -276,11 +276,11 @@ export const errorUtils = {
     if (error?.response?.data?.error?.message) {
       return error.response.data.error.message;
     }
-    
+
     if (error?.message) {
       return error.message;
     }
-    
+
     return ERROR_MESSAGES.UNKNOWN_ERROR;
   },
 
@@ -290,10 +290,12 @@ export const errorUtils = {
    * @returns 是否为网络错误
    */
   isNetworkError(error: any): boolean {
-    return error?.code === 'NETWORK_ERROR' || 
-           error?.message?.includes('fetch') ||
-           error?.message?.includes('network');
-  }
+    return (
+      error?.code === "NETWORK_ERROR" ||
+      error?.message?.includes("fetch") ||
+      error?.message?.includes("network")
+    );
+  },
 };
 
 /**
@@ -303,11 +305,11 @@ export const errorUtils = {
  * @returns 防抖后的函数
  */
 export function debounce<T extends (...args: any[]) => any>(
-  func: T, 
+  func: T,
   delay: number
 ): (...args: Parameters<T>) => void {
   let timeoutId: NodeJS.Timeout;
-  
+
   return (...args: Parameters<T>) => {
     clearTimeout(timeoutId);
     timeoutId = setTimeout(() => func(...args), delay);
@@ -321,11 +323,11 @@ export function debounce<T extends (...args: any[]) => any>(
  * @returns 节流后的函数
  */
 export function throttle<T extends (...args: any[]) => any>(
-  func: T, 
+  func: T,
   delay: number
 ): (...args: Parameters<T>) => void {
   let lastCall = 0;
-  
+
   return (...args: Parameters<T>) => {
     const now = Date.now();
     if (now - lastCall >= delay) {

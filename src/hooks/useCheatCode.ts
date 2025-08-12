@@ -12,7 +12,7 @@ import { useEffect, useRef, useCallback } from "react";
 export function useCheatCode(
   targetSequence: string,
   callback: () => void,
-  allowedKeysRegex: RegExp = /^\d$/, // Default: only digits 0-9
+  allowedKeysRegex: RegExp = /^\d$/ // Default: only digits 0-9
 ) {
   const inputSequenceRef = useRef<string>("");
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -30,12 +30,12 @@ export function useCheatCode(
       if (allowedKeysRegex.test(key)) {
         inputSequenceRef.current += key;
         console.log(
-          `[useCheatCode] Current sequence: ${inputSequenceRef.current}`,
+          `[useCheatCode] Current sequence: ${inputSequenceRef.current}`
         );
 
         if (inputSequenceRef.current.endsWith(targetSequence)) {
           console.log(
-            `[useCheatCode] Target sequence matched: ${targetSequence}`,
+            `[useCheatCode] Target sequence matched: ${targetSequence}`
           );
           callback();
           inputSequenceRef.current = ""; // Reset after success
@@ -44,7 +44,7 @@ export function useCheatCode(
           targetSequence.length * 2
         ) {
           inputSequenceRef.current = inputSequenceRef.current.slice(
-            -targetSequence.length * 2,
+            -targetSequence.length * 2
           );
         }
 
@@ -61,7 +61,7 @@ export function useCheatCode(
         }
       }
     },
-    [targetSequence, callback, allowedKeysRegex],
+    [targetSequence, callback, allowedKeysRegex]
   );
 
   useEffect(() => {

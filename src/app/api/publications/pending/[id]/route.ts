@@ -7,7 +7,7 @@ const prisma = new PrismaClient();
 // Handler for DELETE requests
 export async function DELETE(
   request: Request,
-  { params }: { params: Promise<{ id: string }> }, // Next.js 15 requires Promise
+  { params }: { params: Promise<{ id: string }> } // Next.js 15 requires Promise
 ) {
   const { id: idString } = await params; // Await params in Next.js 15
   const id = parseInt(idString, 10); // Convert string to integer
@@ -16,7 +16,7 @@ export async function DELETE(
   if (!id || isNaN(id)) {
     return NextResponse.json(
       { error: "Valid publication ID is required" },
-      { status: 400 },
+      { status: 400 }
     );
   }
 
@@ -32,18 +32,18 @@ export async function DELETE(
       // Return 404 even if it never existed, or was already deleted/approved
       return NextResponse.json(
         { error: "Publication not found" },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
     // IMPORTANT: Only allow deletion if the status is 'pending_review'
     if (publication.status !== "pending_review") {
       console.warn(
-        `Attempted to delete publication ${id} with status ${publication.status}.`,
+        `Attempted to delete publication ${id} with status ${publication.status}.`
       );
       return NextResponse.json(
         { error: "Cannot delete publication that is not pending review." },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -61,7 +61,7 @@ export async function DELETE(
       error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json(
       { error: `Internal server error: ${errorMessage}` },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -69,7 +69,7 @@ export async function DELETE(
 // Handler for PUT requests (Update)
 export async function PUT(
   request: Request,
-  { params }: { params: { id: string } },
+  { params }: { params: { id: string } }
 ) {
   const id = params.id;
   console.log(`Received PUT request for publication ID: ${id}`);
@@ -77,7 +77,7 @@ export async function PUT(
   if (!id) {
     return NextResponse.json(
       { error: "Publication ID is required" },
-      { status: 400 },
+      { status: 400 }
     );
   }
 
@@ -108,7 +108,7 @@ export async function PUT(
     // Ensure status is 'approved' when saving from editor
     if (status !== "approved") {
       console.warn(
-        `Editor attempted to save with status ${status}. Forcing to 'approved'.`,
+        `Editor attempted to save with status ${status}. Forcing to 'approved'.`
       );
       // Or return error: return NextResponse.json({ error: 'Invalid status for update' }, { status: 400 });
     }
@@ -133,7 +133,7 @@ export async function PUT(
       if (authorIds && Array.isArray(authorIds) && authorIds.length > 0) {
         // Ensure authorIds are valid strings
         const validAuthorIds = authorIds.filter(
-          (aid): aid is string => typeof aid === "string" && aid.length > 0,
+          (aid): aid is string => typeof aid === "string" && aid.length > 0
         );
         if (validAuthorIds.length > 0) {
           await tx.publication.update({
@@ -162,7 +162,7 @@ export async function PUT(
       if (!result) {
         // This shouldn't happen if the initial update succeeded, but handle defensively
         throw new Error(
-          "Failed to re-fetch updated publication after transaction.",
+          "Failed to re-fetch updated publication after transaction."
         );
       }
       return result;
@@ -177,7 +177,7 @@ export async function PUT(
       if (error.code === "P2025") {
         return NextResponse.json(
           { error: "Publication not found" },
-          { status: 404 },
+          { status: 404 }
         );
       }
     }
@@ -185,7 +185,7 @@ export async function PUT(
       error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json(
       { error: `Internal server error: ${errorMessage}` },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

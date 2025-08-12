@@ -4,12 +4,12 @@
  */
 
 // 主容器组件 - 主要入口点
-export { default as PublicationManagerContainer } from './containers/MainPublicationContainer';
+export { default as PublicationManagerContainer } from "./containers/MainPublicationContainer";
 
 // 模块管理器导出
-export { default as PublishedManager } from './modules/published/PublishedManager';
-export { default as PendingManager } from './modules/pending/PendingManager';
-export { default as DblpImportManager } from './modules/dblp-import/DblpImportManager';
+export { default as PublishedManager } from "./modules/published/PublishedManager";
+export { default as PendingManager } from "./modules/pending/PendingManager";
+export { default as DblpImportManager } from "./modules/dblp-import/DblpImportManager";
 
 // 已发布出版物模块导出
 export {
@@ -20,7 +20,7 @@ export {
   usePublishedActions,
   usePublishedManager,
   publishedApi,
-} from './modules/published';
+} from "./modules/published";
 
 // 待审核出版物模块导出
 export {
@@ -31,16 +31,16 @@ export {
   usePendingActions,
   usePendingManager,
   pendingApi,
-} from './modules/pending';
+} from "./modules/pending";
 
 // 共享组件导出
-export { useDialog } from './shared/hooks/useDialog';
-export { useSearch } from './shared/hooks/useSearch';
-export { default as SearchBar } from './shared/components/SearchBar';
+export { useDialog } from "./shared/hooks/useDialog";
+export { useSearch } from "./shared/hooks/useSearch";
+export { default as SearchBar } from "./shared/components/SearchBar";
 
 // 表单组件导出
-export { PublicationForm } from './forms/PublicationForm';
-export type { PublicationFormData } from './forms/PublicationForm';
+export { PublicationForm } from "./forms/PublicationForm";
+export type { PublicationFormData } from "./forms/PublicationForm";
 
 // 类型导出
-export type { PublicationWithAuthors } from '@/app/api/publications/route';
+export type { PublicationWithAuthors } from "@/app/api/publications/route";

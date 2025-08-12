@@ -23,7 +23,7 @@ export async function GET(request: Request) {
       console.warn("[API Get Users] Permission denied.");
       return NextResponse.json(
         { success: false, error: "Permission denied." },
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -53,7 +53,7 @@ export async function GET(request: Request) {
         success: false,
         error: "An internal server error occurred while fetching users.",
       },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

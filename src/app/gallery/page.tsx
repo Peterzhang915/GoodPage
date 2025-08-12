@@ -2,12 +2,12 @@
 
 /**
  * 实验室相册展示页面
- * 
+ *
  * 功能：
  * 1. 展示实验室相册中被标记为可见的图片
  * 2. 支持图片瀑布流布局
  * 3. 支持图片加载状态显示
- * 
+ *
  * 数据流：
  * 1. 组件加载时从 /api/gallery/photos 获取图片数据
  * 2. 只获取 category=Albums 且 show_in_albums=true 的图片
@@ -30,7 +30,9 @@ export default function GalleryPage() {
     async function fetchImages() {
       setLoading(true);
       // 只请求在相册中显示的图片（show_in_albums=true）
-      const res = await fetch("/api/gallery/photos?category=Albums&include_hidden=false");
+      const res = await fetch(
+        "/api/gallery/photos?category=Albums&include_hidden=false"
+      );
       const data = await res.json();
       if (data.success) setImages(data.data);
       setLoading(false);

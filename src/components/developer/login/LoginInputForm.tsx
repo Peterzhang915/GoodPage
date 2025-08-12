@@ -62,10 +62,7 @@ const LoginInputForm: React.FC<LoginInputFormProps> = ({
   const isDisabled = isLocked || loginStage === "validating";
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className=""
-    >
+    <form onSubmit={handleSubmit} className="">
       {/* Lockout Message */}
       {isLocked && lockoutMessage && (
         <div className="text-red-500 font-bold p-3 bg-red-900/30 border border-red-700 rounded mb-4 text-sm">

@@ -1,21 +1,14 @@
 /**
  * 图片卡片组件
- * 
+ *
  * 显示单张图片及其操作控件
  */
 
-import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  Edit2, 
-  Eye, 
-  EyeOff, 
-  Trash2, 
-  Check, 
-  X 
-} from 'lucide-react';
-import type { PhotoCardProps } from '../types';
-import { TOOLTIPS } from '../constants';
+import React, { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Edit2, Eye, EyeOff, Trash2, Check, X } from "lucide-react";
+import type { PhotoCardProps } from "../types";
+import { TOOLTIPS } from "../constants";
 
 /**
  * 图片卡片组件
@@ -26,20 +19,20 @@ const PhotoCard: React.FC<PhotoCardProps> = ({
   onToggleVisibility,
   onOrderChange,
   onUpdateMetadata,
-  isAlbumsView = false
+  isAlbumsView = false,
 }) => {
   // 组件状态
   const [showControls, setShowControls] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
-  const [editCaption, setEditCaption] = useState(photo.caption || '');
-  const [editDate, setEditDate] = useState(photo.date || '');
+  const [editCaption, setEditCaption] = useState(photo.caption || "");
+  const [editDate, setEditDate] = useState(photo.date || "");
   const [isComposing, setIsComposing] = useState(false);
 
   // 同步编辑状态与 props
   useEffect(() => {
     if (isEditing) {
-      setEditCaption(photo.caption || '');
-      setEditDate(photo.date || '');
+      setEditCaption(photo.caption || "");
+      setEditDate(photo.date || "");
     }
   }, [isEditing, photo.caption, photo.date]);
 
@@ -55,8 +48,8 @@ const PhotoCard: React.FC<PhotoCardProps> = ({
    * 取消编辑
    */
   const handleCancel = () => {
-    setEditCaption(photo.caption || '');
-    setEditDate(photo.date || '');
+    setEditCaption(photo.caption || "");
+    setEditDate(photo.date || "");
     setIsEditing(false);
   };
 
@@ -64,7 +57,9 @@ const PhotoCard: React.FC<PhotoCardProps> = ({
    * 处理向上移动
    */
   const handleMoveUp = () => {
-    const currentOrder = isAlbumsView ? photo.albums_order : photo.display_order;
+    const currentOrder = isAlbumsView
+      ? photo.albums_order
+      : photo.display_order;
     onOrderChange(photo, currentOrder - 1);
   };
 
@@ -72,7 +67,9 @@ const PhotoCard: React.FC<PhotoCardProps> = ({
    * 处理向下移动
    */
   const handleMoveDown = () => {
-    const currentOrder = isAlbumsView ? photo.albums_order : photo.display_order;
+    const currentOrder = isAlbumsView
+      ? photo.albums_order
+      : photo.display_order;
     onOrderChange(photo, currentOrder + 1);
   };
 
@@ -99,9 +96,9 @@ const PhotoCard: React.FC<PhotoCardProps> = ({
   return (
     <motion.div
       className={`relative group border rounded-lg overflow-hidden ${
-        isVisible 
-          ? isAlbumsView 
-            ? "border-green-500" 
+        isVisible
+          ? isAlbumsView
+            ? "border-green-500"
             : "border-gray-700"
           : "border-red-700 opacity-50"
       }`}
@@ -184,10 +181,10 @@ const PhotoCard: React.FC<PhotoCardProps> = ({
                 <div className="bg-black bg-opacity-80 rounded p-2 space-y-2">
                   <div>
                     <input
-                      key={photo.id + (isEditing ? '-editing' : '-view')}
+                      key={photo.id + (isEditing ? "-editing" : "-view")}
                       type="text"
                       value={editCaption}
-                      onChange={e => setEditCaption(e.target.value)}
+                      onChange={(e) => setEditCaption(e.target.value)}
                       onCompositionStart={() => setIsComposing(true)}
                       onCompositionEnd={() => setIsComposing(false)}
                       placeholder="Image Caption"

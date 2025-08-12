@@ -56,26 +56,29 @@ export async function GET(request: Request) {
     console.log(`Found ${pendingPublications.length} pending publications.`);
 
     // 格式化数据以匹配 PublicationWithAuthors 接口
-    const formattedPublications = pendingPublications.map(pub => ({
+    const formattedPublications = pendingPublications.map((pub) => ({
       ...pub,
-      authors: pub.authors.map(author => ({
+      authors: pub.authors.map((author) => ({
         author_order: author.author_order,
         is_corresponding_author: author.is_corresponding_author,
         author: author.author,
       })),
     }));
 
-    return NextResponse.json({
-      success: true,
-      data: formattedPublications
-    }, { status: 200 });
+    return NextResponse.json(
+      {
+        success: true,
+        data: formattedPublications,
+      },
+      { status: 200 }
+    );
   } catch (error) {
     console.error("Error fetching pending publications:", error);
     const errorMessage =
       error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json(
       { error: `Internal server error: ${errorMessage}` },
-      { status: 500 },
+      { status: 500 }
     );
   }
   // Prisma client disconnection is usually handled automatically in serverless environments
@@ -103,7 +106,7 @@ export async function POST(request: Request) {
         year: parseInt(body.year),
         venue: body.venue || null,
         authors_full_string: body.authors_full_string || null,
-        type: body.type || 'OTHER',
+        type: body.type || "OTHER",
         abstract: body.abstract || null,
         keywords: body.keywords || null,
         pdf_url: body.pdf_url || null,
@@ -131,14 +134,14 @@ export async function POST(request: Request) {
       {
         success: true,
         data: newPublication,
-        message: "Publication added to pending review"
+        message: "Publication added to pending review",
       },
       { status: 201 }
     );
-
   } catch (error) {
     console.error("Error creating pending publication:", error);
-    const errorMessage = error instanceof Error ? error.message : "Unknown error";
+    const errorMessage =
+      error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json(
       { error: `Failed to create publication: ${errorMessage}` },
       { status: 500 }

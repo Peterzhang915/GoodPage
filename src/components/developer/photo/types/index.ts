@@ -1,6 +1,6 @@
 /**
  * 相册管理组件类型定义
- * 
+ *
  * 包含所有相册管理相关的 TypeScript 类型定义
  */
 
@@ -34,14 +34,14 @@ export interface GalleryImage {
 /**
  * 支持的图片分类类型
  */
-export type Category = 
-  | "Albums"        // 首页相册
-  | "Meetings"      // 会议照片
-  | "Graduation"    // 毕业照片
+export type Category =
+  | "Albums" // 首页相册
+  | "Meetings" // 会议照片
+  | "Graduation" // 毕业照片
   | "Team Building" // 团建活动
-  | "Sports"        // 运动照片
-  | "Lab Life"      // 实验室生活
-  | "Competition";  // 比赛照片
+  | "Sports" // 运动照片
+  | "Lab Life" // 实验室生活
+  | "Competition"; // 比赛照片
 
 /**
  * PhotoManager 主组件属性
@@ -64,7 +64,11 @@ export interface PhotoCardProps {
   /** 更改顺序回调 */
   onOrderChange: (photo: GalleryImage, newOrder: number) => void;
   /** 更新元数据回调 */
-  onUpdateMetadata: (photo: GalleryImage, caption: string | null, date: string | null) => void;
+  onUpdateMetadata: (
+    photo: GalleryImage,
+    caption: string | null,
+    date: string | null
+  ) => void;
   /** 是否为相册视图 */
   isAlbumsView?: boolean;
 }
@@ -108,7 +112,11 @@ export interface PhotoGridProps {
   /** 更改顺序回调 */
   onOrderChange: (photo: GalleryImage, newOrder: number) => void;
   /** 更新元数据回调 */
-  onUpdateMetadata: (photo: GalleryImage, caption: string | null, date: string | null) => void;
+  onUpdateMetadata: (
+    photo: GalleryImage,
+    caption: string | null,
+    date: string | null
+  ) => void;
 }
 
 /**

@@ -1,22 +1,22 @@
 /**
  * 重构后的相册管理组件
- * 
+ *
  * 简化的主组件，只负责组合和布局
  */
 
 "use client";
 
-import React from 'react';
-import { Image, Info } from 'lucide-react';
-import type { PhotoManagerProps } from './types';
-import { usePhotoManager } from './hooks/usePhotoManager';
-import { usePhotoOperations } from './hooks/usePhotoOperations';
-import { isAlbumsView } from './constants';
+import React from "react";
+import { Image, Info } from "lucide-react";
+import type { PhotoManagerProps } from "./types";
+import { usePhotoManager } from "./hooks/usePhotoManager";
+import { usePhotoOperations } from "./hooks/usePhotoOperations";
+import { isAlbumsView } from "./constants";
 
 // 导入子组件
-import CategorySelector from './components/CategorySelector';
-import UploadArea from './components/UploadArea';
-import PhotoGrid from './components/PhotoGrid';
+import CategorySelector from "./components/CategorySelector";
+import UploadArea from "./components/UploadArea";
+import PhotoGrid from "./components/PhotoGrid";
 
 /**
  * 相册管理主组件（重构版）
@@ -32,7 +32,7 @@ const PhotoManager: React.FC<PhotoManagerProps> = ({ onClose }) => {
     setError,
     refreshPhotos,
     updateLocalPhoto,
-    removeLocalPhoto
+    removeLocalPhoto,
   } = usePhotoManager();
 
   // 使用图片操作 hook
@@ -40,17 +40,17 @@ const PhotoManager: React.FC<PhotoManagerProps> = ({ onClose }) => {
     deletePhoto,
     togglePhotoVisibility,
     updatePhotoOrder,
-    updatePhotoMetadata
+    updatePhotoMetadata,
   } = usePhotoOperations({
     category,
     onPhotoUpdate: updateLocalPhoto,
     onPhotoRemove: removeLocalPhoto,
     onError: setError,
     onSuccess: (message) => {
-      console.log('Success:', message);
+      console.log("Success:", message);
       // 可以在这里添加成功提示
     },
-    onRefresh: refreshPhotos
+    onRefresh: refreshPhotos,
   });
 
   /**
@@ -84,10 +84,7 @@ const PhotoManager: React.FC<PhotoManagerProps> = ({ onClose }) => {
       </div>
 
       {/* 分类选择器 */}
-      <CategorySelector
-        value={category}
-        onChange={setCategory}
-      />
+      <CategorySelector value={category} onChange={setCategory} />
 
       {/* 上传区域 */}
       <UploadArea

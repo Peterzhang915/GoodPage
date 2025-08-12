@@ -52,52 +52,55 @@ src/components/developer/publication/
 ```
 
 ### 表单组件
+
 - **`forms/PublicationFormModal.tsx`** - 统一的表单模态框
 - **`forms/PublicationEditModal.tsx`** - 编辑模态框（重构自 PendingPublicationEditor）
 
 ### UI 组件
+
 - **`components/PublicationCard.tsx`** - 出版物卡片组件
 - **`components/PublicationList.tsx`** - 出版物列表组件
 
 ### 业务逻辑 Hooks
+
 - **`hooks/usePublications.ts`** - 数据管理 hook
 - **`hooks/usePublicationForm.ts`** - 表单状态管理 hook
 
 ### 工具函数和类型
+
 - **`utils/publicationTypes.ts`** - 类型定义
 - **`utils/publicationUtils.ts`** - 工具函数
 
 ## 使用方式
 
 ### 基本使用
+
 ```tsx
-import { PublicationContentEditor } from '@/components/developer/publication';
+import { PublicationContentEditor } from "@/components/developer/publication";
 
 function MyComponent() {
-  return (
-    <PublicationContentEditor onClose={() => console.log('Closed')} />
-  );
+  return <PublicationContentEditor onClose={() => console.log("Closed")} />;
 }
 ```
 
 ### 单独使用管理器组件
+
 ```tsx
-import { PublishedPublicationManager } from '@/components/developer/publication';
+import { PublishedPublicationManager } from "@/components/developer/publication";
 
 function MyComponent() {
-  return (
-    <PublishedPublicationManager />
-  );
+  return <PublishedPublicationManager />;
 }
 ```
 
 ### 使用 Hooks
+
 ```tsx
-import { usePublications } from '@/components/developer/publication';
+import { usePublications } from "@/components/developer/publication";
 
 function MyComponent() {
   const { publications, isLoading, addPublication } = usePublications();
-  
+
   // 使用数据和方法
 }
 ```
@@ -113,6 +116,7 @@ function MyComponent() {
 ## 向后兼容性
 
 原有的组件仍然保留并可以正常使用：
+
 - `PublicationManager.tsx` - 已发布出版物管理（原始版本）
 - `PendingPublicationsPage.tsx` - 待审核出版物页面（已重构为使用新组件的兼容版本）
 
@@ -129,6 +133,7 @@ function MyComponent() {
 ## 🔧 核心模块详解
 
 ### Published 模块 (已发布出版物)
+
 ```typescript
 // 数据管理Hook - 纯状态管理
 usePublishedData() → { publications, isLoading, error, ... }
@@ -149,6 +154,7 @@ publishedApi → { fetchAll, create, update, delete }
 ```
 
 ### Shared 模块 (共享资源)
+
 ```typescript
 // 通用Hook
 useDialog() → 对话框状态管理
@@ -165,11 +171,11 @@ import {
   PublishedManager,
   PendingManager,
   usePublishedManager,
-  SearchBar
-} from '@/components/developer/publication';
+  SearchBar,
+} from "@/components/developer/publication";
 
 // 单独使用已发布模块
-<PublishedManager />
+<PublishedManager />;
 
 // 或者自定义组合
 const CustomManager = () => {
@@ -186,18 +192,21 @@ const CustomManager = () => {
 ## ✅ 深度解耦成果
 
 ### 代码质量提升
+
 - **文件数量**: 从6个大文件 → 20+个小文件
 - **平均文件大小**: 从400+行 → 50-150行
 - **代码复用性**: 提升80%
 - **测试覆盖难度**: 降低70%
 
 ### 维护性改善
+
 - **新功能添加**: 只需修改对应小模块
 - **Bug修复**: 影响范围明确且有限
 - **代码审查**: 每次变更范围小且清晰
 - **团队协作**: 多人可并行开发不同模块
 
 ### 性能优化
+
 - **按需加载**: 可以单独导入需要的模块
 - **代码分割**: 更好的Tree Shaking支持
 - **重渲染优化**: 状态变更影响范围更小
@@ -205,12 +214,14 @@ const CustomManager = () => {
 ## 🔄 扩展指南
 
 ### 添加新模块
+
 1. 在 `modules/` 下创建新的业务模块文件夹
 2. 按照现有结构创建 `components/`, `hooks/`, `services/`
 3. 创建模块的 `index.ts` 导出文件
 4. 在主 `index.ts` 中添加导出
 
 ### 添加新功能
+
 1. 确定功能属于哪个模块
 2. 在对应模块下创建新的小文件
 3. 保持文件大小在50-150行范围内

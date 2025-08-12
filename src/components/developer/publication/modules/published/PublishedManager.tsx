@@ -25,7 +25,9 @@ interface PublishedManagerProps {
  * 已发布出版物管理器
  * 组合各个小模块，提供完整的管理功能
  */
-const PublishedManager: React.FC<PublishedManagerProps> = ({ className = "" }) => {
+const PublishedManager: React.FC<PublishedManagerProps> = ({
+  className = "",
+}) => {
   // 使用管理器Hook
   const {
     publications,
@@ -75,8 +77,6 @@ const PublishedManager: React.FC<PublishedManagerProps> = ({ className = "" }) =
     }
   };
 
-
-
   return (
     <div className={`space-y-6 ${className}`}>
       {/* 头部区域 */}
@@ -103,7 +103,8 @@ const PublishedManager: React.FC<PublishedManagerProps> = ({ className = "" }) =
       {/* 搜索结果提示 */}
       {hasSearch && (
         <div className={`text-sm ${themeColors.devDescText}`}>
-          Found {resultCount} publication{resultCount !== 1 ? 's' : ''} matching "{searchTerm}"
+          Found {resultCount} publication{resultCount !== 1 ? "s" : ""} matching
+          "{searchTerm}"
         </div>
       )}
 

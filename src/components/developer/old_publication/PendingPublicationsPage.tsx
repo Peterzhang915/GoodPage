@@ -26,7 +26,7 @@ interface PendingPublication extends Publication {
 // Helper to display authors concisely
 const formatAuthors = (
   authorsRelation: PendingPublication["authors"], // Explicitly name the relation parameter
-  rawAuthorsField: string | null, // Explicitly name the raw string field parameter
+  rawAuthorsField: string | null // Explicitly name the raw string field parameter
 ) => {
   // Prioritize the structured relation if available
   if (authorsRelation && authorsRelation.length > 0) {
@@ -52,7 +52,7 @@ const PendingPublicationsPage: React.FC = () => {
     string | null
   >(null);
   const [showSuccessMessage, setShowSuccessMessage] = useState<string | null>(
-    null,
+    null
   );
   const [deletingId, setDeletingId] = useState<string | null>(null); // Track which item is being deleted
 
@@ -73,7 +73,7 @@ const PendingPublicationsPage: React.FC = () => {
       setError(
         err instanceof Error
           ? err.message
-          : "Failed to load pending publications.",
+          : "Failed to load pending publications."
       );
       setPendingPublications([]); // Clear data on error
     } finally {
@@ -99,7 +99,7 @@ const PendingPublicationsPage: React.FC = () => {
     if (deletingId) return; // Prevent double clicks
     if (
       !window.confirm(
-        "Are you sure you want to delete this pending publication? This cannot be undone.",
+        "Are you sure you want to delete this pending publication? This cannot be undone."
       )
     ) {
       return;
@@ -118,14 +118,16 @@ const PendingPublicationsPage: React.FC = () => {
         throw new Error(errData.error || `HTTP Error: ${response.status}`);
       }
       // Remove from list on success - Use toString() for comparison
-      setPendingPublications((prev) => prev.filter((pub) => pub.id.toString() !== id));
+      setPendingPublications((prev) =>
+        prev.filter((pub) => pub.id.toString() !== id)
+      );
       setShowSuccessMessage("Publication deleted successfully.");
       // Auto-hide success message after a few seconds
       setTimeout(() => setShowSuccessMessage(null), 3000);
     } catch (err) {
       console.error("Failed to delete pending publication:", err);
       setError(
-        err instanceof Error ? err.message : "Failed to delete publication.",
+        err instanceof Error ? err.message : "Failed to delete publication."
       );
     } finally {
       setDeletingId(null);
@@ -134,12 +136,14 @@ const PendingPublicationsPage: React.FC = () => {
 
   // Handler for successful save/approve from the editor
   const handleSaveSuccess = async (
-    updatedPublication: Publication,
+    updatedPublication: Publication
   ): Promise<void> => {
     console.log("Saved and approved:", updatedPublication);
     // Remove the approved publication from the pending list - Use toString()
     setPendingPublications((prev) =>
-      prev.filter((pub) => pub.id.toString() !== updatedPublication.id.toString()),
+      prev.filter(
+        (pub) => pub.id.toString() !== updatedPublication.id.toString()
+      )
     );
     setEditingPublicationId(null); // Close the editor
     setShowSuccessMessage("Publication approved and saved successfully!");

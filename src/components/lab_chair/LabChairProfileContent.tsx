@@ -74,7 +74,11 @@ const LabChairProfileContent: React.FC<LabChairProfileContentProps> = ({
     // Root element for the content, applying theme background
     <div className={`${themeColors.themePageBg ?? "bg-gray-50"} min-h-screen`}>
       {/* Header Section - Not typically part of staggered animation, rendered directly */}
-      <LabChairHeader leaderData={leaderData} addressLine1={addressLine1} addressLine2={addressLine2} />
+      <LabChairHeader
+        leaderData={leaderData}
+        addressLine1={addressLine1}
+        addressLine2={addressLine2}
+      />
 
       {/* Main Content Area with Animation Container */}
       <motion.div

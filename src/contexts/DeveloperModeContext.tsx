@@ -40,7 +40,7 @@ export const useDeveloperMode = (): DeveloperModeContextProps => {
   const context = useContext(DeveloperModeContext);
   if (context === undefined) {
     throw new Error(
-      "useDeveloperMode must be used within a DeveloperModeProvider",
+      "useDeveloperMode must be used within a DeveloperModeProvider"
     );
   }
   return context;

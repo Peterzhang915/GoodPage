@@ -165,7 +165,7 @@ function MemberPublicationItem({ pub }: { pub: PublicationInfo }) {
         pub.slides_url ||
         pub.video_url ||
         pub.code_repository_url ||
-        pub.project_page_url /*|| pub.dblp_url*/ ) && (
+        pub.project_page_url) /*|| pub.dblp_url*/ && (
         <div className="flex flex-wrap items-center space-x-3 text-xs mt-1">
           {pdfHref && pdfHref !== "#" && (
             <a

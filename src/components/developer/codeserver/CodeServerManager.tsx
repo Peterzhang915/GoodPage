@@ -95,7 +95,7 @@ const CodeServerManager: React.FC<CodeServerManagerProps> = ({ onClose }) => {
   const handleDeleteServer = (idToDelete: string) => {
     if (confirm("Are you sure you want to delete this server entry?")) {
       setServers((prevServers) =>
-        prevServers.filter((server) => server.id !== idToDelete),
+        prevServers.filter((server) => server.id !== idToDelete)
       );
       // 如果正在编辑的项被删除，则取消编辑状态
       if (editingServerId === idToDelete) {
@@ -150,8 +150,8 @@ const CodeServerManager: React.FC<CodeServerManagerProps> = ({ onClose }) => {
       prevServers.map((server) =>
         server.id === editingServerId
           ? { ...server, name: trimmedName, url: trimmedUrl }
-          : server,
-      ),
+          : server
+      )
     );
 
     handleCancelEdit(); // 保存成功后退出编辑模式

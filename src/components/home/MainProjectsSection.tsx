@@ -6,7 +6,10 @@ import { AlertTriangle } from "lucide-react";
 import Link from "next/link";
 import { Link as LinkIcon } from "lucide-react";
 
-enum ProjectType { MAIN = 'MAIN', FORMER = 'FORMER' }
+enum ProjectType {
+  MAIN = "MAIN",
+  FORMER = "FORMER",
+}
 
 interface HomepageProjectItem {
   id: number;
@@ -22,11 +25,16 @@ interface MainProjectsSectionProps {
   error: string | null;
 }
 
-const MainProjectsSection: React.FC<MainProjectsSectionProps> = ({ items, error }) => {
+const MainProjectsSection: React.FC<MainProjectsSectionProps> = ({
+  items,
+  error,
+}) => {
   return (
     <ContentSection id="main-projects" title="Main Focus Projects">
       {error ? (
-        <div className={`flex items-center space-x-2 text-red-600 dark:text-red-400`}>
+        <div
+          className={`flex items-center space-x-2 text-red-600 dark:text-red-400`}
+        >
           <AlertTriangle className="h-5 w-5 flex-shrink-0" />
           <span>Error loading main projects: {error}</span>
         </div>
@@ -43,7 +51,7 @@ const MainProjectsSection: React.FC<MainProjectsSectionProps> = ({ items, error 
                 <div className="md:flex-1">
                   <p
                     className={`text-sm md:text-base leading-relaxed ${themeColors.textColorSecondary} mb-4`}
-                    style={{ whiteSpace: 'pre-line' }}
+                    style={{ whiteSpace: "pre-line" }}
                   >
                     {item.description}
                   </p>
@@ -61,7 +69,9 @@ const MainProjectsSection: React.FC<MainProjectsSectionProps> = ({ items, error 
                 </div>
                 {item.image_url && (
                   <div className="md:w-1/4 lg:w-1/5 mt-4 md:mt-0 flex-shrink-0">
-                    <div className={`bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden shadow-md border ${themeColors.devBorder}`}>
+                    <div
+                      className={`bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden shadow-md border ${themeColors.devBorder}`}
+                    >
                       <Image
                         src={item.image_url}
                         alt={`Image for ${item.title}`}

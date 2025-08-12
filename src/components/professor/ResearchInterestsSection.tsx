@@ -15,7 +15,10 @@ const ResearchInterestsSection: React.FC<ResearchInterestsSectionProps> = ({
 }) => {
   // 优先使用 props 传入的 interestsText（即 member.research_interests），没有则用默认内容
   // 中文注释：如果传入了研究兴趣内容，则显示传入内容，否则显示默认内容
-  const content = interestsText && interestsText.trim() !== "" ? interestsText : defaultInterestsText;
+  const content =
+    interestsText && interestsText.trim() !== ""
+      ? interestsText
+      : defaultInterestsText;
 
   return (
     <section id="interests">

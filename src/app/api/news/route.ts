@@ -1,9 +1,9 @@
-    // src/app/api/news/route.ts
+// src/app/api/news/route.ts
 import { NextResponse } from "next/server";
 import fs from "fs";
 import path from "path";
 
-    // 定义 news.json 文件路径
+// 定义 news.json 文件路径
 const NEWS_FILE_PATH = path.join(process.cwd(), "data", "news.json");
 const HISTORY_FILE_PATH = path.join(process.cwd(), "data", "news_history.json");
 const MAX_HISTORY_LENGTH = 10; // 最多保留 10 条历史记录
@@ -25,8 +25,8 @@ interface HistoryEntry {
 }
 
 // --- GET Handler (Modified for new data structure and standard response) ---
-    export async function GET() {
-      try {
+export async function GET() {
+  try {
     const jsonData = await fs.promises.readFile(NEWS_FILE_PATH, "utf-8");
     try {
       const data = JSON.parse(jsonData);
@@ -40,16 +40,16 @@ interface HistoryEntry {
           // Standard success response
           return NextResponse.json(
             { success: true, data: data },
-            { status: 200 },
+            { status: 200 }
           );
         } else {
           console.warn(
-            "Invalid news array items in news.json, returning default.",
+            "Invalid news array items in news.json, returning default."
           );
           // Standard success response with default data
           return NextResponse.json(
             { success: true, data: defaultNews },
-            { status: 200 },
+            { status: 200 }
           );
         }
       } else {
@@ -58,7 +58,7 @@ interface HistoryEntry {
           data.every((item) => typeof item === "string")
         ) {
           console.log(
-            "Found legacy news format (string array), wrapping with default title.",
+            "Found legacy news format (string array), wrapping with default title."
           );
           // Standard success response wrapping legacy data
           return NextResponse.json(
@@ -66,16 +66,16 @@ interface HistoryEntry {
               success: true,
               data: { title: "(Untitled Legacy News)", news: data },
             },
-            { status: 200 },
+            { status: 200 }
           );
         } else {
           console.warn(
-            "Invalid data format in news.json (neither object nor string array), returning default.",
+            "Invalid data format in news.json (neither object nor string array), returning default."
           );
           // Standard success response with default data
           return NextResponse.json(
             { success: true, data: defaultNews },
-            { status: 200 },
+            { status: 200 }
           );
         }
       }
@@ -87,16 +87,16 @@ interface HistoryEntry {
           success: false,
           error: { code: "PARSE_ERROR", message: "Failed to parse news data" },
         },
-        { status: 500 },
+        { status: 500 }
       );
-        }
-      } catch (error) {
+    }
+  } catch (error) {
     if (error instanceof Error && "code" in error && error.code === "ENOENT") {
       console.log("news.json not found, returning default news.");
       // Standard success response with default data (treating not found as default success)
       return NextResponse.json(
         { success: true, data: defaultNews },
-        { status: 200 },
+        { status: 200 }
       );
     } else {
       console.error("API GET /api/news Error reading file:", error);
@@ -106,7 +106,7 @@ interface HistoryEntry {
           success: false,
           error: { code: "READ_ERROR", message: "Failed to read news data" },
         },
-        { status: 500 },
+        { status: 500 }
       );
     }
   }
@@ -128,7 +128,7 @@ export async function POST(req: Request) {
         !rawData.news.every((item: unknown) => typeof item === "string")
       ) {
         throw new Error(
-          "Invalid data format. Expected { title: string, news: string[] }.",
+          "Invalid data format. Expected { title: string, news: string[] }."
         );
       }
       newNewsData = rawData;
@@ -142,7 +142,7 @@ export async function POST(req: Request) {
             message: "Invalid JSON or data format in request body.",
           },
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -154,7 +154,7 @@ export async function POST(req: Request) {
     try {
       const currentJsonData = await fs.promises.readFile(
         NEWS_FILE_PATH,
-        "utf-8",
+        "utf-8"
       );
       try {
         const parsedCurrent = JSON.parse(currentJsonData);
@@ -179,13 +179,13 @@ export async function POST(req: Request) {
           };
         } else {
           console.warn(
-            "Could not parse current news.json into known format for history.",
+            "Could not parse current news.json into known format for history."
           );
         }
       } catch (parseError) {
         console.warn(
           "Error parsing current news.json for history:",
-          parseError,
+          parseError
         );
       }
     } catch (error) {
@@ -214,7 +214,7 @@ export async function POST(req: Request) {
         try {
           const historyJsonData = await fs.promises.readFile(
             HISTORY_FILE_PATH,
-            "utf-8",
+            "utf-8"
           );
           const parsedHistory = JSON.parse(historyJsonData);
           // Basic validation of history format
@@ -223,7 +223,7 @@ export async function POST(req: Request) {
             history = parsedHistory;
           } else {
             console.warn(
-              "news_history.json format is invalid, starting fresh history.",
+              "news_history.json format is invalid, starting fresh history."
             );
           }
         } catch (histError) {
@@ -233,12 +233,12 @@ export async function POST(req: Request) {
             histError.code === "ENOENT"
           ) {
             console.log(
-              "news_history.json not found, creating new history file.",
+              "news_history.json not found, creating new history file."
             );
           } else {
             console.warn(
               "Error reading or parsing news_history.json:",
-              histError,
+              histError
             );
           }
           // Initialize history as empty array if file not found or parse error
@@ -262,7 +262,7 @@ export async function POST(req: Request) {
         await fs.promises.writeFile(
           HISTORY_FILE_PATH,
           JSON.stringify(history, null, 2),
-          "utf-8",
+          "utf-8"
         );
         console.log("News history updated.");
       } catch (histUpdateError) {
@@ -272,7 +272,7 @@ export async function POST(req: Request) {
       }
     } else {
       console.log(
-        "New news data is identical to current version. Skipping history update.",
+        "New news data is identical to current version. Skipping history update."
       );
     }
 
@@ -284,7 +284,7 @@ export async function POST(req: Request) {
     // 5. Return the newly saved data in standard success format
     return NextResponse.json(
       { success: true, data: newNewsData },
-      { status: 200 },
+      { status: 200 }
     );
   } catch (error) {
     // Catch unexpected errors during the process
@@ -298,18 +298,18 @@ export async function POST(req: Request) {
           message: "Failed to update news data due to an internal error.",
         },
       },
-      { status: 500 },
+      { status: 500 }
     );
-      }
-    }
+  }
+}
 
-    // 可选：添加 OPTIONS handler 以支持 CORS (如果从不同域调用 API)
-    // export async function OPTIONS() {
-    //   return new NextResponse(null, {
-    //     status: 204,
-    //     headers: {
-    //       'Allow': 'GET, POST, OPTIONS',
-    //       // Add CORS headers if needed
-    //     },
-    //   });
-    // }
+// 可选：添加 OPTIONS handler 以支持 CORS (如果从不同域调用 API)
+// export async function OPTIONS() {
+//   return new NextResponse(null, {
+//     status: 204,
+//     headers: {
+//       'Allow': 'GET, POST, OPTIONS',
+//       // Add CORS headers if needed
+//     },
+//   });
+// }

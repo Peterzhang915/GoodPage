@@ -62,7 +62,7 @@ export async function GET() {
     console.error("API GET Error:", error);
     return NextResponse.json(
       { error: "Failed to fetch visit counts" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -75,7 +75,7 @@ export async function POST(req: Request) {
 
     // **总是增加总访问次数**
     const incrementTotalStmt = await db.prepare(
-      "UPDATE visits SET count = count + 1 WHERE id = 1",
+      "UPDATE visits SET count = count + 1 WHERE id = 1"
     );
     await incrementTotalStmt.run();
     await incrementTotalStmt.finalize();
@@ -83,7 +83,7 @@ export async function POST(req: Request) {
     // 如果是开发者访问，额外增加开发者访问次数
     if (source === "developer") {
       const incrementDevStmt = await db.prepare(
-        "UPDATE visits SET count = count + 1 WHERE id = 2",
+        "UPDATE visits SET count = count + 1 WHERE id = 2"
       );
       await incrementDevStmt.run();
       await incrementDevStmt.finalize();
@@ -105,13 +105,13 @@ export async function POST(req: Request) {
 
     return NextResponse.json(
       { total: totalCount, developer: devCount },
-      { status: 200 },
+      { status: 200 }
     );
   } catch (error) {
     console.error("API POST Error:", error);
     return NextResponse.json(
       { error: "Failed to update visit counts" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

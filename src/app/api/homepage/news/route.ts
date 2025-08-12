@@ -1,12 +1,12 @@
-import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
-import { z } from 'zod'; // For input validation
+import { NextResponse } from "next/server";
+import { PrismaClient } from "@prisma/client";
+import { z } from "zod"; // For input validation
 
 const prisma = new PrismaClient();
 
 // Zod Schema for validating POST request body
 const createNewsSchema = z.object({
-  content: z.string().min(1, { message: 'News content cannot be empty.' }),
+  content: z.string().min(1, { message: "News content cannot be empty." }),
   // display_order is optional, handled by finding max + 1 if not provided
   display_order: z.number().int().optional(),
   is_visible: z.boolean().optional().default(true),
@@ -17,15 +17,15 @@ export async function GET() {
   try {
     const newsItems = await prisma.homepageNews.findMany({
       orderBy: {
-        display_order: 'asc', // Default sort order
+        display_order: "asc", // Default sort order
       },
     });
     return NextResponse.json({ success: true, data: newsItems });
   } catch (error) {
-    console.error('Failed to fetch homepage news:', error);
+    console.error("Failed to fetch homepage news:", error);
     return NextResponse.json(
-      { success: false, error: { message: 'Failed to fetch news data.' } },
-      { status: 500 },
+      { success: false, error: { message: "Failed to fetch news data." } },
+      { status: 500 }
     );
   } finally {
     await prisma.$disconnect();
@@ -41,8 +41,14 @@ export async function POST(request: Request) {
     const validation = createNewsSchema.safeParse(body);
     if (!validation.success) {
       return NextResponse.json(
-        { success: false, error: { message: 'Invalid input.', details: validation.error.errors } },
-        { status: 400 },
+        {
+          success: false,
+          error: {
+            message: "Invalid input.",
+            details: validation.error.errors,
+          },
+        },
+        { status: 400 }
       );
     }
 
@@ -68,13 +74,16 @@ export async function POST(request: Request) {
       },
     });
 
-    return NextResponse.json({ success: true, data: newNewsItem }, { status: 201 }); // 201 Created status
+    return NextResponse.json(
+      { success: true, data: newNewsItem },
+      { status: 201 }
+    ); // 201 Created status
   } catch (error) {
-    console.error('Failed to create homepage news item:', error);
+    console.error("Failed to create homepage news item:", error);
     // Consider more specific error checks (e.g., database constraint errors)
     return NextResponse.json(
-      { success: false, error: { message: 'Failed to create news item.' } },
-      { status: 500 },
+      { success: false, error: { message: "Failed to create news item." } },
+      { status: 500 }
     );
   } finally {
     await prisma.$disconnect();

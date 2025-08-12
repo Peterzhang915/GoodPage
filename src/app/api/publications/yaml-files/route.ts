@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
-import fs from 'fs';
-import path from 'path';
+import fs from "fs";
+import path from "path";
 
-const YAML_DIR = path.join(process.cwd(), 'data', 'yaml');
+const YAML_DIR = path.join(process.cwd(), "data", "yaml");
 
 /**
  * 获取所有可用的 YAML 文件列表
@@ -15,29 +15,34 @@ export async function GET() {
     }
 
     // 读取目录中的所有 .yml 和 .yaml 文件
-    const files = fs.readdirSync(YAML_DIR)
-      .filter(file => /\.(yml|yaml)$/i.test(file))
-      .map(fileName => {
+    const files = fs
+      .readdirSync(YAML_DIR)
+      .filter((file) => /\.(yml|yaml)$/i.test(file))
+      .map((fileName) => {
         const filePath = path.join(YAML_DIR, fileName);
         const stats = fs.statSync(filePath);
-        
+
         return {
           name: fileName,
           size: stats.size,
           lastModified: stats.mtime.toISOString(),
-          path: `/data/yaml/${fileName}`
+          path: `/data/yaml/${fileName}`,
         };
       })
-      .sort((a, b) => new Date(b.lastModified).getTime() - new Date(a.lastModified).getTime());
+      .sort(
+        (a, b) =>
+          new Date(b.lastModified).getTime() -
+          new Date(a.lastModified).getTime()
+      );
 
     return NextResponse.json({
       success: true,
-      data: files
+      data: files,
     });
-
   } catch (error) {
     console.error("Error reading YAML files:", error);
-    const errorMessage = error instanceof Error ? error.message : "Unknown error";
+    const errorMessage =
+      error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json(
       { error: `Failed to read YAML files: ${errorMessage}` },
       { status: 500 }
@@ -51,13 +56,10 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const formData = await request.formData();
-    const file = formData.get('file') as File;
+    const file = formData.get("file") as File;
 
     if (!file) {
-      return NextResponse.json(
-        { error: "No file provided" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "No file provided" }, { status: 400 });
     }
 
     // 验证文件类型
@@ -103,13 +105,13 @@ export async function POST(request: Request) {
       data: {
         name: file.name,
         size: file.size,
-        path: `/data/yaml/${file.name}`
-      }
+        path: `/data/yaml/${file.name}`,
+      },
     });
-
   } catch (error) {
     console.error("Error uploading YAML file:", error);
-    const errorMessage = error instanceof Error ? error.message : "Unknown error";
+    const errorMessage =
+      error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json(
       { error: `Failed to upload file: ${errorMessage}` },
       { status: 500 }

@@ -20,26 +20,28 @@ export function MemberList({ groupedMembers, statusTitles }: MemberListProps) {
   const [isEmojiEnabled, setIsEmojiEnabled] = useState(false);
 
   // 新增：控制已毕业学生显示的状态
-  const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({});
+  const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>(
+    {}
+  );
 
   // 切换分组的展开/收起状态
   const toggleGroupExpansion = (groupKey: string) => {
-    setExpandedGroups(prev => ({
+    setExpandedGroups((prev) => ({
       ...prev,
-      [groupKey]: !prev[groupKey]
+      [groupKey]: !prev[groupKey],
     }));
   };
 
   // 判断是否为学生分组（需要毕业功能的分组）
   // 注意：博士生毕业逻辑复杂，暂不包含在自动毕业功能中
   const isStudentGroup = (groupKey: string) => {
-    return ['MASTER_STUDENT', 'UNDERGRADUATE'].includes(groupKey);
+    return ["MASTER_STUDENT", "UNDERGRADUATE"].includes(groupKey);
   };
 
   // 分离当前学生和已毕业学生
   const separateStudents = (members: MemberForCard[]) => {
-    const current = members.filter(m => !m.isGraduated);
-    const graduated = members.filter(m => m.isGraduated);
+    const current = members.filter((m) => !m.isGraduated);
+    const graduated = members.filter((m) => m.isGraduated);
     return { current, graduated };
   };
 
@@ -54,7 +56,7 @@ export function MemberList({ groupedMembers, statusTitles }: MemberListProps) {
 
   // 获取除了 PROFESSOR 之外的其他分组键
   const otherGroupKeys = Object.keys(groupedMembers).filter(
-    key => key !== headOfLabGroupKey
+    (key) => key !== headOfLabGroupKey
   );
 
   // --- 硬编码的 Faculty 数据 ---
@@ -77,7 +79,6 @@ export function MemberList({ groupedMembers, statusTitles }: MemberListProps) {
   //   // 如果需要，可以添加更多硬编码的老师
   // ];
   // --------------------------
-
 
   return (
     <>
@@ -125,7 +126,9 @@ export function MemberList({ groupedMembers, statusTitles }: MemberListProps) {
         if (!membersInGroup || membersInGroup.length === 0) return null;
 
         const isStudent = isStudentGroup(groupKey);
-        const { current, graduated } = isStudent ? separateStudents(membersInGroup) : { current: membersInGroup, graduated: [] };
+        const { current, graduated } = isStudent
+          ? separateStudents(membersInGroup)
+          : { current: membersInGroup, graduated: [] };
         const isExpanded = expandedGroups[groupKey] || false;
         const hasGraduated = graduated.length > 0;
 
@@ -138,7 +141,11 @@ export function MemberList({ groupedMembers, statusTitles }: MemberListProps) {
                 <button
                   onClick={() => toggleGroupExpansion(groupKey)}
                   className={`mr-3 p-1 rounded-md transition-colors duration-200 ${themeColors.textColorTertiary ?? "text-gray-500"} hover:${themeColors.textColorSecondary ?? "text-gray-700"} hover:bg-gray-100`}
-                  title={isExpanded ? "Hide graduated students" : `Show ${graduated.length} graduated students`}
+                  title={
+                    isExpanded
+                      ? "Hide graduated students"
+                      : `Show ${graduated.length} graduated students`
+                  }
                 >
                   {isExpanded ? (
                     <ChevronDown className="w-5 h-5" />
@@ -154,7 +161,9 @@ export function MemberList({ groupedMembers, statusTitles }: MemberListProps) {
                 {statusTitles[groupKey] || "Other Members"}
                 {/* 显示已毕业学生数量 */}
                 {isStudent && hasGraduated && (
-                  <span className={`ml-3 text-sm font-normal ${themeColors.textColorTertiary ?? "text-gray-500"}`}>
+                  <span
+                    className={`ml-3 text-sm font-normal ${themeColors.textColorTertiary ?? "text-gray-500"}`}
+                  >
                     ({graduated.length} more)
                   </span>
                 )}
@@ -184,7 +193,9 @@ export function MemberList({ groupedMembers, statusTitles }: MemberListProps) {
                   transition={{ duration: 0.3, ease: "easeInOut" }}
                   className="mt-6 pt-6 border-t border-gray-200 overflow-hidden"
                 >
-                  <h3 className={`text-lg font-medium ${themeColors.textColorSecondary ?? "text-gray-600"} mb-4`}>
+                  <h3
+                    className={`text-lg font-medium ${themeColors.textColorSecondary ?? "text-gray-600"} mb-4`}
+                  >
                     Graduated Students
                   </h3>
                   <motion.div
@@ -198,7 +209,10 @@ export function MemberList({ groupedMembers, statusTitles }: MemberListProps) {
                         key={member.id}
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.3, delay: 0.1 + index * 0.05 }}
+                        transition={{
+                          duration: 0.3,
+                          delay: 0.1 + index * 0.05,
+                        }}
                       >
                         <MemberCard
                           member={member}

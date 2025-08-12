@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
-import fs from 'fs';
-import path from 'path';
+import fs from "fs";
+import path from "path";
 
-const YAML_DIR = path.join(process.cwd(), 'data', 'yaml');
+const YAML_DIR = path.join(process.cwd(), "data", "yaml");
 
 /**
  * 删除指定的 YAML 文件
@@ -22,11 +22,12 @@ export async function DELETE(
     }
 
     // 验证文件名（防止路径遍历攻击）
-    if (filename.includes('..') || filename.includes('/') || filename.includes('\\')) {
-      return NextResponse.json(
-        { error: "Invalid filename" },
-        { status: 400 }
-      );
+    if (
+      filename.includes("..") ||
+      filename.includes("/") ||
+      filename.includes("\\")
+    ) {
+      return NextResponse.json({ error: "Invalid filename" }, { status: 400 });
     }
 
     // 验证文件类型
@@ -54,12 +55,12 @@ export async function DELETE(
 
     return NextResponse.json({
       success: true,
-      message: `File "${filename}" deleted successfully`
+      message: `File "${filename}" deleted successfully`,
     });
-
   } catch (error) {
     console.error("Error deleting YAML file:", error);
-    const errorMessage = error instanceof Error ? error.message : "Unknown error";
+    const errorMessage =
+      error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json(
       { error: `Failed to delete file: ${errorMessage}` },
       { status: 500 }

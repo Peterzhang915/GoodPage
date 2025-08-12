@@ -28,10 +28,8 @@ const TextProgressBar: React.FC<TextProgressBarProps> = ({
 
   return (
     // Use template literal for clarity
-    <span className="font-mono">
-      {`[${filled}${empty}]`}
-    </span>
+    <span className="font-mono">{`[${filled}${empty}]`}</span>
   );
 };
 
-export default TextProgressBar; 
+export default TextProgressBar;
