@@ -52,8 +52,6 @@ export async function GET(request: Request) {
       },
     });
 
-
-
     // 格式化数据以匹配 PublicationWithAuthors 接口
     const formattedPublications = pendingPublications.map((pub) => ({
       ...pub,
@@ -84,7 +82,6 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-
   try {
     const body = await request.json();
 
@@ -124,8 +121,6 @@ export async function POST(request: Request) {
         source: body.source || "yaml_import", // 标记数据来源
       },
     });
-
-
 
     return NextResponse.json(
       {

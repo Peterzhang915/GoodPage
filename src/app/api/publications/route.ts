@@ -58,8 +58,6 @@ export async function GET() {
     // 使用 getAllPublicationsFormatted 函数获取格式化的出版物数据
     const publications = await getAllPublicationsFormatted();
 
-
-
     return NextResponse.json({
       data: publications,
       count: publications.length,
@@ -151,8 +149,6 @@ export async function POST(request: Request) {
     const { title, year, venue, ccf_rank, authors_full_string, pdf_url, type } =
       validationResult.data;
 
-
-
     // 3. Create publication in database
     const newPublication = await prisma.publication.create({
       data: {
@@ -238,7 +234,6 @@ export async function POST(request: Request) {
               author_order: authorOrder,
             },
           });
-
         } else {
           console.warn(
             `API: Author "${authorName}" from authors_full_string not linked to any existing member.`
@@ -247,8 +242,6 @@ export async function POST(request: Request) {
         authorOrder++;
       }
     }
-
-
 
     // 5. 获取完整的publication数据（包含authors关系）用于返回
     const completePublication = await prisma.publication.findUnique({

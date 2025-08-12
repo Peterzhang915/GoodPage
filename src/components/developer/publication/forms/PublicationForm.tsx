@@ -184,7 +184,9 @@ export const PublicationForm: React.FC<PublicationFormProps> = ({
             <FormItem>
               <FormLabel>CCF Rank</FormLabel>
               <Select
-                onValueChange={(value) => field.onChange(value === "none" ? null : value)}
+                onValueChange={(value) =>
+                  field.onChange(value === "none" ? null : value)
+                }
                 value={field.value ?? "none"}
               >
                 <FormControl>

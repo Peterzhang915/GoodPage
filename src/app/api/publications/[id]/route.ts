@@ -47,8 +47,6 @@ export async function GET(request: Request, { params }: RouteParams) {
     );
   }
 
-
-
   try {
     const publication = await prisma.publication.findUnique({
       where: { id: publicationId },
@@ -65,7 +63,6 @@ export async function GET(request: Request, { params }: RouteParams) {
         { status: 404 } // Return 404 if not found
       );
     }
-
 
     return NextResponse.json({ success: true, data: publication });
   } catch (error: unknown) {
@@ -235,8 +232,6 @@ export async function PUT(request: Request, { params }: RouteParams) {
       { status: 400 }
     );
   }
-
-
 
   let body: any;
   try {
@@ -420,7 +415,6 @@ export async function PUT(request: Request, { params }: RouteParams) {
         return finalResult; // The transaction returns the result of this last operation
       }
     );
-
 
     // Return the final publication data which now includes the updated 'authors' relation
     return NextResponse.json({
