@@ -45,8 +45,6 @@ data/info.csv
 
 package-lock.json
 
-# cursor
-/.cursor/
 
 pnpm-workspace.yaml
 pnpm-lock.yaml

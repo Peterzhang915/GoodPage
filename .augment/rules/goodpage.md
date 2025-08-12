@@ -1,0 +1,177 @@
+---
+type: "always_apply"
+priority: 1000
+---
+
+# 🏠 GoodPage 项目开发指南
+
+> **南昌大学 GOOD 实验室主页 - 双重身份的现代化网站**
+
+## 📋 项目核心特色
+
+**主要功能:** 实验室展示主页 + 隐藏的开发者管理后台
+**技术栈:** Next.js 15 (App Router) + TypeScript + Tailwind CSS + Prisma + SQLite
+**特殊机制:** Konami Code (上上下下左右左右BA) 触发开发者页面
+**项目根目录:** 所有操作基于 `GoodPage/` 子目录
+
+---
+
+## 🎯 项目架构理解
+
+### 核心页面结构
+- **主页 (`page.tsx`):** 展示新闻、项目、教学信息
+- **成员页面 (`members/`):** 实验室成员展示
+- **出版物页面 (`publications/`):** 学术发表展示
+- **图库页面 (`gallery/`):** 照片展示
+- **联系页面 (`contact/`):** 联系信息
+- **🔒 开发者页面 (`developer/`):** 隐藏的管理后台
+- **🎮 恐龙游戏 (`dino/`):** 彩蛋页面
+- **API 路由 (`api/`):** 后端数据接口
+
+### 状态管理架构
+- **Zustand:** 全局认证状态 (`src/store/authStore.ts`)
+- **Context:** 开发者模式状态 (`src/contexts/DeveloperModeContext.tsx`)
+- **useState:** 组件内部状态管理
+
+### 样式管理系统
+- **主题文件:** `src/styles/theme.ts` - 统一颜色管理，**严禁硬编码颜色**
+- **CSS 框架:** Tailwind CSS + shadcn/ui 组件库
+- **动画库:** Framer Motion
+
+---
+
+## 🛠️ 开发规范 (基于项目实际情况)
+
+### 必读文档
+- **开发规范:** `Development_Specification.md` - 代码风格、命名约定、组件设计
+- **设计文档:** `design.md` - 项目架构、Konami Code 机制、认证设计
+
+### 代码质量工具 (已配置)
+- **Prettier:** `.prettierrc` - 代码格式化
+- **ESLint:** `eslint.config.mjs` - 代码质量检查
+- **TypeScript:** 严格类型检查，避免 `any` 类型
+
+### 命名规范
+- **组件文件:** `PascalCase` (如 `HeroSection.tsx`)
+- **页面文件:** Next.js 约定 (`page.tsx`, `layout.tsx`, `route.ts`)
+- **工具文件:** `camelCase` (如 `authUtils.ts`)
+- **类型定义:** `PascalCase` (如 `type MemberProps = {...}`)
+
+---
+
+## 🎨 UI 开发规范
+
+### 颜色使用 (重要!)
+```typescript
+// ✅ 正确 - 使用 theme.ts 中的颜色
+import { themeColors } from '@/styles/theme';
+<div className={themeColors.textColorPrimary}>
+
+// ❌ 错误 - 硬编码颜色
+<div className="text-gray-800">
+```
+
+### 组件设计原则
+- **Props 定义:** 使用 `type` 关键字定义组件 Props
+- **组件拆分:** 按功能模块组织 (`src/components/home/`, `src/components/developer/`)
+- **状态管理:** 优先级 `useState` → Context → Zustand
+
+### 响应式设计
+- **策略:** Mobile-first，使用 Tailwind 断点
+- **测试:** 确保在不同设备上的显示效果
+
+---
+
+## 🔧 API 开发规范
+
+### 路由组织 (Next.js App Router)
+- **主页数据:** `src/app/api/homepage/` - 新闻、项目、教学数据
+- **成员管理:** `src/app/api/members/` - 成员 CRUD 操作
+- **出版物管理:** `src/app/api/publications/` - 出版物管理
+- **图库管理:** `src/app/api/gallery/` - 图片管理
+- **认证相关:** `src/app/api/auth/` - 登录验证
+
+### 数据库操作
+- **ORM:** Prisma，确保类型安全
+- **数据库:** SQLite (`prisma/dev.db`)
+- **迁移:** 使用 `npx prisma migrate dev`
+
+### API 响应格式
+```typescript
+// 标准成功响应
+{ success: true, data: {...} }
+
+// 标准错误响应
+{ success: false, error: { message: "错误信息" } }
+```
+
+---
+
+## 🔒 开发者页面特殊逻辑
+
+### 访问机制
+1. **触发:** 在任意页面输入 Konami Code (上上下下左右左右BA)
+2. **导航:** 自动跳转到 `/developer` 页面
+3. **认证:** 显示终端风格登录界面
+
+### 认证流程
+- **登录界面:** 终端风格，包含 ASCII Art 和 MOTD
+- **状态管理:** 使用 Zustand (`authStore`) 管理认证状态
+- **权限控制:** 简单的开发者权限验证
+
+### 管理功能
+- 新闻管理、成员管理、出版物管理、图库管理
+- 访问统计查看
+- 数据导入导出功能
+
+---
+
+## 📦 模块化设计示例
+
+### Members 模块解耦 (参考实现)
+```
+src/lib/members/
+├── index.ts           # 统一导出
+├── queries.ts         # 数据查询函数
+├── utils.ts           # 工具函数
+└── education.ts       # Education CRUD 操作
+```
+
+### 组件组织
+```
+src/components/
+├── common/            # 通用组件
+├── ui/                # shadcn/ui 基础组件
+├── home/              # 主页专用组件
+├── developer/         # 开发者页面组件
+└── [page]/            # 各页面专用组件
+```
+
+---
+
+## 💡 开发协作规范
+
+### AI 助手协作
+- **命令限制:** AI 不得主动执行终端命令 (如 `npm install`, `prisma migrate`)
+- **操作确认:** 需要执行的命令由开发者确认后手动执行
+- **文档更新:** 重要变更及时更新到 `design.md`
+
+### 开发流程
+1. **理解需求:** 先查阅相关文档和现有代码
+2. **模块化思考:** 考虑如何与现有架构集成
+3. **颜色管理:** 确保使用 `theme.ts` 中的颜色定义
+4. **类型安全:** 充分利用 TypeScript 类型系统
+
+---
+
+## ⚠️ 关键注意事项
+
+1. **项目根目录:** 所有文件操作基于 `GoodPage/` 子目录
+2. **颜色管理:** 严禁硬编码颜色，必须使用 `src/styles/theme.ts`
+3. **Konami Code:** 理解并保护开发者页面的访问机制
+4. **模块化:** 参考 members 模块的解耦方式组织代码
+5. **依赖管理:** 统一使用 npm 作为包管理工具
+
+---
+
+**🎯 项目目标:** 构建功能完整、易于维护的实验室主页，展现技术实力的同时提供便捷的内容管理能力
