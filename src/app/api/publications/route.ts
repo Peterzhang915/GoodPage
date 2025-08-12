@@ -37,7 +37,6 @@ export type PublicationWithAuthors = Prisma.PublicationGetPayload<
 >;
 
 export async function GET() {
-  console.log("API: Handling GET /api/publications");
   try {
     // --- Permission Check Placeholder ---
     /*
@@ -59,7 +58,7 @@ export async function GET() {
     // 使用 getAllPublicationsFormatted 函数获取格式化的出版物数据
     const publications = await getAllPublicationsFormatted();
 
-    console.log(`API: Fetched ${publications.length} formatted publications.`);
+
 
     return NextResponse.json({
       data: publications,
@@ -90,6 +89,11 @@ const createPublicationSchema = z.object({
     .nullable()
     .optional()
     .transform((val) => (val === "" ? null : val)),
+  ccf_rank: z
+    .string()
+    .nullable()
+    .optional()
+    .transform((val) => (val === "" ? null : val)),
   authors_full_string: z
     .string()
     .nullable()
@@ -106,7 +110,6 @@ const createPublicationSchema = z.object({
 
 // --- POST Handler ---
 export async function POST(request: Request) {
-  console.log("API: Handling POST /api/publications");
   try {
     // --- Permission Check Placeholder ---
     /* 
@@ -131,10 +134,6 @@ export async function POST(request: Request) {
     // 2. Validate input data
     const validationResult = createPublicationSchema.safeParse(body);
     if (!validationResult.success) {
-      console.log(
-        "API: Invalid input for creating publication:",
-        validationResult.error.formErrors.fieldErrors
-      ); // Log detailed errors
       return NextResponse.json(
         {
           success: false,
@@ -149,12 +148,10 @@ export async function POST(request: Request) {
     }
 
     // Ensure data types are correct after validation
-    const { title, year, venue, authors_full_string, pdf_url, type } =
+    const { title, year, venue, ccf_rank, authors_full_string, pdf_url, type } =
       validationResult.data;
 
-    console.log(
-      `API: Creating publication with Title: ${title}, Year: ${year}, Venue: ${venue}, Authors: ${authors_full_string}, PDF: ${pdf_url}, Type: ${type}`
-    );
+
 
     // 3. Create publication in database
     const newPublication = await prisma.publication.create({
@@ -162,6 +159,7 @@ export async function POST(request: Request) {
         title: title, // Explicitly typed
         year: year, // Explicitly typed
         venue: venue, // Explicitly typed
+        ccf_rank: ccf_rank, // Explicitly typed
         authors_full_string: authors_full_string, // Explicitly typed
         pdf_url: pdf_url, // Explicitly typed
         type: type, // Explicitly typed
@@ -240,9 +238,7 @@ export async function POST(request: Request) {
               author_order: authorOrder,
             },
           });
-          console.log(
-            `API: Linked author "${authorName}" to member ID ${member.id} (${member.name_en})`
-          );
+
         } else {
           console.warn(
             `API: Author "${authorName}" from authors_full_string not linked to any existing member.`
@@ -252,9 +248,7 @@ export async function POST(request: Request) {
       }
     }
 
-    console.log(
-      `API: Successfully created publication with ID: ${newPublication.id}`
-    );
+
 
     // 5. 获取完整的publication数据（包含authors关系）用于返回
     const completePublication = await prisma.publication.findUnique({

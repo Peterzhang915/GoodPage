@@ -118,6 +118,11 @@ const PublishedItem: React.FC<PublishedItemProps> = ({
           {publication.venue && (
             <span className="italic"> - {publication.venue}</span>
           )}
+          {publication.ccf_rank && (
+            <span className="px-2 py-0.5 bg-blue-600 text-white text-xs rounded font-medium">
+              CCF {publication.ccf_rank}
+            </span>
+          )}
         </div>
         {/* Action Buttons */}
         <div className="flex items-center gap-2 flex-shrink-0">

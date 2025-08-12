@@ -62,7 +62,7 @@ const PendingItem: React.FC<PendingItemProps> = ({
             target="_blank"
             rel="noopener noreferrer"
             className={`p-1.5 rounded ${themeColors.devButtonBg} ${themeColors.devButtonHoverBg} transition-colors flex-shrink-0`}
-            title="查看PDF"
+            title="view PDF"
           >
             <ExternalLink size={16} />
           </a>
@@ -84,6 +84,11 @@ const PendingItem: React.FC<PendingItemProps> = ({
           <span>{publication.year || "N/A"}</span>
           {publication.venue && (
             <span className="italic"> - {publication.venue}</span>
+          )}
+          {publication.ccf_rank && (
+            <span className="px-2 py-0.5 bg-blue-600 text-white text-xs rounded font-medium">
+              CCF {publication.ccf_rank}
+            </span>
           )}
         </div>
 

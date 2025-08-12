@@ -40,6 +40,11 @@ const publicationFormSchema = z.object({
     .nullable()
     .optional()
     .transform((val) => (val === "" ? null : val)),
+  ccf_rank: z
+    .string()
+    .nullable()
+    .optional()
+    .transform((val) => (val === "" ? null : val)),
   authors_full_string: z
     .string()
     .nullable()
@@ -83,6 +88,7 @@ export const PublicationForm: React.FC<PublicationFormProps> = ({
       title: initialData?.title || "",
       year: initialData?.year || new Date().getFullYear(),
       venue: initialData?.venue ?? null,
+      ccf_rank: initialData?.ccf_rank ?? null,
       authors_full_string: initialData?.authors_full_string ?? null,
       pdf_url: initialData?.pdf_url ?? null,
       type: initialData?.type ?? PublicationType.CONFERENCE,
@@ -165,6 +171,34 @@ export const PublicationForm: React.FC<PublicationFormProps> = ({
                   } // 处理空字符串为null
                 />
               </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        {/* CCF 等级字段（可选） */}
+        <FormField
+          control={form.control}
+          name="ccf_rank"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>CCF Rank</FormLabel>
+              <Select
+                onValueChange={(value) => field.onChange(value === "none" ? null : value)}
+                value={field.value ?? "none"}
+              >
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select CCF Rank" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value="none">other</SelectItem>
+                  <SelectItem value="A">CCF A</SelectItem>
+                  <SelectItem value="B">CCF B</SelectItem>
+                  <SelectItem value="C">CCF C</SelectItem>
+                </SelectContent>
+              </Select>
               <FormMessage />
             </FormItem>
           )}

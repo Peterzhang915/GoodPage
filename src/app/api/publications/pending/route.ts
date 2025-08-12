@@ -4,7 +4,6 @@ import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
 export async function GET(request: Request) {
-  console.log("Received request to /api/publications/pending");
   try {
     const pendingPublications = await prisma.publication.findMany({
       where: {
@@ -53,7 +52,7 @@ export async function GET(request: Request) {
       },
     });
 
-    console.log(`Found ${pendingPublications.length} pending publications.`);
+
 
     // 格式化数据以匹配 PublicationWithAuthors 接口
     const formattedPublications = pendingPublications.map((pub) => ({
@@ -85,11 +84,9 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  console.log("Received POST request to /api/publications/pending");
 
   try {
     const body = await request.json();
-    console.log("Request body:", body);
 
     // 验证必需字段
     if (!body.title || !body.year) {
@@ -128,7 +125,7 @@ export async function POST(request: Request) {
       },
     });
 
-    console.log(`Created pending publication with ID: ${newPublication.id}`);
+
 
     return NextResponse.json(
       {

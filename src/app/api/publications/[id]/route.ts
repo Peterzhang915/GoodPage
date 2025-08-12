@@ -47,9 +47,7 @@ export async function GET(request: Request, { params }: RouteParams) {
     );
   }
 
-  console.log(
-    `[API GET /api/publications/${id}] Attempting to fetch publication. Parsed ID: ${publicationId} (Type: ${typeof publicationId})`
-  );
+
 
   try {
     const publication = await prisma.publication.findUnique({
@@ -59,9 +57,6 @@ export async function GET(request: Request, { params }: RouteParams) {
     });
 
     if (!publication) {
-      console.log(
-        `[API] Publication with ID ${publicationId} not found in database.`
-      );
       return NextResponse.json(
         {
           success: false,
@@ -71,9 +66,7 @@ export async function GET(request: Request, { params }: RouteParams) {
       );
     }
 
-    console.log(
-      `[API] Successfully fetched publication with ID: ${publicationId}`
-    );
+
     return NextResponse.json({ success: true, data: publication });
   } catch (error: unknown) {
     console.error(`[API] Error fetching publication ${publicationId}:`, error);
@@ -164,6 +157,11 @@ const updatePublicationSchema = z.object({
     }),
   // Add other expected fields from PublicationFormData here
   venue: z.string().nullable().optional(),
+  ccf_rank: z
+    .string()
+    .nullable()
+    .optional()
+    .transform((val) => (val === "" ? null : val)),
   type: z.nativeEnum(PublicationType).optional(), // Use imported PublicationType
   pdf_url: z
     .string()
@@ -238,9 +236,7 @@ export async function PUT(request: Request, { params }: RouteParams) {
     );
   }
 
-  console.log(
-    `[API PUT /api/publications/${id}] Attempting to update publication.`
-  );
+
 
   let body: any;
   try {
@@ -425,9 +421,7 @@ export async function PUT(request: Request, { params }: RouteParams) {
       }
     );
 
-    console.log(
-      `[API] Successfully updated publication and processed authors for ID: ${publicationId}`
-    );
+
     // Return the final publication data which now includes the updated 'authors' relation
     return NextResponse.json({
       success: true,

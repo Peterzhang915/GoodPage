@@ -11,7 +11,6 @@ export async function DELETE(
 ) {
   const { id: idString } = await params; // Await params in Next.js 15
   const id = parseInt(idString, 10); // Convert string to integer
-  console.log(`Received DELETE request for pending publication ID: ${id}`);
 
   if (!id || isNaN(id)) {
     return NextResponse.json(
@@ -52,7 +51,6 @@ export async function DELETE(
       where: { id: id },
     });
 
-    console.log(`Successfully deleted pending publication with ID: ${id}`);
     // Return a success response with no content
     return new NextResponse(null, { status: 204 });
   } catch (error) {
@@ -69,25 +67,27 @@ export async function DELETE(
 // Handler for PUT requests (Update)
 export async function PUT(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const id = params.id;
-  console.log(`Received PUT request for publication ID: ${id}`);
+  const { id: idString } = await params; // Await params in Next.js 15
+  const id = parseInt(idString, 10); // Convert string to integer
 
-  if (!id) {
+  if (!id || isNaN(id)) {
     return NextResponse.json(
-      { error: "Publication ID is required" },
+      { success: false, error: "Valid publication ID is required" },
       { status: 400 }
     );
   }
 
   try {
     const body = await request.json();
-    console.log("Update payload:", body);
 
     // Validate required fields (adjust based on your form validation)
     if (!body.title) {
-      return NextResponse.json({ error: "Title is required" }, { status: 400 });
+      return NextResponse.json(
+        { success: false, error: "Title is required" },
+        { status: 400 }
+      );
     }
 
     // Extract fields allowed for update
@@ -117,46 +117,50 @@ export async function PUT(
     // Use Prisma transaction to update publication and connect authors
     const updatedPublication = await prisma.$transaction(async (tx) => {
       // 1. Update the publication data
-      const publication = await tx.publication.update({
+      await tx.publication.update({
         where: { id: id },
         data: {
           ...updateData,
           status: finalStatus, // Set status to approved
-          authors: {
-            // Disconnect all existing authors first
-            set: [],
-          },
         },
       });
 
-      // 2. Connect the selected authors (if any)
+      // 2. Clear existing author relationships
+      await tx.publicationAuthor.deleteMany({
+        where: { publication_id: id },
+      });
+
+      // 3. Create new author relationships (if any)
       if (authorIds && Array.isArray(authorIds) && authorIds.length > 0) {
         // Ensure authorIds are valid strings
         const validAuthorIds = authorIds.filter(
           (aid): aid is string => typeof aid === "string" && aid.length > 0
         );
         if (validAuthorIds.length > 0) {
-          await tx.publication.update({
-            where: { id: id },
-            data: {
-              authors: {
-                connect: validAuthorIds.map((authorId) => ({ id: authorId })),
-              },
-            },
+          await tx.publicationAuthor.createMany({
+            data: validAuthorIds.map((authorId, index) => ({
+              publication_id: id,
+              member_id: authorId,
+              author_order: index + 1,
+              is_corresponding_author: false,
+            })),
           });
-        } else {
-          console.log("No valid author IDs provided to connect.");
         }
-      } else {
-        console.log("No author IDs provided, clearing connections.");
       }
 
-      // 3. Re-fetch the updated publication with authors included for the response
+      // 4. Re-fetch the updated publication with authors included for the response
       const result = await tx.publication.findUnique({
         where: { id: id },
         include: {
-          authors: { select: { id: true, name_en: true, name_zh: true } },
-        }, // Include authors in result
+          authors: {
+            include: {
+              author: {
+                select: { id: true, name_en: true, name_zh: true },
+              },
+            },
+            orderBy: { author_order: "asc" },
+          },
+        },
       });
 
       if (!result) {
@@ -168,15 +172,17 @@ export async function PUT(
       return result;
     });
 
-    console.log(`Successfully updated and approved publication with ID: ${id}`);
-    return NextResponse.json(updatedPublication, { status: 200 });
+    return NextResponse.json(
+      { success: true, data: updatedPublication },
+      { status: 200 }
+    );
   } catch (error) {
     console.error(`Error updating publication ${id}:`, error);
     // Handle potential Prisma errors (e.g., record not found)
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
       if (error.code === "P2025") {
         return NextResponse.json(
-          { error: "Publication not found" },
+          { success: false, error: "Publication not found" },
           { status: 404 }
         );
       }
@@ -184,7 +190,7 @@ export async function PUT(
     const errorMessage =
       error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json(
-      { error: `Internal server error: ${errorMessage}` },
+      { success: false, error: `Internal server error: ${errorMessage}` },
       { status: 500 }
     );
   }
